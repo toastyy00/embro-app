@@ -1901,14 +1901,20 @@
 
               if (Array.isArray(payload.cmts)) {
                 cmts.value = JSON.parse(JSON.stringify(payload.cmts));
+              } else {
+                cmts.value = [];
               }
 
               if (payload.completedMap && typeof payload.completedMap === 'object') {
                 completedMap.value = JSON.parse(JSON.stringify(payload.completedMap));
+              } else {
+                completedMap.value = {};
               }
 
               if (payload.colorMap && typeof payload.colorMap === 'object') {
                 colorMap.value = JSON.parse(JSON.stringify(payload.colorMap));
+              } else {
+                colorMap.value = {};
               }
 
               if (payload.activeSessionId !== undefined) {
@@ -1918,6 +1924,9 @@
                 if (oldId !== payload.activeSessionId && payload.activeSessionName) {
                   notice = `Sesi "${payload.activeSessionName}" aktif dari rekan kerja`;
                 }
+              } else {
+                activeSessionId.value = null;
+                activeSessionName.value = '';
               }
 
               if (activeSessionId.value && savedSessions.value.length > 0) {
@@ -1988,7 +1997,7 @@
                   isInitialRoomStateLoaded = true;
                 } else {
                   if (!isInitialRoomStateLoaded) {
-                    const hasRealData = activeSessionId.value || (cmts.value.length > 0 && JSON.stringify(cmts.value) !== JSON.stringify(SAMPLE_DATA));
+                    const hasRealData = activeSessionId.value || cmts.value.length > 0;
                     if (hasRealData) {
                       syncRoomStateToCloud();
                     }
@@ -2255,8 +2264,15 @@
                   cmts.value = [];
                 }
               } else {
-                cmts.value = JSON.parse(JSON.stringify(SAMPLE_DATA));
-                localStorage.setItem('embro_active_cmts', JSON.stringify(cmts.value));
+                cmts.value = [];
+                localStorage.setItem('embro_active_cmts', JSON.stringify([]));
+              }
+
+              if (cmts.value.length === 0) {
+                activeSessionId.value = null;
+                activeSessionName.value = '';
+                localStorage.removeItem('embro_active_session_id');
+                localStorage.removeItem('embro_active_session_name');
               }
 
               const storedCompleted = localStorage.getItem('embro_completed_map');
@@ -2830,6 +2846,10 @@
             needleCapacity.value = 11;
             swapNeedle.value = 11;
             completedMap.value = {};
+            activeSessionId.value = null;
+            activeSessionName.value = 'Data Sampel Bawaan';
+            syncRoomStateToCloud();
+            showToast('Data sampel bawaan berhasil dimuat.');
           };
 
           const clearAllCMTs = async () => {
@@ -2843,6 +2863,15 @@
             if (ok) {
               cmts.value = [];
               completedMap.value = {};
+              activeSessionId.value = null;
+              activeSessionName.value = '';
+              sessionNote.value = '';
+              localStorage.setItem('embro_active_cmts', JSON.stringify([]));
+              localStorage.setItem('embro_completed_map', JSON.stringify({}));
+              localStorage.removeItem('embro_active_session_id');
+              localStorage.removeItem('embro_active_session_name');
+              syncRoomStateToCloud();
+              showToast('Daftar CMT berhasil dikosongkan.');
             }
           };
 
