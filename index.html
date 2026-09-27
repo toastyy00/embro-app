@@ -4552,6 +4552,7 @@
           };
 
           const scheduleSearch = ref('');
+          const scheduleFilter = ref('all'); // 'all', 'running', 'acc', 'pending', 'completed'
           const storedViewMode = typeof localStorage !== 'undefined' ? localStorage.getItem('embro_schedule_view_mode') : null;
           const scheduleViewMode = ref(storedViewMode === 'flat' ? 'flat' : 'floppy');
 
