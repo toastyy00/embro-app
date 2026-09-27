@@ -1677,6 +1677,14 @@
           <div class="flex items-center gap-2">
             <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 font-bold uppercase tracking-wider">{{ floppyListWithStats.length }} Floppy Terdaftar</span>
             <button
+              v-if="floppyList.length > 0"
+              @click="clearAllFloppies"
+              class="h-7.5 px-2.5 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-400 hover:text-rose-400 border border-zinc-800 hover:border-rose-900/60 text-xs font-mono transition-colors flex items-center gap-1 cursor-pointer"
+              title="Hapus semua data floppy"
+            >
+              <span>Kosongkan</span>
+            </button>
+            <button
               @click="openAddFloppyModal"
               class="h-7.5 px-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold font-mono transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
@@ -1687,7 +1695,7 @@
         </div>
 
         <!-- Floppy Cards List -->
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div v-if="floppyListWithStats.length > 0" class="grid gap-3 sm:grid-cols-2">
           <div
             v-for="fl in floppyListWithStats"
             :key="fl.id || fl.name"
@@ -1816,6 +1824,28 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Empty State Floppy -->
+        <div v-else class="bg-zinc-950 border border-dashed border-zinc-800 rounded-xl p-8 text-center space-y-3">
+          <div class="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-zinc-200">Belum Ada Master Floppy Terdaftar</h3>
+            <p class="text-xs text-zinc-400 font-sans max-w-md mx-auto">
+              Database film bordir saat ini masih kosong. Klik tombol di bawah untuk mendaftarkan floppy baru beserta rincian stitch, meter benang, dan screenshot Wilcom.
+            </p>
+          </div>
+          <div class="pt-1">
+            <button
+              @click="openAddFloppyModal"
+              class="h-8 px-4 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold font-mono transition-colors inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Tambah Floppy Pertama</span>
+            </button>
           </div>
         </div>
       </section>
@@ -2139,12 +2169,20 @@
             </div>
           </div>
           <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
-            <div class="text-zinc-400 text-sm font-bold">Tidak ada grup Floppy yang sesuai filter</div>
+            <div class="text-zinc-400 text-sm font-bold">{{ cmts.length === 0 ? 'Belum Ada CMT di Jadwal Mesin' : 'Tidak ada grup Floppy yang sesuai filter' }}</div>
             <p class="text-xs text-zinc-500 font-sans">
-              Coba ubah kata kunci pencarian atau ganti filter status di atas.
+              {{ cmts.length === 0 ? 'Daftar CMT aktif masih kosong. Tambahkan CMT baru atau muat data sampel di menu Trial Benang.' : 'Coba ubah kata kunci pencarian atau ganti filter status di atas.' }}
             </p>
             <div class="pt-2">
               <button
+                v-if="cmts.length === 0"
+                @click="activeModule = 'trial'"
+                class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer border border-zinc-700 inline-flex items-center gap-1.5"
+              >
+                <span>Buka Menu Trial Benang →</span>
+              </button>
+              <button
+                v-else
                 @click="scheduleSearch = ''; scheduleFilter = 'all'"
                 class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
               >
@@ -2327,12 +2365,20 @@
             </div>
           </div>
           <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
-            <div class="text-zinc-400 text-sm font-bold">Tidak ada data CMT yang sesuai filter</div>
+            <div class="text-zinc-400 text-sm font-bold">{{ cmts.length === 0 ? 'Belum Ada CMT di Jadwal Mesin' : 'Tidak ada data CMT yang sesuai filter' }}</div>
             <p class="text-xs text-zinc-500 font-sans">
-              Coba ubah kata kunci pencarian atau ganti filter status di atas.
+              {{ cmts.length === 0 ? 'Daftar CMT aktif masih kosong. Tambahkan CMT baru atau muat data sampel di menu Trial Benang.' : 'Coba ubah kata kunci pencarian atau ganti filter status di atas.' }}
             </p>
             <div class="pt-2">
               <button
+                v-if="cmts.length === 0"
+                @click="activeModule = 'trial'"
+                class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer border border-zinc-700 inline-flex items-center gap-1.5"
+              >
+                <span>Buka Menu Trial Benang →</span>
+              </button>
+              <button
+                v-else
                 @click="scheduleSearch = ''; scheduleFilter = 'all'"
                 class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
               >
@@ -2374,8 +2420,8 @@
             <span class="text-[10.5px] text-zinc-400">Total Jarum: {{ needleCapacity }}</span>
           </div>
 
-          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            <div v-for="nd in needleList" :key="nd.needle" class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-2">
+          <div v-if="needleList.filter(nd => nd.thread && nd.thread !== '-').length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div v-for="nd in needleList.filter(nd => nd.thread && nd.thread !== '-')" :key="nd.needle" class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-2">
               <div class="flex items-center gap-2">
                 <span class="w-3.5 h-3.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: nd.color }"></span>
                 <div>
@@ -2387,8 +2433,22 @@
                 <span class="px-1.5 py-0.5 rounded text-[9.5px] font-bold uppercase" :class="nd.isSwap ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
                   {{ nd.isSwap ? 'Swap J' + nd.needle : 'Jarum ' + nd.needle }}
                 </span>
-                <div class="text-[9px] text-emerald-400 mt-1 font-bold">🟢 Stok Aman</div>
+                <div class="text-[9px] text-emerald-400 mt-1 font-bold">🟢 Terpasang</div>
               </div>
+            </div>
+          </div>
+          <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
+            <div class="text-xs text-zinc-400 font-bold">Belum Ada Benang Terpasang di CMT</div>
+            <p class="text-[11px] text-zinc-500 font-sans">
+              Daftar CMT aktif saat ini kosong. Tambahkan CMT baru atau muat sampel di menu Trial Benang untuk memantau alokasi jarum dan kebutuhan benang.
+            </p>
+            <div class="pt-1">
+              <button
+                @click="activeModule = 'trial'"
+                class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer border border-zinc-700 inline-flex items-center gap-1.5"
+              >
+                <span>Buka Menu Trial Benang →</span>
+              </button>
             </div>
           </div>
         </div>
@@ -3617,6 +3677,13 @@
                   } else if (typeof val === 'object') {
                     cloudList = Object.values(val);
                   }
+                  // Cek jika cloud hanya berisi dummy bawaan lama flopy_b & flopy_c
+                  const isOnlyOldDummy = cloudList.length > 0 && cloudList.every((f) => f.id === 'flopy_b' || f.id === 'flopy_c');
+                  if (isOnlyOldDummy) {
+                    cloudList = [];
+                    firebaseDb.ref('rooms/' + currentRoomCode.value + '/floppies').set([]);
+                  }
+
                   if (cloudList.length > 0) {
                     isRemoteUpdating = true;
                     floppyList.value = cloudList;
@@ -3624,6 +3691,9 @@
                     setTimeout(() => {
                       isRemoteUpdating = false;
                     }, 150);
+                  } else {
+                    floppyList.value = [];
+                    localStorage.setItem('embro_floppy_list', JSON.stringify([]));
                   }
                   isCloudFloppiesLoaded = true;
                 } else {
@@ -4101,7 +4171,7 @@
           });
 
           // ================= DATABASE MASTER FILM & FLOPPY WILCOM =================
-          const DEFAULT_FLOPPIES = [
+          const SAMPLE_FLOPPIES = [
             {
               id: 'flopy_b',
               name: 'Flopy B',
@@ -4130,13 +4200,21 @@
             },
           ];
 
+          const DEFAULT_FLOPPIES = [];
+
           const storedFloppies = localStorage.getItem('embro_floppy_list');
-          let initialFloppies = DEFAULT_FLOPPIES;
+          let initialFloppies = [];
           if (storedFloppies) {
             try {
               const parsed = JSON.parse(storedFloppies);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                initialFloppies = parsed;
+              if (Array.isArray(parsed)) {
+                // Bersihkan dummy lama otomatis jika hanya berisi flopy_b dan flopy_c bawaan
+                const isOnlyOldDummy = parsed.length > 0 && parsed.every((f) => f.id === 'flopy_b' || f.id === 'flopy_c');
+                if (!isOnlyOldDummy) {
+                  initialFloppies = parsed;
+                } else {
+                  localStorage.setItem('embro_floppy_list', JSON.stringify([]));
+                }
               }
             } catch (e) {}
           }
@@ -4160,8 +4238,8 @@
               (f) => (f.name || '').trim().toUpperCase() === key || f.id === key
             );
             if (found) {
-              const totalStitches = (found.components || []).reduce((acc, c) => acc + (Number(c.stitch) || 0), 0) || 16000;
-              const totalMeters = (found.components || []).reduce((acc, c) => acc + (Number(c.threadMeters) || 0), 0) || Math.round(totalStitches * 0.0033);
+              const totalStitches = (found.components || []).reduce((acc, c) => acc + (Number(c.stitch) || 0), 0);
+              const totalMeters = (found.components || []).reduce((acc, c) => acc + (Number(c.threadMeters) || 0), 0) || (totalStitches > 0 ? Math.round(totalStitches * 0.0033) : 0);
               return {
                 ...found,
                 totalStitches,
@@ -4169,31 +4247,17 @@
               };
             }
 
-            // 2. Fallback ke DEFAULT_FLOPPIES
-            const def = DEFAULT_FLOPPIES.find((f) => f.name.toUpperCase() === key);
-            if (def) {
-              const totalStitches = def.components.reduce((acc, c) => acc + (Number(c.stitch) || 0), 0);
-              const totalMeters = def.components.reduce((acc, c) => acc + (Number(c.threadMeters) || 0), 0);
-              return {
-                ...def,
-                totalStitches,
-                totalMeters,
-              };
-            }
-
-            // 3. Fallback generik
+            // 2. Default jika belum terdaftar di database Master Floppy: nilai bersih 0 tanpa dummy
             return {
-              id: 'generic_' + key,
-              name: raw || 'Wilcom Standar',
-              garment: 'Komponen Bordir',
-              quantity: 1200,
+              id: 'unknown_' + (key || 'empty'),
+              name: raw || '-',
+              garment: '-',
+              quantity: 0,
               screenshot: '',
               notes: '',
-              components: [
-                { name: 'Komponen Utama', stitch: 16000, threadMeters: 53 },
-              ],
-              totalStitches: 16000,
-              totalMeters: 53,
+              components: [],
+              totalStitches: 0,
+              totalMeters: 0,
             };
           };
 
@@ -4202,17 +4266,17 @@
               const info = getFloppyInfo(fl.name);
               const totalStitches = info.totalStitches;
               const totalMeters = info.totalMeters;
-              const quantity = Number(fl.quantity) || 1200;
+              const quantity = Number(fl.quantity) || 0;
               const totalLotStitches = totalStitches * quantity;
-              const totalOrderMetersKm = ((totalMeters * quantity) / 1000).toFixed(1);
-              const totalCones = Math.ceil((totalMeters * quantity) / 4000);
+              const totalOrderMetersKm = quantity > 0 ? ((totalMeters * quantity) / 1000).toFixed(1) : '0.0';
+              const totalCones = (quantity > 0 && totalMeters > 0) ? Math.ceil((totalMeters * quantity) / 4000) : 0;
               const heads = 24;
-              const rounds = Math.ceil(quantity / heads);
+              const rounds = quantity > 0 ? Math.ceil(quantity / heads) : 0;
               const spm = 800;
               const tolerance = 1.20;
               const changeoverMinutes = 4;
-              const minutesPerRound = Math.round(((totalStitches / spm) * tolerance) + changeoverMinutes);
-              const totalHours = ((rounds * minutesPerRound) / 60).toFixed(1);
+              const minutesPerRound = totalStitches > 0 ? Math.round(((totalStitches / spm) * tolerance) + changeoverMinutes) : 0;
+              const totalHours = (rounds > 0 && minutesPerRound > 0) ? ((rounds * minutesPerRound) / 60).toFixed(1) : '0.0';
 
               // Cari CMT aktif yang menggunakan floppy ini
               const key = fl.name.trim().toUpperCase();
@@ -4248,11 +4312,11 @@
             id: '',
             name: '',
             garment: '',
-            quantity: 1200,
+            quantity: null,
             screenshot: '',
             notes: '',
             components: [
-              { name: '', stitch: 0, threadMeters: 0 },
+              { name: '', stitch: null, threadMeters: null },
             ],
           });
 
@@ -4266,15 +4330,16 @@
 
           const formMinutesPerRound = computed(() => {
             const st = formTotalStitches.value;
-            return Math.round(((st / 800) * 1.20) + 4);
+            return st > 0 ? Math.round(((st / 800) * 1.20) + 4) : 0;
           });
 
           const formRounds = computed(() => {
-            const qty = Number(floppyForm.value.quantity) || 1200;
-            return Math.ceil(qty / 24);
+            const qty = Number(floppyForm.value.quantity) || 0;
+            return qty > 0 ? Math.ceil(qty / 24) : 0;
           });
 
           const formTotalHours = computed(() => {
+            if (formRounds.value === 0 || formMinutesPerRound.value === 0) return '0.0';
             return ((formRounds.value * formMinutesPerRound.value) / 60).toFixed(1);
           });
 
@@ -4285,14 +4350,11 @@
               id: '',
               name: '',
               garment: '',
-              quantity: 1200,
+              quantity: null,
               screenshot: '',
               notes: '',
               components: [
-                { name: 'Plaket Depan', stitch: 8500, threadMeters: 28 },
-                { name: 'Pocket / Saku', stitch: 3200, threadMeters: 11 },
-                { name: 'Cuff / Manset', stitch: 4100, threadMeters: 14 },
-                { name: 'Collar / Kerah', stitch: 2800, threadMeters: 9 },
+                { name: '', stitch: null, threadMeters: null },
               ],
             };
             isFloppyModalOpen.value = true;
@@ -4305,17 +4367,17 @@
               id: floppy.id || floppy.name,
               name: floppy.name,
               garment: floppy.garment || '',
-              quantity: floppy.quantity || 1200,
+              quantity: floppy.quantity || null,
               screenshot: floppy.screenshot || '',
               notes: floppy.notes || '',
               components: (floppy.components || []).map((c) => ({
                 name: c.name,
-                stitch: Number(c.stitch) || 0,
-                threadMeters: Number(c.threadMeters) || 0,
+                stitch: Number(c.stitch) || null,
+                threadMeters: Number(c.threadMeters) || null,
               })),
             };
             if (floppyForm.value.components.length === 0) {
-              floppyForm.value.components.push({ name: '', stitch: 0, threadMeters: 0 });
+              floppyForm.value.components.push({ name: '', stitch: null, threadMeters: null });
             }
             isFloppyModalOpen.value = true;
           };
@@ -4520,6 +4582,22 @@
             }
           };
 
+          const clearAllFloppies = async () => {
+            const ok = await showConfirm({
+              title: 'Kosongkan Seluruh Master Floppy',
+              message: 'Apakah Anda yakin ingin menghapus seluruh data floppy yang tersimpan di database?',
+              confirmText: 'Kosongkan Semua',
+              cancelText: 'Batal',
+              type: 'danger',
+            });
+            if (ok) {
+              floppyList.value = [];
+              localStorage.setItem('embro_floppy_list', JSON.stringify([]));
+              syncFloppiesToCloud(true);
+              showToast('Seluruh master floppy berhasil dikosongkan.');
+            }
+          };
+
           const createCmtFromFloppy = (floppy) => {
             newFlopy.value = floppy.name;
             activeModule.value = 'trial';
@@ -4606,14 +4684,14 @@
               // Parameter operasional Pabrik Al-Raaz:
               const stitches = floppyInfo.totalStitches;
               const threadMeters = floppyInfo.totalMeters;
-              const orderPcs = Number(floppyInfo.quantity) || 1200;
+              const orderPcs = Number(floppyInfo.quantity) || 0;
               const heads = 24;
-              const rounds = Math.ceil(orderPcs / heads);
+              const rounds = orderPcs > 0 ? Math.ceil(orderPcs / heads) : 0;
               const spm = 800;
               const tolerance = 1.20;
               const changeoverMinutes = 4;
-              const minutesPerRound = Math.round(((stitches / spm) * tolerance) + changeoverMinutes);
-              const totalHours = ((rounds * minutesPerRound) / 60).toFixed(1);
+              const minutesPerRound = stitches > 0 ? Math.round(((stitches / spm) * tolerance) + changeoverMinutes) : 0;
+              const totalHours = (rounds > 0 && minutesPerRound > 0) ? ((rounds * minutesPerRound) / 60).toFixed(1) : '0.0';
 
               return {
                 ...item,
@@ -4690,7 +4768,7 @@
               if (item.hasAcc && !item.completed) grp.accCount++;
               if (item.status === 'pending') grp.pendingCount++;
               if (item.completed) grp.completedCount++;
-              grp.totalOrderPcs += (item.orderPcs || 1200);
+              grp.totalOrderPcs += (item.orderPcs || 0);
             });
 
             groups.forEach((grp) => {
@@ -5245,6 +5323,11 @@
               if (!confirmed) return;
             }
             cmts.value = JSON.parse(JSON.stringify(SAMPLE_DATA));
+            if (!floppyList.value || floppyList.value.length === 0) {
+              floppyList.value = JSON.parse(JSON.stringify(SAMPLE_FLOPPIES));
+              localStorage.setItem('embro_floppy_list', JSON.stringify(floppyList.value));
+              syncFloppiesToCloud();
+            }
             needleCapacity.value = 11;
             swapNeedle.value = 11;
             completedMap.value = {};
@@ -5659,6 +5742,7 @@
             handleScreenshotPaste,
             saveFloppy,
             deleteFloppy,
+            clearAllFloppies,
             createCmtFromFloppy,
             openScreenshotPreview,
             closeScreenshotPreview,
