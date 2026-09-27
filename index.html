@@ -1671,82 +1671,151 @@
             </div>
             <div>
               <h2 class="text-sm font-bold text-white uppercase tracking-tight">Master Film & Floppy Wilcom</h2>
-              <p class="text-[11px] text-zinc-400 font-sans">Database desain bordir, komponen pakaian, dan panjang meter benang</p>
+              <p class="text-[11px] text-zinc-400 font-sans">Database desain bordir, komponen pakaian, screenshot Wilcom & estimasi tusukan/benang</p>
             </div>
           </div>
-          <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 font-bold uppercase tracking-wider">Fase 2 Preview</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 font-bold uppercase tracking-wider">{{ floppyListWithStats.length }} Floppy Terdaftar</span>
+            <button
+              @click="openAddFloppyModal"
+              class="h-7.5 px-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold font-mono transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Tambah Floppy</span>
+            </button>
+          </div>
         </div>
 
         <!-- Floppy Cards List -->
         <div class="grid gap-3 sm:grid-cols-2">
-          <!-- Card Flopy B -->
-          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm hover:border-zinc-700 transition-colors">
-            <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-white text-xs">Flopy B</span>
-                <span class="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400">Kemeja Koko Al-Raaz</span>
+          <div
+            v-for="fl in floppyListWithStats"
+            :key="fl.id || fl.name"
+            class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm hover:border-zinc-700 transition-colors flex flex-col justify-between"
+          >
+            <div class="space-y-3">
+              <!-- Top Row: Name, Garment, Actions -->
+              <div class="flex items-center justify-between border-b border-zinc-850 pb-2.5 gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-7 h-7 rounded bg-sky-950/80 border border-sky-800/80 text-sky-400 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-white text-sm truncate">{{ fl.name }}</span>
+                      <span class="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-300 truncate max-w-[150px] font-sans">{{ fl.garment }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button
+                    @click="openEditFloppyModal(fl)"
+                    title="Edit data Floppy ini"
+                    class="h-6 px-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-[10px] font-bold transition-colors cursor-pointer"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteFloppy(fl)"
+                    title="Hapus Floppy"
+                    class="w-6 h-6 rounded bg-zinc-900 hover:bg-rose-950/60 text-zinc-400 hover:text-rose-400 border border-zinc-800 hover:border-rose-900/60 flex items-center justify-center text-xs transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-              <span class="text-[10px] text-emerald-400 font-bold">4 Komponen</span>
+
+              <!-- Wilcom Screenshot Preview Area -->
+              <div v-if="fl.screenshot" class="relative group rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900/40">
+                <img
+                  :src="fl.screenshot"
+                  @click="openScreenshotPreview(fl.screenshot)"
+                  class="w-full h-36 object-contain bg-zinc-950/80 cursor-pointer hover:opacity-90 transition-opacity"
+                  title="Klik untuk memperbesar screenshot Wilcom"
+                />
+                <button
+                  @click="openScreenshotPreview(fl.screenshot)"
+                  class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 backdrop-blur-sm text-zinc-200 text-[10px] flex items-center gap-1 border border-zinc-700 pointer-events-none group-hover:bg-black/90 cursor-pointer"
+                >
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                  <span>Perbesar</span>
+                </button>
+              </div>
+
+              <!-- Komponen Breakdown -->
+              <div class="space-y-1.5 text-[11px]">
+                <div class="flex items-center justify-between text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                  <span>Rincian Komponen ({{ fl.components.length }} Bagian):</span>
+                  <span>Tusukan • Benang</span>
+                </div>
+                <div class="space-y-1">
+                  <div
+                    v-for="(comp, cIdx) in fl.components"
+                    :key="cIdx"
+                    class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850"
+                  >
+                    <span class="text-zinc-200 font-sans text-xs">{{ comp.name }}</span>
+                    <span class="text-zinc-400 font-mono text-[10.5px]">
+                      {{ (Number(comp.stitch) || 0).toLocaleString() }} st • ~{{ comp.threadMeters || Math.round((Number(comp.stitch)||0)*0.0033) }}m
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Technical Calculations Grid -->
+              <div class="grid grid-cols-2 gap-1.5 text-[10.5px] pt-1 border-t border-zinc-850">
+                <div class="p-2 rounded bg-zinc-900/50 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase">Total Tusukan / Pcs</div>
+                  <div class="font-bold text-white mt-0.5 text-xs">{{ fl.totalStitches.toLocaleString() }} st</div>
+                </div>
+                <div class="p-2 rounded bg-zinc-900/50 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase">Panjang Benang / Pcs</div>
+                  <div class="font-bold text-sky-400 mt-0.5 text-xs">~{{ fl.totalMeters }} Meter</div>
+                </div>
+                <div class="p-2 rounded bg-zinc-900/50 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase">Est. 1 Lot ({{ fl.quantity }} pcs)</div>
+                  <div class="font-bold text-amber-300 mt-0.5 text-xs">{{ fl.rounds }} Putaran (24 Kpl)</div>
+                </div>
+                <div class="p-2 rounded bg-zinc-900/50 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase">Total Waktu Mesin</div>
+                  <div class="font-bold text-emerald-400 mt-0.5 text-xs">~{{ fl.totalHours }} Jam</div>
+                </div>
+              </div>
+
+              <!-- Notes if exists -->
+              <div v-if="fl.notes" class="text-[10.5px] text-zinc-400 bg-zinc-900/30 p-2 rounded border border-zinc-850 font-sans italic">
+                💬 {{ fl.notes }}
+              </div>
             </div>
 
-            <!-- Komponen Breakdown -->
-            <div class="space-y-1.5 text-[11px]">
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <span class="text-zinc-200">1. Plaket Depan</span>
-                <span class="text-zinc-400 font-mono text-[10.5px]">8.500 st • ~28m</span>
+            <!-- Footer Card: Used in CMTs & Actions -->
+            <div class="pt-2.5 border-t border-zinc-850 flex items-center justify-between text-xs gap-2 flex-wrap">
+              <div class="text-[10px] text-zinc-500 flex items-center gap-1.5 flex-wrap">
+                <span>Dipakai di CMT:</span>
+                <template v-if="fl.usedByCmts && fl.usedByCmts.length > 0">
+                  <span
+                    v-for="cNum in fl.usedByCmts"
+                    :key="cNum"
+                    class="px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-200 font-bold text-[10px]"
+                  >
+                    {{ cNum }}
+                  </span>
+                  <span class="text-zinc-600">({{ fl.usedByCount }} variasi)</span>
+                </template>
+                <span v-else class="text-zinc-600 italic">Belum ada CMT aktif</span>
               </div>
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <span class="text-zinc-200">2. Pocket / Saku</span>
-                <span class="text-zinc-400 font-mono text-[10.5px]">3.200 st • ~11m</span>
-              </div>
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <span class="text-zinc-200">3. Cuff / Manset</span>
-                <span class="text-zinc-400 font-mono text-[10.5px]">4.100 st • ~14m</span>
-              </div>
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <span class="text-zinc-200">4. Collar / Kerah</span>
-                <span class="text-zinc-400 font-mono text-[10.5px]">2.800 st • ~9m</span>
+
+              <div class="flex items-center gap-1.5">
+                <button
+                  @click="createCmtFromFloppy(fl)"
+                  class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-750 text-white font-mono text-[10.5px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <span>+ Buat CMT</span>
+                  <span>→</span>
+                </button>
               </div>
             </div>
-
-            <div class="pt-2 border-t border-zinc-850 flex items-center justify-between text-[10px] text-zinc-500">
-              <span>Total: 18.600 tusukan</span>
-              <span class="text-zinc-400">Dipakai di CMT: 617, 618, 619, 620</span>
-            </div>
-          </div>
-
-          <!-- Card Flopy C -->
-          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm hover:border-zinc-700 transition-colors">
-            <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-white text-xs">Flopy C</span>
-                <span class="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400">Gamis Bordir Al-Raaz</span>
-              </div>
-              <span class="text-[10px] text-emerald-400 font-bold">2 Komponen</span>
-            </div>
-
-            <div class="space-y-1.5 text-[11px]">
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <span class="text-zinc-200">1. Dada & Leher</span>
-                <span class="text-zinc-400 font-mono text-[10.5px]">14.200 st • ~48m</span>
-              </div>
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <span class="text-zinc-200">2. Lengan Manset</span>
-                <span class="text-zinc-400 font-mono text-[10.5px]">5.300 st • ~18m</span>
-              </div>
-            </div>
-
-            <div class="pt-2 border-t border-zinc-850 flex items-center justify-between text-[10px] text-zinc-500">
-              <span>Total: 19.500 tusukan</span>
-              <span class="text-zinc-400">Dipakai di CMT: 657</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-4 bg-zinc-900/40 border border-dashed border-zinc-800 rounded-xl text-center text-xs text-zinc-400 font-sans">
-          <span>Form input data Wilcom & upload screenshot komponen akan diaktifkan secara komprehensif pada Fase 2.</span>
-          <div class="mt-2">
-            <button @click="activeModule = 'trial'" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-white font-mono text-[11px] font-bold transition-colors">Ke Modul Trial Benang →</button>
           </div>
         </div>
       </section>
@@ -1844,222 +1913,432 @@
             </button>
           </div>
 
-          <!-- Search Input -->
-          <div class="relative min-w-[200px] sm:w-64">
-            <input
-              v-model="scheduleSearch"
-              type="text"
-              placeholder="Cari CMT, variasi, floppy..."
-              class="w-full h-8 pl-8 pr-7 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
-            />
-            <svg class="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <button
-              v-if="scheduleSearch"
-              @click="scheduleSearch = ''"
-              class="absolute right-2 top-2 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer"
-            >✕</button>
-          </div>
-        </div>
-
-        <!-- List CMT Cards -->
-        <div v-if="filteredScheduleCmts.length > 0" class="space-y-3">
-          <div
-            v-for="(item, idx) in filteredScheduleCmts"
-            :key="item.key || (item.cmt + '_' + item.variant)"
-            class="bg-zinc-950 border rounded-xl p-3.5 space-y-3 shadow-sm transition-all"
-            :class="item.status === 'running' ? 'border-white/50 ring-1 ring-white/20' : (item.completed ? 'border-zinc-850 opacity-75' : 'border-zinc-800 hover:border-zinc-700')"
-          >
-            <!-- Header Kartu: CMT, Variasi, Floppy & Status Workflow -->
-            <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2.5 flex-wrap">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2 py-0.5 rounded bg-zinc-850 border border-zinc-700 text-zinc-200 font-bold text-[10px]">#{{ idx + 1 }}</span>
-                <span class="font-bold text-white text-sm">CMT {{ item.cmt }}</span>
-                <span v-if="item.variant && item.variant !== '-'" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-medium">
-                  {{ item.variant }}
-                </span>
-                <span class="text-zinc-400 text-xs flex items-center gap-1 font-sans">
-                  📁 {{ item.floppyInfo.name }}
-                  <span class="text-zinc-500 font-mono text-[10.5px]">({{ item.floppyInfo.garment }})</span>
-                </span>
-              </div>
-
-              <!-- Status Workflow Badge -->
-              <div class="flex items-center gap-2">
-                <!-- Status Sedang Berjalan -->
-                <span
-                  v-if="item.status === 'running'"
-                  class="px-2.5 py-0.5 rounded bg-white text-zinc-950 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-950 animate-pulse"></span>
-                  <span>Sedang Berjalan (Mesin 1 & 2)</span>
-                </span>
-
-                <!-- Status ACC Siap Naik Mesin -->
-                <span
-                  v-else-if="item.status === 'acc'"
-                  class="px-2 py-0.5 rounded bg-zinc-800 border border-white text-white font-bold text-[10px] uppercase tracking-wider ring-1 ring-white/60 shadow-sm"
-                >
-                  ● ACC • Siap Naik Mesin
-                </span>
-
-                <!-- Status Menunggu Trial -->
-                <span
-                  v-else-if="item.status === 'pending'"
-                  class="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-800/80 text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
-                >
-                  <span>⏳</span>
-                  <span>Menunggu Trial Benang</span>
-                </span>
-
-                <!-- Status Selesai Bordir -->
-                <span
-                  v-else-if="item.completed"
-                  class="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
-                >
-                  <span>✓</span>
-                  <span>Selesai Bordir</span>
-                </span>
-              </div>
-            </div>
-
-            <!-- Benang Section: Resep Benang ACC vs Opsi Calon Trial -->
-            <div class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-3 flex-wrap">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
-                  {{ item.hasAcc ? 'Benang Disetujui (ACC):' : 'Calon Opsi Trial:' }}
-                </span>
-
-                <!-- Jika Ada Benang ACC -->
-                <template v-if="item.hasAcc">
-                  <div
-                    v-for="(th, tIdx) in item.accThreads"
-                    :key="tIdx"
-                    @click="toggleThreadAcc(item, th)"
-                    title="Klik untuk ubah status ACC benang ini"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 border border-white rounded-md text-xs text-white font-bold ring-1 ring-white/60 shadow-sm cursor-pointer hover:bg-zinc-750 transition-colors"
-                  >
-                    <span class="w-3 h-3 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                    <span>{{ th }}</span>
-                  </div>
-
-                  <!-- Tampilkan juga benang kandidat lainnya yang tidak di-ACC jika ada -->
-                  <template v-if="item.threads && item.threads.some(t => !isThreadAcc(item, t))">
-                    <span class="text-zinc-600 text-[10.5px] ml-1 font-sans">Opsi lain:</span>
-                    <div
-                      v-for="(th, oIdx) in item.threads.filter(t => !isThreadAcc(item, t))"
-                      :key="'cand_' + oIdx"
-                      @click="toggleThreadAcc(item, th)"
-                      title="Klik untuk setujui ACC benang ini"
-                      class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/80 border border-zinc-800 hover:border-zinc-600 rounded text-[10px] text-zinc-400 cursor-pointer transition-colors"
-                    >
-                      <span class="w-2 h-2 rounded-full border border-white/10 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                      <span>{{ th }}</span>
-                    </div>
-                  </template>
-                </template>
-
-                <!-- Jika Belum Ada Benang ACC -->
-                <template v-else>
-                  <div
-                    v-for="(th, tIdx) in item.threads"
-                    :key="tIdx"
-                    @click="toggleThreadAcc(item, th)"
-                    title="Klik untuk langsung setujui kode benang ini"
-                    class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-zinc-900 border border-zinc-750 hover:border-zinc-500 rounded text-[11px] text-zinc-300 cursor-pointer transition-colors"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                    <span>{{ th }}</span>
-                  </div>
-                  <span class="text-amber-400/80 text-[10.5px] font-sans italic ml-1">
-                    (Belum di-ACC atasan • klik kode di atas untuk ACC langsung)
-                  </span>
-                </template>
-              </div>
-
-              <!-- Quick Link ke Trial -->
+          <!-- Right Controls: View Mode Toggle & Search -->
+          <div class="flex items-center gap-2">
+            <!-- View Mode Toggle -->
+            <div class="inline-flex rounded-lg bg-zinc-900 p-0.5 border border-zinc-800 text-[10.5px] shrink-0">
               <button
-                @click="activeModule = 'trial'; activeTab = 'operator'"
-                title="Buka proses trial untuk CMT ini"
-                class="text-[11px] text-zinc-400 hover:text-white underline font-sans flex items-center gap-1 cursor-pointer shrink-0"
+                @click="scheduleViewMode = 'floppy'"
+                :class="scheduleViewMode === 'floppy' ? 'bg-zinc-800 text-white font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
+                class="px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                title="Kelompokkan CMT yang memakai Film/Floppy yang sama"
               >
-                <span>Uji di Trial Benang</span>
-                <span>→</span>
+                <span>🗂️ Per Floppy</span>
+              </button>
+              <button
+                @click="scheduleViewMode = 'flat'"
+                :class="scheduleViewMode === 'flat' ? 'bg-zinc-800 text-white font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
+                class="px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                title="Tampilkan daftar per variasi"
+              >
+                <span>📋 Lepas</span>
               </button>
             </div>
 
-            <!-- Detail Wilcom: Komponen, Tusukan & Estimasi Panjang Benang -->
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-[10.5px] text-zinc-400">
-                <span class="font-semibold text-zinc-300 uppercase tracking-wider text-[10px]">Data Wilcom & Komponen Floppy:</span>
-                <span class="font-mono text-zinc-400">Total: <strong class="text-white">{{ item.stitches.toLocaleString() }}</strong> tusukan • <strong class="text-white">~{{ item.threadMeters }}m</strong> / pcs</span>
-              </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10.5px]">
-                <div
-                  v-for="(comp, cIdx) in item.floppyInfo.components"
-                  :key="cIdx"
-                  class="p-1.5 rounded bg-zinc-900/40 border border-zinc-850 flex items-center justify-between gap-1"
-                >
-                  <span class="text-zinc-300 truncate font-sans">{{ comp.name }}</span>
-                  <span class="text-zinc-500 font-mono text-[9.5px] shrink-0">{{ comp.stitch.toLocaleString() }}st</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Detail Estimasi Mesin (24 Kepala, 800 SPM, 4 Menit Jeda) -->
-            <div class="pt-2 border-t border-zinc-850 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px]">
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Perkiraan Order</div>
-                <div class="font-bold text-white mt-0.5 text-xs">{{ item.orderPcs.toLocaleString() }} pcs</div>
-              </div>
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Putaran (24 Kepala)</div>
-                <div class="font-bold text-amber-300 mt-0.5 text-xs">{{ item.rounds }} Angkatan</div>
-              </div>
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Waktu / Angkatan</div>
-                <div class="font-bold text-zinc-200 mt-0.5 text-xs">~{{ item.minutesPerRound }} Menit</div>
-              </div>
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Total Estimasi Jam</div>
-                <div class="font-bold text-emerald-400 mt-0.5 text-xs">~{{ item.totalHours }} Jam</div>
-              </div>
-            </div>
-
-            <!-- Footer Action Bar -->
-            <div class="pt-1.5 border-t border-zinc-850/60 flex items-center justify-between text-xs font-sans">
-              <span class="text-[10px] text-zinc-500 font-mono">
-                Est. Kebutuhan Benang Lot: <strong class="text-zinc-300">~{{ (item.threadMeters * item.orderPcs / 1000).toFixed(1) }} km</strong> ({{ Math.ceil((item.threadMeters * item.orderPcs) / 4000) }} Cone)
-              </span>
-
-              <div class="flex items-center gap-2">
-                <button
-                  @click="toggleItemComplete(item)"
-                  class="px-2.5 py-1 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer"
-                  :class="item.completed ? 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-700' : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900/80'"
-                >
-                  {{ item.completed ? '↺ Batal Selesai' : '✓ Tandai Selesai' }}
-                </button>
-              </div>
+            <!-- Search Input -->
+            <div class="relative min-w-[170px] sm:w-56">
+              <input
+                v-model="scheduleSearch"
+                type="text"
+                placeholder="Cari CMT, variasi, floppy..."
+                class="w-full h-8 pl-8 pr-7 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+              />
+              <svg class="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <button
+                v-if="scheduleSearch"
+                @click="scheduleSearch = ''"
+                class="absolute right-2 top-2 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer"
+              >✕</button>
             </div>
           </div>
         </div>
 
-        <!-- Empty State Filter -->
-        <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
-          <div class="text-zinc-400 text-sm font-bold">Tidak ada data CMT yang sesuai filter</div>
-          <p class="text-xs text-zinc-500 font-sans">
-            Coba ubah kata kunci pencarian atau ganti filter status di atas.
-          </p>
-          <div class="pt-2">
-            <button
-              @click="scheduleSearch = ''; scheduleFilter = 'all'"
-              class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
+        <!-- TAMPILAN 1: TERKELOMPOK PER FILM / FLOPPY (DEFAULT SESUAI PERMINTAAN USER) -->
+        <div v-if="scheduleViewMode === 'floppy'" class="space-y-4">
+          <div v-if="filteredScheduleFloppyGroups.length > 0" class="space-y-4">
+            <div
+              v-for="grp in filteredScheduleFloppyGroups"
+              :key="grp.flopyKey"
+              class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 sm:p-4 space-y-3.5 shadow-sm hover:border-zinc-700 transition-colors"
             >
-              Reset Filter
-            </button>
+              <!-- Floppy Master Header -->
+              <div class="flex items-center justify-between gap-3 border-b border-zinc-850 pb-3 flex-wrap">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-sky-950/80 border border-sky-800/80 text-sky-400 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h3 class="text-sm font-bold text-white uppercase">{{ grp.flopyName }}</h3>
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-750 text-zinc-300 font-sans">{{ grp.floppyInfo.garment }}</span>
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-400 font-bold">
+                        {{ grp.uniqueCmts.length }} CMT • {{ grp.filteredCmts.length }} Variasi
+                      </span>
+                    </div>
+                    <div class="text-[11px] text-zinc-400 font-mono mt-0.5">
+                      Total: <strong class="text-white">{{ grp.stitches.toLocaleString() }}</strong> tusukan • <strong class="text-white">~{{ grp.threadMeters }}m</strong> / pcs • Est. Mesin: <strong class="text-amber-400">{{ grp.rounds }} Angkatan (24 Kpl)</strong> (~{{ grp.totalHours }} Jam)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status Counters for this Floppy -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span v-if="grp.runningCount > 0" class="px-2 py-0.5 rounded bg-white text-zinc-950 font-bold text-[10px] uppercase flex items-center gap-1 shadow-sm">
+                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-950 animate-pulse"></span>
+                    <span>{{ grp.runningCount }} Berjalan</span>
+                  </span>
+                  <span v-if="grp.accCount > 0" class="px-2 py-0.5 rounded bg-zinc-800 border border-white text-white font-bold text-[10px] uppercase ring-1 ring-white/50">
+                    {{ grp.accCount }} Siap Mesin
+                  </span>
+                  <span v-if="grp.pendingCount > 0" class="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-800/80 text-amber-400 text-[10px] font-bold uppercase">
+                    {{ grp.pendingCount }} Menunggu Trial
+                  </span>
+                  <span v-if="grp.completedCount > 0" class="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[10px] font-bold uppercase">
+                    {{ grp.completedCount }} Selesai
+                  </span>
+                </div>
+              </div>
+
+              <!-- Komponen Breakdown Pills -->
+              <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10.5px]">
+                <span class="text-zinc-500 uppercase text-[9.5px] font-semibold shrink-0">Komponen Wilcom:</span>
+                <div
+                  v-for="(comp, cIdx) in grp.floppyInfo.components"
+                  :key="cIdx"
+                  class="px-2 py-0.5 rounded bg-zinc-900/60 border border-zinc-850 shrink-0 flex items-center gap-1 text-zinc-300 font-sans"
+                >
+                  <span>{{ comp.name }}</span>
+                  <span class="text-zinc-500 font-mono text-[9.5px]">({{ (Number(comp.stitch)||0).toLocaleString() }}st)</span>
+                </div>
+              </div>
+
+              <!-- Sub-Items: Grouped by CMT Number -->
+              <div class="space-y-2.5 pt-1">
+                <div
+                  v-for="cmtGrp in grp.filteredCmtList"
+                  :key="cmtGrp.cmt"
+                  class="bg-zinc-900/50 border border-zinc-850 rounded-xl p-2.5 sm:p-3 space-y-2"
+                >
+                  <div class="flex items-center justify-between border-b border-zinc-850/80 pb-2">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-white text-xs px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700">CMT {{ cmtGrp.cmt }}</span>
+                      <span class="text-zinc-400 text-[11px] font-sans">{{ cmtGrp.items.length }} Variasi</span>
+                      <span v-if="cmtGrp.completedVariants === cmtGrp.totalVariants" class="text-[9.5px] px-1.5 py-0.2 rounded bg-emerald-950/50 border border-emerald-800 text-emerald-400 font-bold">
+                        ✓ Semua Variasi Selesai
+                      </span>
+                    </div>
+                    <span class="text-[10px] text-zinc-500 font-mono">
+                      File: {{ grp.flopyName }}
+                    </span>
+                  </div>
+
+                  <!-- Variations rows inside this CMT -->
+                  <div class="space-y-1.5">
+                    <div
+                      v-for="(item, vIdx) in cmtGrp.items"
+                      :key="item.key"
+                      class="flex items-center justify-between gap-2.5 p-2 rounded-lg bg-zinc-950/80 border border-zinc-850 hover:border-zinc-750 transition-colors flex-wrap"
+                    >
+                      <!-- Left: Variant Name & Status Badge -->
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs font-bold text-zinc-100 font-mono">
+                          {{ item.variant && item.variant !== '-' ? item.variant : 'Standar / Polos' }}
+                        </span>
+
+                        <span
+                          v-if="item.status === 'running'"
+                          class="px-2 py-0.2 rounded bg-white text-zinc-950 font-bold text-[9.5px] uppercase tracking-wider flex items-center gap-1 shadow-sm"
+                        >
+                          <span class="w-1.5 h-1.5 rounded-full bg-zinc-950 animate-pulse"></span>
+                          <span>Sedang Berjalan</span>
+                        </span>
+                        <span
+                          v-else-if="item.status === 'acc'"
+                          class="px-2 py-0.2 rounded bg-zinc-800 border border-white text-white font-bold text-[9.5px] uppercase tracking-wider ring-1 ring-white/60"
+                        >
+                          ● Siap Mesin
+                        </span>
+                        <span
+                          v-else-if="item.status === 'pending'"
+                          class="px-2 py-0.2 rounded bg-amber-950/40 border border-amber-800/80 text-amber-400 text-[9.5px] font-bold uppercase tracking-wider"
+                        >
+                          ⏳ Menunggu Trial
+                        </span>
+                        <span
+                          v-else-if="item.completed"
+                          class="px-2 py-0.2 rounded bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[9.5px] font-bold uppercase tracking-wider"
+                        >
+                          ✓ Selesai
+                        </span>
+                      </div>
+
+                      <!-- Center: Thread codes with click-to-ACC -->
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <template v-if="item.hasAcc">
+                          <div
+                            v-for="(th, tIdx) in item.accThreads"
+                            :key="tIdx"
+                            @click="toggleThreadAcc(item, th)"
+                            title="Klik untuk ubah status ACC benang ini"
+                            class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-zinc-800 border border-white rounded text-[10.5px] text-white font-bold ring-1 ring-white/60 shadow-sm cursor-pointer hover:bg-zinc-750 transition-colors"
+                          >
+                            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                            <span>{{ th }}</span>
+                          </div>
+                          <!-- Other candidate threads if any -->
+                          <div
+                            v-for="(th, oIdx) in item.threads.filter(t => !isThreadAcc(item, t))"
+                            :key="'cand_' + oIdx"
+                            @click="toggleThreadAcc(item, th)"
+                            title="Klik untuk setujui ACC benang ini"
+                            class="inline-flex items-center gap-1 px-1.5 py-0.2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded text-[9.5px] text-zinc-400 cursor-pointer transition-colors"
+                          >
+                            <span class="w-2 h-2 rounded-full border border-white/10 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                            <span>{{ th }}</span>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div
+                            v-for="(th, tIdx) in item.threads"
+                            :key="tIdx"
+                            @click="toggleThreadAcc(item, th)"
+                            title="Klik untuk langsung ACC kode benang ini"
+                            class="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-900 border border-zinc-750 hover:border-zinc-500 rounded text-[10.5px] text-zinc-300 cursor-pointer transition-colors"
+                          >
+                            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                            <span>{{ th }}</span>
+                          </div>
+                          <span class="text-amber-400 text-[10px] italic font-sans hidden sm:inline">(Klik untuk ACC)</span>
+                        </template>
+                      </div>
+
+                      <!-- Right: Actions -->
+                      <div class="flex items-center gap-2">
+                        <button
+                          @click="toggleItemComplete(item)"
+                          class="px-2.5 py-1 rounded text-[10.5px] font-mono font-medium transition-colors cursor-pointer"
+                          :class="item.completed ? 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-750' : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900/80'"
+                        >
+                          {{ item.completed ? '↺ Batal Selesai' : '✓ Selesai' }}
+                        </button>
+                        <button
+                          @click="activeModule = 'trial'; activeTab = 'operator'"
+                          title="Buka proses trial untuk CMT ini"
+                          class="text-[10.5px] text-zinc-400 hover:text-white underline font-sans"
+                        >
+                          Trial →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
+            <div class="text-zinc-400 text-sm font-bold">Tidak ada grup Floppy yang sesuai filter</div>
+            <p class="text-xs text-zinc-500 font-sans">
+              Coba ubah kata kunci pencarian atau ganti filter status di atas.
+            </p>
+            <div class="pt-2">
+              <button
+                @click="scheduleSearch = ''; scheduleFilter = 'all'"
+                class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
+              >
+                Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAMPILAN 2: DAFTAR LEPAS PER VARIASI (FLAT VIEW) -->
+        <div v-else-if="scheduleViewMode === 'flat'" class="space-y-3">
+          <div v-if="filteredScheduleCmts.length > 0" class="space-y-3">
+            <div
+              v-for="(item, idx) in filteredScheduleCmts"
+              :key="item.key || (item.cmt + '_' + item.variant)"
+              class="bg-zinc-950 border rounded-xl p-3.5 space-y-3 shadow-sm transition-all"
+              :class="item.status === 'running' ? 'border-white/50 ring-1 ring-white/20' : (item.completed ? 'border-zinc-850 opacity-75' : 'border-zinc-800 hover:border-zinc-700')"
+            >
+              <!-- Header Kartu: CMT, Variasi, Floppy & Status Workflow -->
+              <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2.5 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-2 py-0.5 rounded bg-zinc-850 border border-zinc-700 text-zinc-200 font-bold text-[10px]">#{{ idx + 1 }}</span>
+                  <span class="font-bold text-white text-sm">CMT {{ item.cmt }}</span>
+                  <span v-if="item.variant && item.variant !== '-'" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-medium">
+                    {{ item.variant }}
+                  </span>
+                  <span class="text-zinc-400 text-xs flex items-center gap-1 font-sans">
+                    📁 {{ item.floppyInfo.name }}
+                    <span class="text-zinc-500 font-mono text-[10.5px]">({{ item.floppyInfo.garment }})</span>
+                  </span>
+                </div>
+
+                <!-- Status Workflow Badge -->
+                <div class="flex items-center gap-2">
+                  <span
+                    v-if="item.status === 'running'"
+                    class="px-2.5 py-0.5 rounded bg-white text-zinc-950 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-950 animate-pulse"></span>
+                    <span>Sedang Berjalan (Mesin 1 & 2)</span>
+                  </span>
+                  <span
+                    v-else-if="item.status === 'acc'"
+                    class="px-2 py-0.5 rounded bg-zinc-800 border border-white text-white font-bold text-[10px] uppercase tracking-wider ring-1 ring-white/60 shadow-sm"
+                  >
+                    ● ACC • Siap Naik Mesin
+                  </span>
+                  <span
+                    v-else-if="item.status === 'pending'"
+                    class="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-800/80 text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                  >
+                    <span>⏳</span>
+                    <span>Menunggu Trial Benang</span>
+                  </span>
+                  <span
+                    v-else-if="item.completed"
+                    class="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                  >
+                    <span>✓</span>
+                    <span>Selesai Bordir</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Benang Section -->
+              <div class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-3 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                    {{ item.hasAcc ? 'Benang Disetujui (ACC):' : 'Calon Opsi Trial:' }}
+                  </span>
+
+                  <template v-if="item.hasAcc">
+                    <div
+                      v-for="(th, tIdx) in item.accThreads"
+                      :key="tIdx"
+                      @click="toggleThreadAcc(item, th)"
+                      title="Klik untuk ubah status ACC benang ini"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 border border-white rounded-md text-xs text-white font-bold ring-1 ring-white/60 shadow-sm cursor-pointer hover:bg-zinc-750 transition-colors"
+                    >
+                      <span class="w-3 h-3 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                      <span>{{ th }}</span>
+                    </div>
+
+                    <template v-if="item.threads && item.threads.some(t => !isThreadAcc(item, t))">
+                      <span class="text-zinc-600 text-[10.5px] ml-1 font-sans">Opsi lain:</span>
+                      <div
+                        v-for="(th, oIdx) in item.threads.filter(t => !isThreadAcc(item, t))"
+                        :key="'cand_' + oIdx"
+                        @click="toggleThreadAcc(item, th)"
+                        title="Klik untuk setujui ACC benang ini"
+                        class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded text-[10px] text-zinc-400 cursor-pointer transition-colors"
+                      >
+                        <span class="w-2 h-2 rounded-full border border-white/10 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                        <span>{{ th }}</span>
+                      </div>
+                    </template>
+                  </template>
+
+                  <template v-else>
+                    <div
+                      v-for="(th, tIdx) in item.threads"
+                      :key="tIdx"
+                      @click="toggleThreadAcc(item, th)"
+                      title="Klik untuk langsung setujui kode benang ini"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-zinc-900 border border-zinc-750 hover:border-zinc-500 rounded text-[11px] text-zinc-300 cursor-pointer transition-colors"
+                    >
+                      <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                      <span>{{ th }}</span>
+                    </div>
+                    <span class="text-amber-400/80 text-[10.5px] font-sans italic ml-1">
+                      (Belum di-ACC atasan • klik kode di atas untuk ACC langsung)
+                    </span>
+                  </template>
+                </div>
+
+                <button
+                  @click="activeModule = 'trial'; activeTab = 'operator'"
+                  title="Buka proses trial untuk CMT ini"
+                  class="text-[11px] text-zinc-400 hover:text-white underline font-sans flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <span>Uji di Trial Benang</span>
+                  <span>→</span>
+                </button>
+              </div>
+
+              <!-- Detail Wilcom -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[10.5px] text-zinc-400">
+                  <span class="font-semibold text-zinc-300 uppercase tracking-wider text-[10px]">Data Wilcom & Komponen Floppy:</span>
+                  <span class="font-mono text-zinc-400">Total: <strong class="text-white">{{ item.stitches.toLocaleString() }}</strong> tusukan • <strong class="text-white">~{{ item.threadMeters }}m</strong> / pcs</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10.5px]">
+                  <div
+                    v-for="(comp, cIdx) in item.floppyInfo.components"
+                    :key="cIdx"
+                    class="p-1.5 rounded bg-zinc-900/40 border border-zinc-850 flex items-center justify-between gap-1"
+                  >
+                    <span class="text-zinc-300 truncate font-sans">{{ comp.name }}</span>
+                    <span class="text-zinc-500 font-mono text-[9.5px] shrink-0">{{ comp.stitch.toLocaleString() }}st</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detail Estimasi Mesin -->
+              <div class="pt-2 border-t border-zinc-850 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px]">
+                <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Perkiraan Order</div>
+                  <div class="font-bold text-white mt-0.5 text-xs">{{ item.orderPcs.toLocaleString() }} pcs</div>
+                </div>
+                <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Putaran (24 Kepala)</div>
+                  <div class="font-bold text-amber-300 mt-0.5 text-xs">{{ item.rounds }} Angkatan</div>
+                </div>
+                <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Waktu / Angkatan</div>
+                  <div class="font-bold text-zinc-200 mt-0.5 text-xs">~{{ item.minutesPerRound }} Menit</div>
+                </div>
+                <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Total Estimasi Jam</div>
+                  <div class="font-bold text-emerald-400 mt-0.5 text-xs">~{{ item.totalHours }} Jam</div>
+                </div>
+              </div>
+
+              <!-- Footer Action Bar -->
+              <div class="pt-1.5 border-t border-zinc-850/60 flex items-center justify-between text-xs font-sans">
+                <span class="text-[10px] text-zinc-500 font-mono">
+                  Est. Kebutuhan Benang Lot: <strong class="text-zinc-300">~{{ (item.threadMeters * item.orderPcs / 1000).toFixed(1) }} km</strong> ({{ Math.ceil((item.threadMeters * item.orderPcs) / 4000) }} Cone)
+                </span>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="toggleItemComplete(item)"
+                    class="px-2.5 py-1 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer"
+                    :class="item.completed ? 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-750' : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900/80'"
+                  >
+                    {{ item.completed ? '↺ Batal Selesai' : '✓ Tandai Selesai' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
+            <div class="text-zinc-400 text-sm font-bold">Tidak ada data CMT yang sesuai filter</div>
+            <p class="text-xs text-zinc-500 font-sans">
+              Coba ubah kata kunci pencarian atau ganti filter status di atas.
+            </p>
+            <div class="pt-2">
+              <button
+                @click="scheduleSearch = ''; scheduleFilter = 'all'"
+                class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
+              >
+                Reset Filter
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -2378,6 +2657,300 @@
               >
                 Terapkan
               </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Master Floppy Wilcom Modal (Tambah / Edit) -->
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="isFloppyModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto select-none"
+          @click.self="closeFloppyModal"
+          @paste="handleScreenshotPaste"
+        >
+          <div class="w-full max-w-2xl bg-zinc-900 border border-zinc-700/90 rounded-xl shadow-2xl overflow-hidden font-mono p-4 sm:p-5 space-y-4 my-auto max-h-[90vh] flex flex-col">
+            <!-- Header Modal -->
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800 shrink-0">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                <h3 class="text-xs font-bold text-white uppercase tracking-wider">
+                  {{ isEditingFloppy ? 'Edit Master Floppy Wilcom' : 'Tambah Master Floppy Wilcom Baru' }}
+                </h3>
+              </div>
+              <button @click="closeFloppyModal" class="text-zinc-500 hover:text-white text-sm cursor-pointer p-1">✕</button>
+            </div>
+
+            <!-- Body Modal (Scrollable) -->
+            <div class="space-y-4 text-xs overflow-y-auto pr-1">
+              <!-- Grid Input Utama -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-1">
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Nama Floppy / File *
+                  </label>
+                  <input
+                    v-model="floppyForm.name"
+                    placeholder="cth: Flopy B atau FLOPY-01"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none uppercase"
+                  />
+                </div>
+                <div class="sm:col-span-1">
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Model / Item Pakaian
+                  </label>
+                  <input
+                    v-model="floppyForm.garment"
+                    placeholder="cth: Kemeja Koko Al-Raaz"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none"
+                  />
+                </div>
+                <div class="sm:col-span-1">
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Quantity Order (Pcs)
+                  </label>
+                  <input
+                    v-model.number="floppyForm.quantity"
+                    type="number"
+                    min="1"
+                    placeholder="1200"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Upload & Paste Screenshot Wilcom -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold">
+                    Screenshot Wilcom / Lembar Kerja
+                  </label>
+                  <span class="text-[10px] text-zinc-500">Mendukung Paste (Ctrl+V) langsung</span>
+                </div>
+
+                <div v-if="floppyForm.screenshot" class="relative group rounded-lg overflow-hidden border border-zinc-700 bg-zinc-950/60 p-2 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <img
+                      :src="floppyForm.screenshot"
+                      alt="Wilcom Screenshot"
+                      class="w-20 h-14 object-cover rounded border border-zinc-750 cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+                      @click="openScreenshotPreview(floppyForm.screenshot)"
+                    />
+                    <div class="truncate">
+                      <p class="text-xs text-zinc-200 font-bold truncate">Screenshot Wilcom Terlampir</p>
+                      <button
+                        @click="openScreenshotPreview(floppyForm.screenshot)"
+                        type="button"
+                        class="text-[11px] text-cyan-400 hover:text-cyan-300 underline mt-0.5"
+                      >
+                        Lihat Gambar Penuh
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    @click="floppyForm.screenshot = ''"
+                    type="button"
+                    class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 border border-zinc-700 text-xs transition-colors shrink-0"
+                  >
+                    Hapus
+                  </button>
+                </div>
+
+                <div
+                  v-else
+                  class="border-2 border-dashed border-zinc-750 hover:border-zinc-500 rounded-lg p-3 text-center bg-zinc-950/40 hover:bg-zinc-950 transition-colors"
+                >
+                  <div class="flex flex-col items-center justify-center gap-1.5">
+                    <span class="text-zinc-400 text-base">📸</span>
+                    <p class="text-zinc-300 text-xs font-semibold">
+                      Tempel (Ctrl+V) screenshot Wilcom atau pilih file
+                    </p>
+                    <label class="inline-block mt-1 px-3 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 text-[11px] font-semibold rounded cursor-pointer border border-zinc-700 transition-colors">
+                      Pilih Gambar
+                      <input
+                        type="file"
+                        accept="image/*"
+                        class="hidden"
+                        @change="handleFloppyScreenshotUpload"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rincian Komponen Bordir -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold">
+                    Rincian Komponen Bordir (Wilcom)
+                  </label>
+                  <button
+                    @click="addFloppyComponent"
+                    type="button"
+                    class="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>+ Tambah Komponen</span>
+                  </button>
+                </div>
+
+                <div class="border border-zinc-800 rounded-lg overflow-hidden">
+                  <div class="grid grid-cols-12 gap-2 bg-zinc-950 px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-500 font-bold border-b border-zinc-800">
+                    <div class="col-span-5">Komponen</div>
+                    <div class="col-span-3 text-right">Tusukan (Stitch)</div>
+                    <div class="col-span-3 text-right">Benang (Meter)</div>
+                    <div class="col-span-1 text-center">Aksi</div>
+                  </div>
+
+                  <div class="divide-y divide-zinc-800/60 max-h-48 overflow-y-auto">
+                    <div
+                      v-for="(comp, idx) in floppyForm.components"
+                      :key="idx"
+                      class="grid grid-cols-12 gap-2 p-2.5 items-center hover:bg-zinc-850/40"
+                    >
+                      <div class="col-span-5">
+                        <input
+                          v-model="comp.name"
+                          placeholder="cth: Plaket Depan"
+                          class="w-full h-8 bg-zinc-950 border border-zinc-750 rounded px-2 text-xs text-zinc-100 font-mono focus:border-white focus:outline-none"
+                        />
+                      </div>
+                      <div class="col-span-3">
+                        <input
+                          v-model.number="comp.stitch"
+                          type="number"
+                          min="0"
+                          step="100"
+                          placeholder="8500"
+                          @input="onComponentStitchChange(comp)"
+                          class="w-full h-8 bg-zinc-950 border border-zinc-750 rounded px-2 text-xs text-zinc-100 font-mono text-right focus:border-white focus:outline-none"
+                        />
+                      </div>
+                      <div class="col-span-3">
+                        <input
+                          v-model.number="comp.threadMeters"
+                          type="number"
+                          min="0"
+                          placeholder="28"
+                          class="w-full h-8 bg-zinc-950 border border-zinc-750 rounded px-2 text-xs text-zinc-100 font-mono text-right focus:border-white focus:outline-none"
+                        />
+                      </div>
+                      <div class="col-span-1 flex justify-center">
+                        <button
+                          @click="removeFloppyComponent(idx)"
+                          type="button"
+                          class="w-6 h-6 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Perhitungan Mesin -->
+              <div class="bg-zinc-950/80 border border-zinc-800 rounded-lg p-3 space-y-2">
+                <span class="text-[10px] uppercase tracking-wider text-zinc-400 font-bold block">
+                  Estimasi Perhitungan Teknis (2 Mesin / 24 Kepala @ 800 SPM)
+                </span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono">
+                  <div class="bg-zinc-900/80 rounded p-2 border border-zinc-800">
+                    <span class="text-[9.5px] text-zinc-500 block uppercase">Total Tusukan</span>
+                    <span class="text-xs font-bold text-white">{{ formTotalStitches.toLocaleString('id-ID') }} st</span>
+                  </div>
+                  <div class="bg-zinc-900/80 rounded p-2 border border-zinc-800">
+                    <span class="text-[9.5px] text-zinc-500 block uppercase">Meter / Potong</span>
+                    <span class="text-xs font-bold text-amber-300">{{ formTotalMeters.toLocaleString('id-ID') }} m</span>
+                  </div>
+                  <div class="bg-zinc-900/80 rounded p-2 border border-zinc-800">
+                    <span class="text-[9.5px] text-zinc-500 block uppercase">Putaran (24 Kepala)</span>
+                    <span class="text-xs font-bold text-cyan-300">{{ formRounds }} angkatan</span>
+                  </div>
+                  <div class="bg-zinc-900/80 rounded p-2 border border-zinc-800">
+                    <span class="text-[9.5px] text-zinc-500 block uppercase">Est. Total Waktu</span>
+                    <span class="text-xs font-bold text-emerald-300">{{ formTotalHours }} jam</span>
+                  </div>
+                </div>
+                <div class="text-[10px] text-zinc-400 flex items-center justify-between pt-1">
+                  <span>Waktu per angkatan: <strong>{{ formMinutesPerRound }} menit</strong> (termasuk toleransi ganti bidangan)</span>
+                  <span>Total meter lot: <strong>{{ (((formTotalMeters * (floppyForm.quantity || 1200)) / 1000)).toFixed(1) }} km</strong></span>
+                </div>
+              </div>
+
+              <!-- Catatan Teknis / SOP -->
+              <div>
+                <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                  Catatan Teknis / SOP Bordir
+                </label>
+                <textarea
+                  v-model="floppyForm.notes"
+                  rows="2"
+                  placeholder="cth: Kemeja Koko standar Al-Raaz. Gunakan kertas sobek 2 lapis. Jarum DBxK5 #11."
+                  class="w-full bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md p-2.5 text-xs text-zinc-100 font-mono focus:outline-none"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-800 shrink-0">
+              <button
+                @click="closeFloppyModal"
+                type="button"
+                class="h-8 px-3 rounded-md bg-zinc-800 hover:bg-zinc-750 text-zinc-300 text-xs font-semibold cursor-pointer border border-zinc-700"
+              >
+                Batal
+              </button>
+              <button
+                @click="saveFloppy"
+                type="button"
+                style="background-color: #ffffff !important; color: #09090b !important; color-scheme: only light !important"
+                class="btn-white-solid h-8 px-4 rounded-md bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold cursor-pointer shadow-sm"
+              >
+                {{ isEditingFloppy ? 'Simpan Perubahan' : 'Tambah Floppy' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Lightbox Preview Screenshot Floppy -->
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="previewScreenshotUrl"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md select-none"
+          @click.self="closeScreenshotPreview"
+        >
+          <div class="relative max-w-4xl max-h-[90vh] bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-2xl p-2 flex flex-col items-center">
+            <button
+              @click="closeScreenshotPreview"
+              type="button"
+              class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-zinc-850 hover:bg-zinc-700 border border-zinc-650 text-white flex items-center justify-center cursor-pointer shadow-lg text-sm"
+            >
+              ✕
+            </button>
+            <img
+              :src="previewScreenshotUrl"
+              alt="Preview Screenshot Wilcom"
+              class="max-w-full max-h-[82vh] object-contain rounded"
+            />
+            <div class="w-full flex items-center justify-between px-3 py-2 text-zinc-400 font-mono text-[11px]">
+              <span>Lembar Kerja / Screenshot Wilcom</span>
+              <button @click="closeScreenshotPreview" class="hover:text-white underline cursor-pointer">Tutup Preview</button>
             </div>
           </div>
         </div>
@@ -3431,49 +4004,380 @@
             return cmts.value.filter((c) => isAcc(c));
           });
 
-          // ================= DATABASE FILM & FLOPPY WILCOM =================
-          const FLOPPY_DATABASE = {
-            'FLOPY B': {
+          // ================= DATABASE MASTER FILM & FLOPPY WILCOM =================
+          const DEFAULT_FLOPPIES = [
+            {
+              id: 'flopy_b',
               name: 'Flopy B',
               garment: 'Kemeja Koko Al-Raaz',
+              quantity: 1200,
+              screenshot: '',
+              notes: 'Kemeja Koko standar Al-Raaz. Gunakan kertas sobek 2 lapis. Jarum DBxK5 #11.',
               components: [
                 { name: 'Plaket Depan', stitch: 8500, threadMeters: 28 },
                 { name: 'Pocket / Saku', stitch: 3200, threadMeters: 11 },
                 { name: 'Cuff / Manset', stitch: 4100, threadMeters: 14 },
                 { name: 'Collar / Kerah', stitch: 2800, threadMeters: 9 },
               ],
-              totalStitches: 18600,
-              totalMeters: 62,
             },
-            'FLOPY C': {
+            {
+              id: 'flopy_c',
               name: 'Flopy C',
               garment: 'Gamis Bordir Al-Raaz',
+              quantity: 1200,
+              screenshot: '',
+              notes: 'Bordir dada lebar gamis. Pastikan tegangan benang stabil untuk bahan jatuh.',
               components: [
                 { name: 'Dada & Leher', stitch: 14200, threadMeters: 48 },
                 { name: 'Lengan Manset', stitch: 5300, threadMeters: 18 },
               ],
-              totalStitches: 19500,
-              totalMeters: 66,
             },
-          };
+          ];
+
+          const storedFloppies = localStorage.getItem('embro_floppy_list');
+          let initialFloppies = DEFAULT_FLOPPIES;
+          if (storedFloppies) {
+            try {
+              const parsed = JSON.parse(storedFloppies);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                initialFloppies = parsed;
+              }
+            } catch (e) {}
+          }
+          const floppyList = ref(initialFloppies);
+
+          watch(
+            floppyList,
+            (val) => {
+              localStorage.setItem('embro_floppy_list', JSON.stringify(val));
+              if (!isRemoteUpdating) debounceSyncRoomState(200);
+            },
+            { deep: true },
+          );
 
           const getFloppyInfo = (flopyName) => {
             const raw = (flopyName || '').toString().trim();
             const key = raw.toUpperCase();
-            if (FLOPPY_DATABASE[key]) {
-              return FLOPPY_DATABASE[key];
+
+            // 1. Cek di floppyList reaktif
+            const found = (floppyList.value || []).find(
+              (f) => (f.name || '').trim().toUpperCase() === key || f.id === key
+            );
+            if (found) {
+              const totalStitches = (found.components || []).reduce((acc, c) => acc + (Number(c.stitch) || 0), 0) || 16000;
+              const totalMeters = (found.components || []).reduce((acc, c) => acc + (Number(c.threadMeters) || 0), 0) || Math.round(totalStitches * 0.0033);
+              return {
+                ...found,
+                totalStitches,
+                totalMeters,
+              };
             }
+
+            // 2. Fallback ke DEFAULT_FLOPPIES
+            const def = DEFAULT_FLOPPIES.find((f) => f.name.toUpperCase() === key);
+            if (def) {
+              const totalStitches = def.components.reduce((acc, c) => acc + (Number(c.stitch) || 0), 0);
+              const totalMeters = def.components.reduce((acc, c) => acc + (Number(c.threadMeters) || 0), 0);
+              return {
+                ...def,
+                totalStitches,
+                totalMeters,
+              };
+            }
+
+            // 3. Fallback generik
             return {
+              id: 'generic_' + key,
               name: raw || 'Wilcom Standar',
               garment: 'Komponen Bordir',
+              quantity: 1200,
+              screenshot: '',
+              notes: '',
               components: [
-                { name: 'Bordir Komponen Utama', stitch: 16000, threadMeters: 53 },
+                { name: 'Komponen Utama', stitch: 16000, threadMeters: 53 },
               ],
               totalStitches: 16000,
               totalMeters: 53,
             };
           };
 
+          const floppyListWithStats = computed(() => {
+            return floppyList.value.map((fl) => {
+              const info = getFloppyInfo(fl.name);
+              const totalStitches = info.totalStitches;
+              const totalMeters = info.totalMeters;
+              const quantity = Number(fl.quantity) || 1200;
+              const totalLotStitches = totalStitches * quantity;
+              const totalOrderMetersKm = ((totalMeters * quantity) / 1000).toFixed(1);
+              const totalCones = Math.ceil((totalMeters * quantity) / 4000);
+              const heads = 24;
+              const rounds = Math.ceil(quantity / heads);
+              const spm = 800;
+              const tolerance = 1.20;
+              const changeoverMinutes = 4;
+              const minutesPerRound = Math.round(((totalStitches / spm) * tolerance) + changeoverMinutes);
+              const totalHours = ((rounds * minutesPerRound) / 60).toFixed(1);
+
+              // Cari CMT aktif yang menggunakan floppy ini
+              const key = fl.name.trim().toUpperCase();
+              const matchingCmts = cmts.value.filter(
+                (c) => (c.flopy || '').trim().toUpperCase() === key
+              );
+              const uniqueCmts = [...new Set(matchingCmts.map((c) => String(c.cmt).trim()))];
+
+              return {
+                ...fl,
+                totalStitches,
+                totalMeters,
+                quantity,
+                totalLotStitches,
+                totalOrderMetersKm,
+                totalCones,
+                rounds,
+                minutesPerRound,
+                totalHours,
+                usedByCmts: uniqueCmts,
+                usedByCount: matchingCmts.length,
+              };
+            });
+          });
+
+          // State Form Tambah & Edit Floppy
+          const isFloppyModalOpen = ref(false);
+          const isEditingFloppy = ref(false);
+          const editingFloppyId = ref(null);
+          const previewScreenshotUrl = ref(null);
+
+          const floppyForm = ref({
+            id: '',
+            name: '',
+            garment: '',
+            quantity: 1200,
+            screenshot: '',
+            notes: '',
+            components: [
+              { name: '', stitch: 0, threadMeters: 0 },
+            ],
+          });
+
+          const formTotalStitches = computed(() => {
+            return (floppyForm.value.components || []).reduce((sum, c) => sum + (Number(c.stitch) || 0), 0);
+          });
+
+          const formTotalMeters = computed(() => {
+            return (floppyForm.value.components || []).reduce((sum, c) => sum + (Number(c.threadMeters) || 0), 0);
+          });
+
+          const formMinutesPerRound = computed(() => {
+            const st = formTotalStitches.value;
+            return Math.round(((st / 800) * 1.20) + 4);
+          });
+
+          const formRounds = computed(() => {
+            const qty = Number(floppyForm.value.quantity) || 1200;
+            return Math.ceil(qty / 24);
+          });
+
+          const formTotalHours = computed(() => {
+            return ((formRounds.value * formMinutesPerRound.value) / 60).toFixed(1);
+          });
+
+          const openAddFloppyModal = () => {
+            isEditingFloppy.value = false;
+            editingFloppyId.value = null;
+            floppyForm.value = {
+              id: '',
+              name: '',
+              garment: '',
+              quantity: 1200,
+              screenshot: '',
+              notes: '',
+              components: [
+                { name: 'Plaket Depan', stitch: 8500, threadMeters: 28 },
+                { name: 'Pocket / Saku', stitch: 3200, threadMeters: 11 },
+                { name: 'Cuff / Manset', stitch: 4100, threadMeters: 14 },
+                { name: 'Collar / Kerah', stitch: 2800, threadMeters: 9 },
+              ],
+            };
+            isFloppyModalOpen.value = true;
+          };
+
+          const openEditFloppyModal = (floppy) => {
+            isEditingFloppy.value = true;
+            editingFloppyId.value = floppy.id || floppy.name;
+            floppyForm.value = {
+              id: floppy.id || floppy.name,
+              name: floppy.name,
+              garment: floppy.garment || '',
+              quantity: floppy.quantity || 1200,
+              screenshot: floppy.screenshot || '',
+              notes: floppy.notes || '',
+              components: (floppy.components || []).map((c) => ({
+                name: c.name,
+                stitch: Number(c.stitch) || 0,
+                threadMeters: Number(c.threadMeters) || 0,
+              })),
+            };
+            if (floppyForm.value.components.length === 0) {
+              floppyForm.value.components.push({ name: '', stitch: 0, threadMeters: 0 });
+            }
+            isFloppyModalOpen.value = true;
+          };
+
+          const closeFloppyModal = () => {
+            isFloppyModalOpen.value = false;
+          };
+
+          const addFloppyComponent = () => {
+            floppyForm.value.components.push({ name: '', stitch: 0, threadMeters: 0 });
+          };
+
+          const removeFloppyComponent = (idx) => {
+            if (floppyForm.value.components.length > 1) {
+              floppyForm.value.components.splice(idx, 1);
+            } else {
+              floppyForm.value.components[0] = { name: '', stitch: 0, threadMeters: 0 };
+            }
+          };
+
+          const onComponentStitchChange = (comp) => {
+            const st = Number(comp.stitch) || 0;
+            if (st > 0 && (!comp.threadMeters || comp.threadMeters === 0)) {
+              comp.threadMeters = Math.round(st * 0.0033);
+            }
+          };
+
+          const handleFloppyScreenshotUpload = (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+              showAlert({ title: 'Format Tidak Sesuai', message: 'Silakan pilih file gambar (JPG, PNG, WEBP).' });
+              return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+              showAlert({ title: 'Ukuran Terlalu Besar', message: 'Ukuran gambar maksimal 5 MB.' });
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              floppyForm.value.screenshot = evt.target.result;
+              showToast('Screenshot Wilcom berhasil dimuat');
+            };
+            reader.readAsDataURL(file);
+          };
+
+          const handleScreenshotPaste = (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (let i = 0; i < items.length; i++) {
+              if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                  floppyForm.value.screenshot = evt.target.result;
+                  showToast('Screenshot dari clipboard berhasil ditempel!');
+                };
+                reader.readAsDataURL(blob);
+                break;
+              }
+            }
+          };
+
+          const saveFloppy = async () => {
+            const name = (floppyForm.value.name || '').trim();
+            if (!name) {
+              showAlert({ title: 'Nama Wajib Diisi', message: 'Silakan masukkan Nama Floppy / File Desain (misal: Flopy B).' });
+              return;
+            }
+
+            const validComponents = (floppyForm.value.components || [])
+              .filter((c) => (c.name || '').trim() || (Number(c.stitch) || 0) > 0)
+              .map((c) => ({
+                name: (c.name || 'Komponen').trim(),
+                stitch: Number(c.stitch) || 0,
+                threadMeters: Number(c.threadMeters) || Math.round((Number(c.stitch) || 0) * 0.0033),
+              }));
+
+            if (validComponents.length === 0) {
+              validComponents.push({ name: 'Komponen Utama', stitch: 16000, threadMeters: 53 });
+            }
+
+            const payload = {
+              id: isEditingFloppy.value && editingFloppyId.value ? editingFloppyId.value : 'floppy_' + Date.now().toString(36),
+              name: name,
+              garment: (floppyForm.value.garment || '').trim() || 'Komponen Bordir',
+              quantity: Number(floppyForm.value.quantity) || 1200,
+              screenshot: floppyForm.value.screenshot || '',
+              notes: (floppyForm.value.notes || '').trim(),
+              components: validComponents,
+            };
+
+            if (isEditingFloppy.value) {
+              const idx = floppyList.value.findIndex(
+                (f) => f.id === editingFloppyId.value || f.name.toUpperCase() === name.toUpperCase()
+              );
+              if (idx !== -1) {
+                floppyList.value[idx] = payload;
+              } else {
+                floppyList.value.push(payload);
+              }
+              showToast(`Floppy "${name}" berhasil diperbarui!`);
+            } else {
+              const exists = floppyList.value.some((f) => f.name.toUpperCase() === name.toUpperCase());
+              if (exists) {
+                const replace = await showConfirm({
+                  title: 'Floppy Sudah Ada',
+                  message: `Floppy dengan nama "${name}" sudah ada. Timpa data ini?`,
+                  confirmText: 'Timpa Floppy',
+                  cancelText: 'Ganti Nama',
+                });
+                if (!replace) return;
+                const idx = floppyList.value.findIndex((f) => f.name.toUpperCase() === name.toUpperCase());
+                floppyList.value[idx] = payload;
+              } else {
+                floppyList.value.push(payload);
+              }
+              showToast(`Floppy "${name}" berhasil ditambahkan!`);
+            }
+
+            floppyList.value = [...floppyList.value];
+            localStorage.setItem('embro_floppy_list', JSON.stringify(floppyList.value));
+            isFloppyModalOpen.value = false;
+          };
+
+          const deleteFloppy = async (floppy) => {
+            const ok = await showConfirm({
+              title: 'Hapus Master Floppy',
+              message: `Hapus Floppy "${floppy.name}" dari database? Data perhitungan CMT terkait akan kembali ke standar.`,
+              confirmText: 'Hapus Floppy',
+              cancelText: 'Batal',
+              type: 'danger',
+            });
+            if (ok) {
+              floppyList.value = floppyList.value.filter(
+                (f) => f.id !== floppy.id && f.name.toUpperCase() !== floppy.name.toUpperCase()
+              );
+              localStorage.setItem('embro_floppy_list', JSON.stringify(floppyList.value));
+              showToast(`Floppy "${floppy.name}" telah dihapus`);
+            }
+          };
+
+          const createCmtFromFloppy = (floppy) => {
+            newFlopy.value = floppy.name;
+            activeModule.value = 'trial';
+            activeTab.value = 'manage';
+            showToast(`Floppy "${floppy.name}" dipilih. Silakan isi nomor CMT dan variasinya.`);
+          };
+
+          const openScreenshotPreview = (imgUrl) => {
+            previewScreenshotUrl.value = imgUrl;
+          };
+
+          const closeScreenshotPreview = () => {
+            previewScreenshotUrl.value = null;
+          };
+
+          // ================= PELACAKAN & JADWAL MESIN (TERKELOMPOK PER-FLOPPY) =================
           const getItemKey = (item) => {
             if (!item) return '';
             if (item.key) return item.key;
@@ -3511,6 +4415,7 @@
 
           const scheduleSearch = ref('');
           const scheduleFilter = ref('all'); // 'all', 'running', 'acc', 'pending', 'completed'
+          const scheduleViewMode = ref('floppy'); // 'floppy' (default) or 'flat'
 
           const scheduleCmtList = computed(() => {
             let runningAssigned = false;
@@ -3538,12 +4443,12 @@
               // Parameter operasional Pabrik Al-Raaz:
               const stitches = floppyInfo.totalStitches;
               const threadMeters = floppyInfo.totalMeters;
-              const orderPcs = 1200; // Standar 1 lot order
-              const heads = 24; // 2 mesin total 24 kepala
-              const rounds = Math.ceil(orderPcs / heads); // 50 angkatan
+              const orderPcs = Number(floppyInfo.quantity) || 1200;
+              const heads = 24;
+              const rounds = Math.ceil(orderPcs / heads);
               const spm = 800;
               const tolerance = 1.20;
-              const changeoverMinutes = 4; // jeda ganti kertas sobek & bidangan
+              const changeoverMinutes = 4;
               const minutesPerRound = Math.round(((stitches / spm) * tolerance) + changeoverMinutes);
               const totalHours = ((rounds * minutesPerRound) / 60).toFixed(1);
 
@@ -3572,13 +4477,11 @@
             const filter = scheduleFilter.value;
 
             return scheduleCmtList.value.filter((item) => {
-              // Filter status
               if (filter === 'running' && item.status !== 'running') return false;
               if (filter === 'acc' && (item.status !== 'acc' && item.status !== 'running')) return false;
               if (filter === 'pending' && item.status !== 'pending') return false;
               if (filter === 'completed' && item.status !== 'completed') return false;
 
-              // Filter pencarian teks
               if (query) {
                 const matchCmt = String(item.cmt).toLowerCase().includes(query);
                 const matchVariant = String(item.variant || '').toLowerCase().includes(query);
@@ -3592,6 +4495,148 @@
             });
           });
 
+          // PENGELOMPOKAN JADWAL BERDASARKAN FILM / FLOPPY
+          const groupedScheduleFloppies = computed(() => {
+            const map = new Map();
+            const groups = [];
+
+            scheduleCmtList.value.forEach((item) => {
+              const flopyKey = (item.flopy || 'Tanpa Floppy').trim().toUpperCase();
+              if (!map.has(flopyKey)) {
+                const flInfo = getFloppyInfo(item.flopy);
+                const group = {
+                  flopyKey,
+                  flopyName: item.flopy || 'Standar Wilcom',
+                  floppyInfo: flInfo,
+                  cmts: [],
+                  totalItems: 0,
+                  runningCount: 0,
+                  accCount: 0,
+                  pendingCount: 0,
+                  completedCount: 0,
+                  totalOrderPcs: 0,
+                };
+                map.set(flopyKey, group);
+                groups.push(group);
+              }
+
+              const grp = map.get(flopyKey);
+              grp.cmts.push(item);
+              grp.totalItems++;
+              if (item.status === 'running') grp.runningCount++;
+              if (item.hasAcc && !item.completed) grp.accCount++;
+              if (item.status === 'pending') grp.pendingCount++;
+              if (item.completed) grp.completedCount++;
+              grp.totalOrderPcs += (item.orderPcs || 1200);
+            });
+
+            groups.forEach((grp) => {
+              const uniqueCmts = [...new Set(grp.cmts.map((c) => String(c.cmt).trim()))];
+              grp.uniqueCmts = uniqueCmts;
+
+              // Sub-group berdasarkan nomor CMT (cth: 619 mengumpulkan C1-C4)
+              const cmtMap = new Map();
+              const cmtList = [];
+              grp.cmts.forEach((it) => {
+                const cmtKey = String(it.cmt).trim();
+                if (!cmtMap.has(cmtKey)) {
+                  const cmtEntry = {
+                    cmt: cmtKey,
+                    flopy: it.flopy,
+                    items: [],
+                    totalVariants: 0,
+                    completedVariants: 0,
+                    hasRunning: false,
+                    hasAcc: false,
+                  };
+                  cmtMap.set(cmtKey, cmtEntry);
+                  cmtList.push(cmtEntry);
+                }
+                const entry = cmtMap.get(cmtKey);
+                entry.items.push(it);
+                entry.totalVariants++;
+                if (it.completed) entry.completedVariants++;
+                if (it.status === 'running') entry.hasRunning = true;
+                if (it.hasAcc) entry.hasAcc = true;
+              });
+              grp.cmtList = cmtList;
+
+              const stitches = grp.floppyInfo.totalStitches;
+              const threadMeters = grp.floppyInfo.totalMeters;
+              const heads = 24;
+              const rounds = Math.ceil(grp.totalOrderPcs / heads);
+              const spm = 800;
+              const tolerance = 1.20;
+              const changeoverMinutes = 4;
+              const minutesPerRound = Math.round(((stitches / spm) * tolerance) + changeoverMinutes);
+              const totalHours = ((rounds * minutesPerRound) / 60).toFixed(1);
+
+              grp.stitches = stitches;
+              grp.threadMeters = threadMeters;
+              grp.rounds = rounds;
+              grp.minutesPerRound = minutesPerRound;
+              grp.totalHours = totalHours;
+            });
+
+            return groups;
+          });
+
+          const filteredScheduleFloppyGroups = computed(() => {
+            const query = scheduleSearch.value.trim().toLowerCase();
+            const filter = scheduleFilter.value;
+
+            return groupedScheduleFloppies.value
+              .map((grp) => {
+                const matchingItems = grp.cmts.filter((item) => {
+                  if (filter === 'running' && item.status !== 'running') return false;
+                  if (filter === 'acc' && item.status !== 'acc' && item.status !== 'running') return false;
+                  if (filter === 'pending' && item.status !== 'pending') return false;
+                  if (filter === 'completed' && item.status !== 'completed') return false;
+
+                  if (query) {
+                    const matchCmt = String(item.cmt).toLowerCase().includes(query);
+                    const matchVariant = String(item.variant || '').toLowerCase().includes(query);
+                    const matchFlopy = String(item.flopy || '').toLowerCase().includes(query);
+                    const matchGarment = String(item.floppyInfo?.garment || '').toLowerCase().includes(query);
+                    const matchThreads = (item.threads || []).some((t) => String(t).toLowerCase().includes(query));
+                    if (!matchCmt && !matchVariant && !matchFlopy && !matchGarment && !matchThreads) return false;
+                  }
+
+                  return true;
+                });
+
+                if (matchingItems.length === 0) return null;
+
+                const cmtMap = new Map();
+                const cmtList = [];
+                matchingItems.forEach((it) => {
+                  const cmtKey = String(it.cmt).trim();
+                  if (!cmtMap.has(cmtKey)) {
+                    const entry = {
+                      cmt: cmtKey,
+                      flopy: it.flopy,
+                      items: [],
+                      totalVariants: 0,
+                      completedVariants: 0,
+                    };
+                    cmtMap.set(cmtKey, entry);
+                    cmtList.push(entry);
+                  }
+                  const entry = cmtMap.get(cmtKey);
+                  entry.items.push(it);
+                  entry.totalVariants++;
+                  if (it.completed) entry.completedVariants++;
+                });
+
+                return {
+                  ...grp,
+                  filteredCmts: matchingItems,
+                  filteredCmtList: cmtList,
+                };
+              })
+              .filter(Boolean);
+          });
+
           const scheduleCounts = computed(() => {
             const list = scheduleCmtList.value;
             return {
@@ -3600,6 +4645,7 @@
               acc: list.filter((i) => i.hasAcc && !i.completed).length,
               pending: list.filter((i) => i.status === 'pending').length,
               completed: list.filter((i) => i.status === 'completed').length,
+              floppyTotal: groupedScheduleFloppies.value.length,
             };
           });
 
@@ -4419,12 +5465,40 @@
             accList,
             scheduleSearch,
             scheduleFilter,
+            scheduleViewMode,
             scheduleCmtList,
             filteredScheduleCmts,
+            groupedScheduleFloppies,
+            filteredScheduleFloppyGroups,
             scheduleCounts,
             toggleItemComplete,
             isItemCompleted,
             getFloppyInfo,
+            floppyList,
+            floppyListWithStats,
+            isFloppyModalOpen,
+            isEditingFloppy,
+            editingFloppyId,
+            previewScreenshotUrl,
+            floppyForm,
+            formTotalStitches,
+            formTotalMeters,
+            formMinutesPerRound,
+            formRounds,
+            formTotalHours,
+            openAddFloppyModal,
+            openEditFloppyModal,
+            closeFloppyModal,
+            addFloppyComponent,
+            removeFloppyComponent,
+            onComponentStitchChange,
+            handleFloppyScreenshotUpload,
+            handleScreenshotPaste,
+            saveFloppy,
+            deleteFloppy,
+            createCmtFromFloppy,
+            openScreenshotPreview,
+            closeScreenshotPreview,
             colorMap,
             savedSessions,
             sessionNote,
