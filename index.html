@@ -3039,7 +3039,8 @@
       createApp({
         setup() {
           const activeTab = ref('operator');
-          const activeModule = ref('trial'); // 'trial', 'floppy', 'schedule', 'inventory', 'archives'
+          const storedMod = typeof localStorage !== 'undefined' ? localStorage.getItem('embro_active_module') : null;
+          const activeModule = ref(storedMod && ['trial', 'floppy', 'schedule', 'inventory', 'archives'].includes(storedMod) ? storedMod : 'trial');
           const isSidebarOpen = ref(false);
           const needleCapacity = ref(11);
           const swapNeedle = ref(11); // Default ke jarum paling akhir / ujung
@@ -3329,8 +3330,14 @@
             timestamp: Date.now(),
           });
 
-          const syncRoomStateToCloud = () => {
+          const syncRoomStateToCloud = (force = false) => {
             if (isRemoteUpdating) return;
+            // 🛡️ GUARDRAIL KEAMANAN DATA CLOUD ANTI-OVERWRITE:
+            // Jika perangkat baru pertama kali membuka web dan belum selesai mendownload data cloud (isInitialRoomStateLoaded === false),
+            // dilarang keras mengirim data kosong ke cloud agar tidak menimpa data perangkat lain yang sudah ada!
+            if (!force && !isInitialRoomStateLoaded && cmts.value.length === 0) {
+              return;
+            }
             const payload = getRoomStatePayload();
 
             if (broadcastChannel) {
@@ -3387,8 +3394,14 @@
             }, 1500);
           };
 
-          const syncFloppiesToCloud = () => {
+          const syncFloppiesToCloud = (force = false) => {
             if (!firebaseDb || !isFirebaseConnected.value) return;
+            // 🛡️ GUARDRAIL KEAMANAN FLOPPIES ANTI-OVERWRITE:
+            // Jika data cloud floppies belum selesai di-download (isCloudFloppiesLoaded === false),
+            // jangan izinkan perangkat baru menimpa data cloud dengan list default!
+            if (!force && !isCloudFloppiesLoaded && (!floppyList.value || floppyList.value.length <= DEFAULT_FLOPPIES.length)) {
+              return;
+            }
             try {
               isUpdatingCloudFloppies = true;
               const cleanList = JSON.parse(JSON.stringify(floppyList.value || []));
@@ -3889,10 +3902,15 @@
               }
             }
 
-            // 6. Muat active tab
+            // 6. Muat active tab & active module
             const storedTab = localStorage.getItem('embro_active_tab');
             if (storedTab && ['operator', 'rack', 'colors', 'manage'].includes(storedTab)) {
               activeTab.value = storedTab;
+            }
+
+            const storedMod = localStorage.getItem('embro_active_module');
+            if (storedMod && ['trial', 'floppy', 'schedule', 'inventory', 'archives'].includes(storedMod)) {
+              activeModule.value = storedMod;
             }
 
             // 7. Inisialisasi Jalur Sinkronisasi (BroadcastChannel lokal + Firebase jika ada)
@@ -3941,6 +3959,10 @@
 
           watch(activeTab, (val) => {
             localStorage.setItem('embro_active_tab', val);
+          });
+
+          watch(activeModule, (val) => {
+            localStorage.setItem('embro_active_module', val);
           });
 
           watch(
@@ -4530,8 +4552,12 @@
           };
 
           const scheduleSearch = ref('');
-          const scheduleFilter = ref('all'); // 'all', 'running', 'acc', 'pending', 'completed'
-          const scheduleViewMode = ref('floppy'); // 'floppy' (default) or 'flat'
+          const storedViewMode = typeof localStorage !== 'undefined' ? localStorage.getItem('embro_schedule_view_mode') : null;
+          const scheduleViewMode = ref(storedViewMode === 'flat' ? 'flat' : 'floppy');
+
+          watch(scheduleViewMode, (val) => {
+            localStorage.setItem('embro_schedule_view_mode', val);
+          });
 
           const scheduleCmtList = computed(() => {
             let runningAssigned = false;
@@ -5228,7 +5254,7 @@
               localStorage.setItem('embro_acc_map', JSON.stringify({}));
               localStorage.removeItem('embro_active_session_id');
               localStorage.removeItem('embro_active_session_name');
-              syncRoomStateToCloud();
+              syncRoomStateToCloud(true);
               showToast('Daftar CMT berhasil dikosongkan.');
             }
           };
