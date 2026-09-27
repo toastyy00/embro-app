@@ -567,7 +567,9 @@
                 </svg>
                 <span>Stok Benang</span>
               </div>
-              <span class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-950/80 border border-indigo-800/80 text-indigo-300 font-medium">Phase 4</span>
+              <span v-if="inventoryCounts.alertCount > 0" class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950/80 border border-amber-800/80 text-amber-300 font-bold animate-pulse">{{ inventoryCounts.alertCount }} Restock</span>
+              <span v-else-if="inventoryCounts.total > 0" class="text-[9.5px] px-1.5 py-0.2 rounded bg-indigo-950/80 border border-indigo-800/80 text-indigo-300 font-medium">{{ inventoryCounts.total }} Warna</span>
+              <span v-else class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-950/80 border border-indigo-800/80 text-indigo-300 font-medium">Gudang</span>
             </button>
 
             <!-- 5. Arsip & SPK -->
@@ -2389,7 +2391,7 @@
         </div>
       </section>
 
-      <!-- ================= MODULE 4: INVENTORY STOK BENANG ================= -->
+      <!-- ================= MODULE 4: INVENTORY STOK BENANG GUDANG ================= -->
       <section v-if="activeModule === 'inventory'" class="space-y-4 no-print font-mono">
         <!-- Module Header Banner -->
         <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap">
@@ -2398,58 +2400,272 @@
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-white uppercase tracking-tight">Inventory & Monitoring Benang</h2>
-              <p class="text-[11px] text-zinc-400 font-sans">Rayon Elephant 120g (4.000m/Cone) • Peringatan murni berbasis total volume meter</p>
+              <h2 class="text-sm font-bold text-white uppercase tracking-tight">Inventory &amp; Stok Benang Gudang</h2>
+              <p class="text-[11px] text-zinc-400 font-sans">Rayon Elephant 120g (4.000m/Cone) • Input &amp; perbarui stok fisik mandiri (terpisah dari mesin trial)</p>
             </div>
           </div>
-          <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-bold uppercase tracking-wider">Fase 4 Preview</span>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="inventoryList.length > 0"
+              @click="clearAllInventory"
+              class="h-7.5 px-2.5 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-400 hover:text-rose-400 border border-zinc-800 hover:border-rose-900/60 text-xs font-mono transition-colors flex items-center gap-1 cursor-pointer"
+              title="Hapus semua data inventory"
+            >
+              <span>Kosongkan</span>
+            </button>
+            <button
+              @click="openAddInventoryModal"
+              style="background-color: #ffffff !important; color: #09090b !important; color-scheme: only light !important"
+              class="btn-white-solid h-7.5 px-3 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold font-mono transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Tambah Benang</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Note on Cone Splitting -->
-        <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs space-y-1 text-zinc-300 font-sans">
-          <div class="text-[11px] text-indigo-400 font-bold font-mono">💡 Praktik Pabrik Al-Raaz (Cone Dipecah 4-6 Kelos):</div>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
-            Sistem menghitung kecukupan stok berdasarkan total meter benang Wilcom vs ketersediaan cone utuh/sisa di gudang. Tidak ada batasan 24 cone utuh karena operator membagi 1 cone menjadi beberapa kelos kecil di mesin.
-          </p>
+        <!-- Stat Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <!-- Total Warna -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Total Varian Warna</div>
+            <div class="text-lg font-bold text-white mt-1">{{ inventoryCounts.total }} <span class="text-xs font-normal text-zinc-500">Kode</span></div>
+          </div>
+          <!-- Total Cone Utuh -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">Stok Cone Utuh</div>
+            <div class="text-lg font-bold text-white mt-1">{{ inventoryCounts.totalCones }} <span class="text-xs font-normal text-zinc-500">Cone</span></div>
+          </div>
+          <!-- Total Kelos Sisa -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-amber-400/90 uppercase tracking-wider font-semibold">Sisa Kelos Mesin</div>
+            <div class="text-lg font-bold text-amber-300 mt-1">{{ inventoryCounts.totalPartials }} <span class="text-xs font-normal text-zinc-500">Kelos</span></div>
+          </div>
+          <!-- Status Peringatan -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between" :class="inventoryCounts.alertCount > 0 ? 'border-amber-700/60 ring-1 ring-amber-500/20' : ''">
+            <div class="text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5" :class="inventoryCounts.alertCount > 0 ? 'text-amber-400' : 'text-emerald-400'">
+              <span class="w-1.5 h-1.5 rounded-full" :class="inventoryCounts.alertCount > 0 ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'"></span>
+              <span>Status Restock</span>
+            </div>
+            <div class="text-lg font-bold mt-1" :class="inventoryCounts.alertCount > 0 ? 'text-amber-300' : 'text-emerald-400'">
+              {{ inventoryCounts.alertCount > 0 ? `${inventoryCounts.alertCount} Perlu Restock` : 'Semua Aman' }}
+            </div>
+          </div>
         </div>
 
-        <!-- Active Thread Codes from CMTs Table -->
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm">
-          <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
-            <span class="text-xs font-bold text-white uppercase">Daftar Kode Benang Aktif di CMT Saat Ini</span>
-            <span class="text-[10.5px] text-zinc-400">Total Jarum: {{ needleCapacity }}</span>
+        <!-- Filter Bar & Search -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 text-[11px]">
+            <button
+              @click="inventoryFilter = 'all'"
+              :class="inventoryFilter === 'all' ? 'bg-zinc-800 text-white border-zinc-600 font-bold' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Semua ({{ inventoryCounts.total }})
+            </button>
+            <button
+              @click="inventoryFilter = 'safe'"
+              :class="inventoryFilter === 'safe' ? 'bg-zinc-800 text-emerald-300 border-emerald-800 font-bold ring-1 ring-emerald-500/30' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              🟢 Aman ({{ inventoryCounts.safeCount }})
+            </button>
+            <button
+              @click="inventoryFilter = 'low'"
+              :class="inventoryFilter === 'low' ? 'bg-amber-950/60 text-amber-300 border-amber-800 font-bold ring-1 ring-amber-500/30' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              🟡 Menipis ({{ inventoryCounts.lowCount }})
+            </button>
+            <button
+              @click="inventoryFilter = 'out'"
+              :class="inventoryFilter === 'out' ? 'bg-rose-950/60 text-rose-300 border-rose-800 font-bold ring-1 ring-rose-500/30' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              🔴 Habis ({{ inventoryCounts.outCount }})
+            </button>
           </div>
 
-          <div v-if="needleList.filter(nd => nd.thread && nd.thread !== '-').length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            <div v-for="nd in needleList.filter(nd => nd.thread && nd.thread !== '-')" :key="nd.needle" class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: nd.color }"></span>
-                <div>
-                  <div class="font-bold text-white text-xs">{{ nd.thread }}</div>
-                  <div class="text-[9.5px] text-zinc-400 font-sans truncate max-w-[120px]">{{ nd.colorName || 'Standar Al-Raaz' }}</div>
+          <!-- Search Input -->
+          <div class="relative w-full sm:w-64">
+            <input
+              v-model="inventorySearch"
+              placeholder="Cari kode benang, warna, rak..."
+              class="w-full h-8 pl-8 pr-3 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none"
+            />
+            <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <button v-if="inventorySearch" @click="inventorySearch = ''" class="absolute right-2 top-2 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer">✕</button>
+          </div>
+        </div>
+
+        <!-- Inventory List Cards -->
+        <div v-if="filteredInventoryList.length > 0" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            v-for="item in filteredInventoryList"
+            :key="item.id"
+            class="bg-zinc-950 border rounded-xl p-3.5 space-y-3 shadow-sm hover:border-zinc-700 transition-all flex flex-col justify-between"
+            :class="item.status === 'out' ? 'border-rose-900/60 bg-rose-950/10' : (item.status === 'low' ? 'border-amber-900/60 bg-amber-950/10' : 'border-zinc-800')"
+          >
+            <div class="space-y-3">
+              <!-- Top Row: Swatch, Code, Name, Status Badge -->
+              <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span
+                    class="w-6 h-6 rounded-full border border-white/20 shrink-0 shadow-sm"
+                    :style="{ backgroundColor: item.colorHex }"
+                  ></span>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-white text-base tracking-tight font-mono">{{ item.code }}</span>
+                      <span v-if="item.rack" class="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400 font-sans truncate">📍 {{ item.rack }}</span>
+                    </div>
+                    <div class="text-[11px] text-zinc-300 font-sans truncate max-w-[170px]" :title="item.name">{{ item.name }}</div>
+                  </div>
+                </div>
+
+                <div class="shrink-0 flex items-center gap-1.5">
+                  <span
+                    v-if="item.status === 'out'"
+                    class="px-2 py-0.5 rounded bg-rose-950/80 border border-rose-800 text-rose-300 font-bold text-[9.5px] uppercase tracking-wider"
+                  >
+                    🔴 Habis
+                  </span>
+                  <span
+                    v-else-if="item.status === 'low'"
+                    class="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-800 text-amber-300 font-bold text-[9.5px] uppercase tracking-wider"
+                  >
+                    🟡 Menipis
+                  </span>
+                  <span
+                    v-else
+                    class="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-300 font-bold text-[9.5px] uppercase tracking-wider"
+                  >
+                    🟢 Aman
+                  </span>
                 </div>
               </div>
-              <div class="text-right">
-                <span class="px-1.5 py-0.5 rounded text-[9.5px] font-bold uppercase" :class="nd.isSwap ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
-                  {{ nd.isSwap ? 'Swap J' + nd.needle : 'Jarum ' + nd.needle }}
-                </span>
-                <div class="text-[9px] text-emerald-400 mt-1 font-bold">🟢 Terpasang</div>
+
+              <!-- Quick In-Place Steppers: Cone Utuh & Kelos Sisa -->
+              <div class="grid grid-cols-2 gap-2 bg-zinc-900/60 border border-zinc-850 rounded-lg p-2 font-mono">
+                <!-- Cone Utuh Stepper -->
+                <div class="flex flex-col items-center justify-between p-1 bg-zinc-950/80 rounded border border-zinc-850">
+                  <div class="text-[9.5px] text-zinc-400 uppercase font-semibold flex items-center justify-between w-full px-1">
+                    <span>Cone Utuh</span>
+                    <span class="text-[8.5px] text-zinc-500">Min: {{ item.minStock }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 my-1">
+                    <button
+                      @click="quickAdjustCones(item, -1)"
+                      :disabled="item.cones <= 0"
+                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-xs font-bold cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span class="text-sm font-bold text-white min-w-[28px] text-center">{{ item.cones }}</span>
+                    <button
+                      @click="quickAdjustCones(item, 1)"
+                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-zinc-200 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Sisa Kelos Stepper -->
+                <div class="flex flex-col items-center justify-between p-1 bg-zinc-950/80 rounded border border-zinc-850">
+                  <div class="text-[9.5px] text-amber-400/90 uppercase font-semibold flex items-center justify-between w-full px-1">
+                    <span>Sisa Kelos</span>
+                    <span class="text-[8.5px] text-zinc-500">Terbuka</span>
+                  </div>
+                  <div class="flex items-center gap-2 my-1">
+                    <button
+                      @click="quickAdjustPartials(item, -1)"
+                      :disabled="item.partialCones <= 0"
+                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-amber-200 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-xs font-bold cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span class="text-sm font-bold text-amber-300 min-w-[28px] text-center">{{ item.partialCones }}</span>
+                    <button
+                      @click="quickAdjustPartials(item, 1)"
+                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-amber-200 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notes (if any) -->
+              <div v-if="item.notes" class="text-[10px] text-zinc-400 font-sans italic truncate">
+                "{{ item.notes }}"
+              </div>
+            </div>
+
+            <!-- Bottom Row: Meta & Card Actions -->
+            <div class="flex items-center justify-between pt-2 border-t border-zinc-850/80 mt-2 text-[10px] text-zinc-500">
+              <span class="truncate">{{ item.brand || 'Rayon Elephant 120g' }}</span>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button
+                  @click="openEditInventoryModal(item)"
+                  class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
+                >
+                  Edit
+                </button>
+                <button
+                  @click="deleteInventoryItem(item)"
+                  class="w-5 h-5 rounded bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 border border-zinc-800 transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  ✕
+                </button>
               </div>
             </div>
           </div>
-          <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
-            <div class="text-xs text-zinc-400 font-bold">Belum Ada Benang Terpasang di CMT</div>
-            <p class="text-[11px] text-zinc-500 font-sans">
-              Daftar CMT aktif saat ini kosong. Tambahkan CMT baru atau muat sampel di menu Trial Benang untuk memantau alokasi jarum dan kebutuhan benang.
+        </div>
+
+        <!-- Empty State When Search Result 0 -->
+        <div v-else-if="inventoryList.length > 0" class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
+          <div class="text-zinc-400 text-sm font-bold">Tidak ada benang yang sesuai filter / pencarian</div>
+          <p class="text-xs text-zinc-500 font-sans">
+            Coba ubah kata kunci pencarian atau ganti filter status di atas.
+          </p>
+          <div class="pt-1">
+            <button
+              @click="inventorySearch = ''; inventoryFilter = 'all'"
+              class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
+            >
+              Reset Filter
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State Initial (Katalog Bersih / Kosong) -->
+        <div v-else class="bg-zinc-950 border border-dashed border-zinc-800 rounded-xl p-8 text-center space-y-3.5">
+          <div class="w-12 h-12 rounded-full bg-indigo-950/60 border border-indigo-800/80 flex items-center justify-center mx-auto text-indigo-400">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-zinc-200">Database Inventory Stok Benang Kosong</h3>
+            <p class="text-xs text-zinc-400 font-sans max-w-lg mx-auto leading-relaxed">
+              Modul inventory ini telah berdiri sendiri secara mandiri untuk pencatatan stok fisik benang gudang (cone utuh &amp; kelos terbuka), terpisah dari mesin trial 1 kepala. Anda dapat mulai menambahkan stok secara manual atau memuat sampel katalog standar.
             </p>
-            <div class="pt-1">
-              <button
-                @click="activeModule = 'trial'"
-                class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer border border-zinc-700 inline-flex items-center gap-1.5"
-              >
-                <span>Buka Menu Trial Benang →</span>
-              </button>
-            </div>
+          </div>
+          <div class="flex items-center justify-center gap-2.5 pt-1 flex-wrap">
+            <button
+              @click="openAddInventoryModal"
+              style="background-color: #ffffff !important; color: #09090b !important; color-scheme: only light !important"
+              class="btn-white-solid h-8.5 px-4 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold font-mono transition-colors inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Tambah Benang Pertama</span>
+            </button>
+            <button
+              @click="loadSampleInventory"
+              class="h-8.5 px-4 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-mono transition-colors inline-flex items-center gap-1.5 border border-zinc-750 cursor-pointer"
+            >
+              <span>Muat Sampel Katalog Rayon (10 Warna)</span>
+            </button>
           </div>
         </div>
       </section>
@@ -2576,7 +2792,9 @@
                     <span class="text-base">📦</span>
                     <span>Stok Benang</span>
                   </div>
-                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 border border-indigo-800 text-indigo-300">Phase 4</span>
+                  <span v-if="inventoryCounts.alertCount > 0" class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950 border border-amber-800 text-amber-300 font-bold">{{ inventoryCounts.alertCount }} Restock</span>
+                  <span v-else-if="inventoryCounts.total > 0" class="text-[9.5px] px-1.5 py-0.5 rounded bg-indigo-950 border border-indigo-800 text-indigo-300">{{ inventoryCounts.total }}</span>
+                  <span v-else class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 border border-indigo-800 text-indigo-300">Gudang</span>
                 </button>
 
                 <button
@@ -2981,6 +3199,179 @@
         </div>
       </transition>
 
+      <!-- Modal Inventory Benang (Tambah / Edit) -->
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="isInventoryModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto select-none"
+          @click.self="closeInventoryModal"
+        >
+          <div class="w-full max-w-lg bg-zinc-900 border border-zinc-700/90 rounded-xl shadow-2xl overflow-hidden font-mono p-4 sm:p-5 space-y-4 my-auto max-h-[90vh] flex flex-col">
+            <!-- Header Modal -->
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800 shrink-0">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                <h3 class="text-xs font-bold text-white uppercase tracking-wider">
+                  {{ isEditingInventory ? 'Edit Stok Benang' : 'Tambah Benang Baru ke Inventory' }}
+                </h3>
+              </div>
+              <button @click="closeInventoryModal" class="text-zinc-500 hover:text-white text-sm cursor-pointer p-1">✕</button>
+            </div>
+
+            <!-- Body Modal -->
+            <div class="space-y-3.5 overflow-y-auto pr-1">
+              <!-- Baris 1: Kode Benang & Preview Swatch Warna -->
+              <div class="grid grid-cols-12 gap-3 items-end">
+                <div class="col-span-7 sm:col-span-8">
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Kode Benang <span class="text-rose-400 font-bold">*</span>
+                  </label>
+                  <div class="relative flex items-center">
+                    <input
+                      v-model="inventoryForm.code"
+                      @input="onInventoryCodeInput"
+                      placeholder="cth: 1179"
+                      class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none uppercase font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-span-5 sm:col-span-4 flex items-center gap-2 h-9 px-2.5 bg-zinc-950 rounded-md border border-zinc-800">
+                  <span
+                    class="w-5 h-5 rounded-full border border-white/20 shrink-0 shadow-sm"
+                    :style="{ backgroundColor: getThreadColor(inventoryForm.code) }"
+                  ></span>
+                  <span class="text-[10px] text-zinc-400 font-sans truncate">
+                    {{ THREAD_METADATA[inventoryForm.code]?.name ? 'Katalog OK' : 'Custom' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Baris 2: Nama Warna / Deskripsi & Merk -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Nama Warna / Deskripsi
+                  </label>
+                  <input
+                    v-model="inventoryForm.name"
+                    placeholder="cth: Hitam / Black"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Merk / Tipe Benang
+                  </label>
+                  <input
+                    v-model="inventoryForm.brand"
+                    placeholder="Rayon Elephant 120g"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Baris 3: Stok Cone Utuh, Sisa Kelos, dan Batas Minimal -->
+              <div class="grid grid-cols-3 gap-2.5 p-3 rounded-lg bg-zinc-950 border border-zinc-800">
+                <div>
+                  <label class="block text-[10px] uppercase tracking-wider text-zinc-300 font-bold mb-1">
+                    Cone Utuh
+                  </label>
+                  <input
+                    v-model.number="inventoryForm.cones"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    class="w-full h-8 bg-zinc-900 border border-zinc-750 rounded px-2 text-xs font-mono font-bold text-center text-white focus:border-white focus:outline-none"
+                  />
+                  <span class="text-[9px] text-zinc-500 block text-center mt-0.5">4.000m/cone</span>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] uppercase tracking-wider text-amber-300 font-bold mb-1">
+                    Sisa Kelos
+                  </label>
+                  <input
+                    v-model.number="inventoryForm.partialCones"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    class="w-full h-8 bg-zinc-900 border border-zinc-750 rounded px-2 text-xs font-mono font-bold text-center text-amber-200 focus:border-white focus:outline-none"
+                  />
+                  <span class="text-[9px] text-zinc-500 block text-center mt-0.5">pecahan mesin</span>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Batas Min.
+                  </label>
+                  <input
+                    v-model.number="inventoryForm.minStock"
+                    type="number"
+                    min="1"
+                    placeholder="2"
+                    class="w-full h-8 bg-zinc-900 border border-zinc-750 rounded px-2 text-xs font-mono text-center text-zinc-300 focus:border-white focus:outline-none"
+                  />
+                  <span class="text-[9px] text-zinc-500 block text-center mt-0.5">peringatan restock</span>
+                </div>
+              </div>
+
+              <!-- Baris 4: Lokasi Rak & Catatan -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Lokasi Rak / Kotak
+                  </label>
+                  <input
+                    v-model="inventoryForm.rack"
+                    placeholder="cth: Rak A-02 / Laci 3"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                    Catatan Khusus
+                  </label>
+                  <input
+                    v-model="inventoryForm.notes"
+                    placeholder="cth: Sering dipakai di koko bordir"
+                    class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-800 shrink-0">
+              <button
+                @click="closeInventoryModal"
+                type="button"
+                class="h-8 px-3 rounded-md bg-zinc-800 hover:bg-zinc-750 text-zinc-300 text-xs font-semibold cursor-pointer border border-zinc-700"
+              >
+                Batal
+              </button>
+              <button
+                @click="saveInventoryItem"
+                type="button"
+                style="background-color: #ffffff !important; color: #09090b !important; color-scheme: only light !important"
+                class="btn-white-solid h-8 px-4 rounded-md bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold cursor-pointer shadow-sm"
+              >
+                {{ isEditingInventory ? 'Simpan Perubahan' : 'Tambah ke Inventory' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
       <!-- Lightbox Preview Screenshot Floppy -->
       <transition
         enter-active-class="transition duration-150 ease-out"
@@ -3096,6 +3487,20 @@
       // Daftar preferensi jarum tetap standar (J1-J3, J5-J11 pada mesin 11 jarum)
       const PREFERRED_FIXED_ORDER = ['1179', '1320', '1319', '2216', '1135', '1144', '1184', '1070', '1175', '1304'];
 
+      // Sampel katalog stok benang standar Rayon Elephant 120g (opsional jika dimuat manual)
+      const SAMPLE_INVENTORY = [
+        { id: 'inv_1179', code: '1179', name: 'Hitam / Black', brand: 'Rayon Elephant 120g', cones: 12, partialCones: 4, minStock: 3, rack: 'Rak A-01', notes: 'Warna utama reguler' },
+        { id: 'inv_1319', code: '1319', name: 'Putih / Pure White', brand: 'Rayon Elephant 120g', cones: 15, partialCones: 6, minStock: 4, rack: 'Rak A-02', notes: 'Stok utama bordir' },
+        { id: 'inv_1320', code: '1320', name: 'Putih Tulang / Broken White', brand: 'Rayon Elephant 120g', cones: 8, partialCones: 3, minStock: 2, rack: 'Rak A-03', notes: 'Koko standar Al-Raaz' },
+        { id: 'inv_2216', code: '2216', name: 'Gold Terang / Bright Gold', brand: 'Rayon Elephant 120g', cones: 5, partialCones: 2, minStock: 2, rack: 'Rak B-01', notes: 'Benang variasi bordir' },
+        { id: 'inv_1135', code: '1135', name: 'Gold Tua / Antique Gold', brand: 'Rayon Elephant 120g', cones: 4, partialCones: 1, minStock: 2, rack: 'Rak B-02', notes: 'Kombinasi motif klasik' },
+        { id: 'inv_1144', code: '1144', name: 'Coklat Tua / Dark Brown', brand: 'Rayon Elephant 120g', cones: 2, partialCones: 1, minStock: 2, rack: 'Rak B-03', notes: 'Perlu restock segera' },
+        { id: 'inv_1184', code: '1184', name: 'Coklat Susu / Mocca', brand: 'Rayon Elephant 120g', cones: 6, partialCones: 2, minStock: 2, rack: 'Rak B-04', notes: 'Stok aman' },
+        { id: 'inv_1070', code: '1070', name: 'Silver / Grey', brand: 'Rayon Elephant 120g', cones: 1, partialCones: 2, minStock: 2, rack: 'Rak C-01', notes: 'Menipis' },
+        { id: 'inv_1175', code: '1175', name: 'Abu Tua / Charcoal', brand: 'Rayon Elephant 120g', cones: 3, partialCones: 1, minStock: 2, rack: 'Rak C-02', notes: 'Stok aman' },
+        { id: 'inv_1304', code: '1304', name: 'Merah Maroon / Crimson', brand: 'Rayon Elephant 120g', cones: 0, partialCones: 1, minStock: 2, rack: 'Rak C-03', notes: 'Cone utuh habis, tersisa 1 kelos' },
+      ];
+
       createApp({
         setup() {
           const activeTab = ref('operator');
@@ -3129,14 +3534,39 @@
           let firebaseRoomRef = null;
           let firebaseArchivesRef = null;
           let firebaseFloppiesRef = null;
+          let firebaseInventoryRef = null;
           let isCloudArchivesLoaded = false;
           let isUpdatingCloudArchives = false;
           let isCloudFloppiesLoaded = false;
           let isUpdatingCloudFloppies = false;
+          let isCloudInventoryLoaded = false;
+          let isUpdatingCloudInventory = false;
           let floppiesSyncTimer = null;
+          let inventorySyncTimer = null;
           let checklistSyncTimeout = null;
           let isRemoteUpdating = false;
           let toastTimer = null;
+
+          const storedInventory = typeof localStorage !== 'undefined' ? localStorage.getItem('embro_inventory_list') : null;
+          let initialInventory = [];
+          if (storedInventory) {
+            try {
+              const parsed = JSON.parse(storedInventory);
+              if (Array.isArray(parsed)) {
+                initialInventory = parsed;
+              }
+            } catch (e) {}
+          }
+          const inventoryList = ref(initialInventory);
+
+          watch(
+            inventoryList,
+            (val) => {
+              localStorage.setItem('embro_inventory_list', JSON.stringify(val));
+              if (!isRemoteUpdating) debounceSyncInventoryToCloud(300);
+            },
+            { deep: true },
+          );
 
           const newFlopy = ref('');
           const newCmt = ref('');
@@ -3492,6 +3922,41 @@
             }, delay);
           };
 
+          const syncInventoryToCloud = (force = false) => {
+            if (!firebaseDb || !isFirebaseConnected.value) return;
+            if (!force && !isCloudInventoryLoaded && (!inventoryList.value || inventoryList.value.length === 0)) {
+              return;
+            }
+            try {
+              isUpdatingCloudInventory = true;
+              const cleanList = JSON.parse(JSON.stringify(inventoryList.value || []));
+              firebaseDb
+                .ref('rooms/' + currentRoomCode.value + '/inventory')
+                .set(cleanList)
+                .finally(() => {
+                  setTimeout(() => {
+                    isUpdatingCloudInventory = false;
+                  }, 400);
+                });
+              if (broadcastChannel) {
+                try {
+                  broadcastChannel.postMessage({ type: 'INVENTORY_UPDATE', inventory: cleanList, senderId: myClientId });
+                } catch (e) {}
+              }
+            } catch (e) {
+              console.warn('Sync inventory to cloud error:', e);
+              isUpdatingCloudInventory = false;
+            }
+          };
+
+          const debounceSyncInventoryToCloud = (delay = 400) => {
+            if (isRemoteUpdating) return;
+            if (inventorySyncTimer) clearTimeout(inventorySyncTimer);
+            inventorySyncTimer = setTimeout(() => {
+              syncInventoryToCloud();
+            }, delay);
+          };
+
           const handleRemoteRoomState = (payload) => {
             if (!payload) return;
             if (payload.updatedBy === myClientId) return;
@@ -3583,6 +4048,13 @@
                   isRemoteUpdating = true;
                   floppyList.value = data.floppies;
                   localStorage.setItem('embro_floppy_list', JSON.stringify(data.floppies));
+                  setTimeout(() => {
+                    isRemoteUpdating = false;
+                  }, 150);
+                } else if (data && data.type === 'INVENTORY_UPDATE' && data.senderId !== myClientId && Array.isArray(data.inventory)) {
+                  isRemoteUpdating = true;
+                  inventoryList.value = data.inventory;
+                  localStorage.setItem('embro_inventory_list', JSON.stringify(data.inventory));
                   setTimeout(() => {
                     isRemoteUpdating = false;
                   }, 150);
@@ -3701,6 +4173,40 @@
                     syncFloppiesToCloud();
                   }
                   isCloudFloppiesLoaded = true;
+                }
+              });
+
+              // 4. Sinkronisasi Seluruh Inventory Stok Benang (inventory)
+              if (firebaseInventoryRef) firebaseInventoryRef.off();
+              firebaseInventoryRef = firebaseDb.ref('rooms/' + currentRoomCode.value + '/inventory');
+              firebaseInventoryRef.on('value', (snap) => {
+                if (isUpdatingCloudInventory) return;
+                const val = snap.val();
+                if (val) {
+                  let cloudInv = [];
+                  if (Array.isArray(val)) {
+                    cloudInv = val.filter(Boolean);
+                  } else if (typeof val === 'object') {
+                    cloudInv = Object.values(val);
+                  }
+
+                  if (cloudInv.length > 0) {
+                    isRemoteUpdating = true;
+                    inventoryList.value = cloudInv;
+                    localStorage.setItem('embro_inventory_list', JSON.stringify(cloudInv));
+                    setTimeout(() => {
+                      isRemoteUpdating = false;
+                    }, 150);
+                  } else {
+                    inventoryList.value = [];
+                    localStorage.setItem('embro_inventory_list', JSON.stringify([]));
+                  }
+                  isCloudInventoryLoaded = true;
+                } else {
+                  if (!isCloudInventoryLoaded && inventoryList.value.length > 0) {
+                    syncInventoryToCloud();
+                  }
+                  isCloudInventoryLoaded = true;
                 }
               });
 
@@ -5310,6 +5816,270 @@
             return list;
           });
 
+          // ================= INVENTORY & STOK BENANG GUDANG =================
+          const inventorySearch = ref('');
+          const inventoryFilter = ref('all'); // 'all', 'safe', 'low', 'out'
+          const isInventoryModalOpen = ref(false);
+          const isEditingInventory = ref(false);
+          const editingInventoryId = ref(null);
+
+          const inventoryForm = ref({
+            id: '',
+            code: '',
+            name: '',
+            brand: 'Rayon Elephant 120g',
+            cones: 1,
+            partialCones: 0,
+            minStock: 2,
+            rack: '',
+            notes: '',
+          });
+
+          const onInventoryCodeInput = () => {
+            const code = (inventoryForm.value.code || '').toString().trim();
+            if (THREAD_METADATA[code] && !inventoryForm.value.name) {
+              inventoryForm.value.name = THREAD_METADATA[code].name;
+            }
+          };
+
+          const inventoryCounts = computed(() => {
+            const list = inventoryList.value || [];
+            let totalCones = 0;
+            let totalPartials = 0;
+            let safeCount = 0;
+            let lowCount = 0;
+            let outCount = 0;
+
+            list.forEach((item) => {
+              const cones = Number(item.cones) || 0;
+              const partials = Number(item.partialCones) || 0;
+              const min = Number(item.minStock) || 2;
+              totalCones += cones;
+              totalPartials += partials;
+
+              if (cones === 0 && partials === 0) {
+                outCount++;
+              } else if (cones <= min) {
+                lowCount++;
+              } else {
+                safeCount++;
+              }
+            });
+
+            return {
+              total: list.length,
+              totalCones,
+              totalPartials,
+              safeCount,
+              lowCount,
+              outCount,
+              alertCount: lowCount + outCount,
+            };
+          });
+
+          const filteredInventoryList = computed(() => {
+            const query = (inventorySearch.value || '').trim().toLowerCase();
+            const filter = inventoryFilter.value;
+
+            return (inventoryList.value || [])
+              .map((item) => {
+                const cones = Number(item.cones) || 0;
+                const partials = Number(item.partialCones) || 0;
+                const min = Number(item.minStock) || 2;
+                let status = 'safe';
+                let statusLabel = 'Aman';
+
+                if (cones === 0 && partials === 0) {
+                  status = 'out';
+                  statusLabel = 'Habis';
+                } else if (cones <= min) {
+                  status = 'low';
+                  statusLabel = 'Menipis';
+                } else {
+                  status = 'safe';
+                  statusLabel = 'Aman';
+                }
+
+                const colorHex = getThreadColor(item.code);
+
+                return {
+                  ...item,
+                  cones,
+                  partialCones: partials,
+                  minStock: min,
+                  status,
+                  statusLabel,
+                  colorHex,
+                };
+              })
+              .filter((item) => {
+                if (filter === 'safe' && item.status !== 'safe') return false;
+                if (filter === 'low' && item.status !== 'low') return false;
+                if (filter === 'out' && item.status !== 'out') return false;
+
+                if (query) {
+                  const matchCode = String(item.code || '').toLowerCase().includes(query);
+                  const matchName = String(item.name || '').toLowerCase().includes(query);
+                  const matchBrand = String(item.brand || '').toLowerCase().includes(query);
+                  const matchRack = String(item.rack || '').toLowerCase().includes(query);
+                  const matchNotes = String(item.notes || '').toLowerCase().includes(query);
+                  if (!matchCode && !matchName && !matchBrand && !matchRack && !matchNotes) return false;
+                }
+
+                return true;
+              });
+          });
+
+          const openAddInventoryModal = () => {
+            isEditingInventory.value = false;
+            editingInventoryId.value = null;
+            inventoryForm.value = {
+              id: '',
+              code: '',
+              name: '',
+              brand: 'Rayon Elephant 120g',
+              cones: 1,
+              partialCones: 0,
+              minStock: 2,
+              rack: '',
+              notes: '',
+            };
+            isInventoryModalOpen.value = true;
+          };
+
+          const openEditInventoryModal = (item) => {
+            isEditingInventory.value = true;
+            editingInventoryId.value = item.id;
+            inventoryForm.value = {
+              id: item.id,
+              code: item.code,
+              name: item.name || '',
+              brand: item.brand || 'Rayon Elephant 120g',
+              cones: Number(item.cones) || 0,
+              partialCones: Number(item.partialCones) || 0,
+              minStock: Number(item.minStock) || 2,
+              rack: item.rack || '',
+              notes: item.notes || '',
+            };
+            isInventoryModalOpen.value = true;
+          };
+
+          const closeInventoryModal = () => {
+            isInventoryModalOpen.value = false;
+          };
+
+          const saveInventoryItem = () => {
+            const code = (inventoryForm.value.code || '').toString().trim();
+            if (!code) {
+              showAlert('Peringatan', 'Kode benang wajib diisi.', 'warning');
+              return;
+            }
+
+            const itemData = {
+              id: isEditingInventory.value && editingInventoryId.value ? editingInventoryId.value : 'inv_' + Date.now(),
+              code,
+              name: (inventoryForm.value.name || '').trim() || (THREAD_METADATA[code]?.name || 'Warna ' + code),
+              brand: (inventoryForm.value.brand || '').trim() || 'Rayon Elephant 120g',
+              cones: Math.max(0, parseInt(inventoryForm.value.cones, 10) || 0),
+              partialCones: Math.max(0, parseInt(inventoryForm.value.partialCones, 10) || 0),
+              minStock: Math.max(0, parseInt(inventoryForm.value.minStock, 10) || 2),
+              rack: (inventoryForm.value.rack || '').trim(),
+              notes: (inventoryForm.value.notes || '').trim(),
+              updatedAt: new Date().toISOString(),
+            };
+
+            if (isEditingInventory.value && editingInventoryId.value) {
+              const idx = inventoryList.value.findIndex((it) => it.id === editingInventoryId.value);
+              if (idx !== -1) {
+                inventoryList.value[idx] = itemData;
+              } else {
+                inventoryList.value.push(itemData);
+              }
+              showToast(`Stok benang #${code} berhasil diperbarui.`);
+            } else {
+              const existingIdx = inventoryList.value.findIndex((it) => it.code.trim().toUpperCase() === code.toUpperCase());
+              if (existingIdx !== -1) {
+                inventoryList.value[existingIdx] = {
+                  ...inventoryList.value[existingIdx],
+                  ...itemData,
+                };
+                showToast(`Stok benang #${code} sudah ada dan telah diperbarui.`);
+              } else {
+                inventoryList.value.unshift(itemData);
+                showToast(`Benang #${code} berhasil ditambahkan ke inventory.`);
+              }
+            }
+
+            localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
+            syncInventoryToCloud();
+            isInventoryModalOpen.value = false;
+          };
+
+          const deleteInventoryItem = async (item) => {
+            const ok = await showConfirm({
+              title: 'Hapus Benang dari Inventory',
+              message: `Hapus benang #${item.code} (${item.name}) dari daftar inventory gudang?`,
+              confirmText: 'Hapus',
+              cancelText: 'Batal',
+              type: 'danger',
+            });
+            if (ok) {
+              inventoryList.value = inventoryList.value.filter((it) => it.id !== item.id);
+              localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
+              syncInventoryToCloud(true);
+              showToast(`Benang #${item.code} telah dihapus dari inventory.`);
+            }
+          };
+
+          const quickAdjustCones = (item, delta) => {
+            const current = Number(item.cones) || 0;
+            const updated = Math.max(0, current + delta);
+            item.cones = updated;
+            localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
+            debounceSyncInventoryToCloud(300);
+          };
+
+          const quickAdjustPartials = (item, delta) => {
+            const current = Number(item.partialCones) || 0;
+            const updated = Math.max(0, current + delta);
+            item.partialCones = updated;
+            localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
+            debounceSyncInventoryToCloud(300);
+          };
+
+          const clearAllInventory = async () => {
+            const ok = await showConfirm({
+              title: 'Kosongkan Seluruh Stok Benang',
+              message: 'Apakah Anda yakin ingin menghapus seluruh data inventory benang di gudang?',
+              confirmText: 'Kosongkan Semua',
+              cancelText: 'Batal',
+              type: 'danger',
+            });
+            if (ok) {
+              inventoryList.value = [];
+              localStorage.setItem('embro_inventory_list', JSON.stringify([]));
+              syncInventoryToCloud(true);
+              showToast('Seluruh stok benang inventory berhasil dikosongkan.');
+            }
+          };
+
+          const loadSampleInventory = async () => {
+            if (inventoryList.value.length > 0) {
+              const ok = await showConfirm({
+                title: 'Muat Sampel Katalog Benang',
+                message: 'Data inventory saat ini akan ditimpa dengan katalog sampel standar Rayon Elephant (10 warna). Lanjutkan?',
+                confirmText: 'Muat Sampel',
+                cancelText: 'Batal',
+                type: 'danger',
+              });
+              if (!ok) return;
+            }
+            inventoryList.value = JSON.parse(JSON.stringify(SAMPLE_INVENTORY));
+            localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
+            syncInventoryToCloud(true);
+            showToast('Katalog sampel benang berhasil dimuat.');
+          };
+
           // ================= CMT & SESSION ACTIONS =================
           const loadSampleData = async () => {
             if (cmts.value.length > 0) {
@@ -5746,6 +6516,26 @@
             createCmtFromFloppy,
             openScreenshotPreview,
             closeScreenshotPreview,
+            // Inventory Stok Benang
+            inventoryList,
+            inventorySearch,
+            inventoryFilter,
+            isInventoryModalOpen,
+            isEditingInventory,
+            editingInventoryId,
+            inventoryForm,
+            onInventoryCodeInput,
+            inventoryCounts,
+            filteredInventoryList,
+            openAddInventoryModal,
+            openEditInventoryModal,
+            closeInventoryModal,
+            saveInventoryItem,
+            deleteInventoryItem,
+            quickAdjustCones,
+            quickAdjustPartials,
+            clearAllInventory,
+            loadSampleInventory,
             colorMap,
             savedSessions,
             sessionNote,
