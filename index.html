@@ -664,8 +664,8 @@
           </div>
         </div>
 
-        <!-- Industrial HUD Status Strip (Focused on Sesi & Workflow Stages) -->
-        <div class="status-strip mt-2.5 bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-2 sm:px-3 sm:py-2 font-mono text-[11px] space-y-1.5">
+        <!-- Industrial HUD Status Strip (Focused on Sesi & Workflow Stages) - Hanya Tampil di Menu Trial Benang -->
+        <div v-if="activeModule === 'trial'" class="status-strip mt-2.5 bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-2 sm:px-3 sm:py-2 font-mono text-[11px] space-y-1.5">
           <!-- Baris 1: Sesi Aktif & Tombol Salin Link -->
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
@@ -1777,73 +1777,289 @@
           </div>
         </div>
 
-        <!-- List CMTs with ACC Status (Siap Naik Mesin) -->
-        <div v-if="accList.length > 0" class="space-y-3">
-          <div class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <span>Antrean CMT Siap Produksi (Sudah di-ACC)</span>
-            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+        <!-- Quick Stat Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <!-- Total CMT -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Total CMT / Variasi</div>
+            <div class="text-lg font-bold text-white mt-1">{{ scheduleCounts.total }} <span class="text-xs font-normal text-zinc-500">Item</span></div>
+          </div>
+          <!-- Siap Naik Mesin (ACC) -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span>Siap Mesin (ACC)</span>
+            </div>
+            <div class="text-lg font-bold text-white mt-1">{{ scheduleCounts.acc }} <span class="text-xs font-normal text-zinc-500">Variasi</span></div>
+          </div>
+          <!-- Menunggu Trial -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-amber-400/90 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Menunggu Trial</span>
+            </div>
+            <div class="text-lg font-bold text-amber-400 mt-1">{{ scheduleCounts.pending }} <span class="text-xs font-normal text-zinc-500">WIP</span></div>
+          </div>
+          <!-- Selesai Produksi -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
+            <div class="text-[10px] text-emerald-400/90 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Selesai Bordir</span>
+            </div>
+            <div class="text-lg font-bold text-emerald-400 mt-1">{{ scheduleCounts.completed }} <span class="text-xs font-normal text-zinc-500">Selesai</span></div>
+          </div>
+        </div>
+
+        <!-- Filter Bar & Search -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 text-[11px]">
+            <button
+              @click="scheduleFilter = 'all'"
+              :class="scheduleFilter === 'all' ? 'bg-zinc-800 text-white border-zinc-600 font-bold' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Semua ({{ scheduleCounts.total }})
+            </button>
+            <button
+              @click="scheduleFilter = 'acc'"
+              :class="scheduleFilter === 'acc' ? 'bg-zinc-800 text-white border-white ring-1 ring-white/30 font-bold' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Siap Mesin / ACC ({{ scheduleCounts.acc }})
+            </button>
+            <button
+              @click="scheduleFilter = 'pending'"
+              :class="scheduleFilter === 'pending' ? 'bg-amber-950/60 text-amber-300 border-amber-800/80 font-bold' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Menunggu Trial ({{ scheduleCounts.pending }})
+            </button>
+            <button
+              @click="scheduleFilter = 'completed'"
+              :class="scheduleFilter === 'completed' ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/80 font-bold' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:text-zinc-200'"
+              class="px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Selesai ({{ scheduleCounts.completed }})
+            </button>
           </div>
 
-          <div v-for="(item, accIdx) in accList" :key="item.key" class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-2.5 shadow-sm">
-            <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2 flex-wrap">
+          <!-- Search Input -->
+          <div class="relative min-w-[200px] sm:w-64">
+            <input
+              v-model="scheduleSearch"
+              type="text"
+              placeholder="Cari CMT, variasi, floppy..."
+              class="w-full h-8 pl-8 pr-7 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+            />
+            <svg class="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <button
+              v-if="scheduleSearch"
+              @click="scheduleSearch = ''"
+              class="absolute right-2 top-2 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer"
+            >✕</button>
+          </div>
+        </div>
+
+        <!-- List CMT Cards -->
+        <div v-if="filteredScheduleCmts.length > 0" class="space-y-3">
+          <div
+            v-for="(item, idx) in filteredScheduleCmts"
+            :key="item.key || (item.cmt + '_' + item.variant)"
+            class="bg-zinc-950 border rounded-xl p-3.5 space-y-3 shadow-sm transition-all"
+            :class="item.status === 'running' ? 'border-white/50 ring-1 ring-white/20' : (item.completed ? 'border-zinc-850 opacity-75' : 'border-zinc-800 hover:border-zinc-700')"
+          >
+            <!-- Header Kartu: CMT, Variasi, Floppy & Status Workflow -->
+            <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2.5 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded bg-zinc-850 border border-zinc-700 text-zinc-200 font-bold text-[10px]">#{{ idx + 1 }}</span>
+                <span class="font-bold text-white text-sm">CMT {{ item.cmt }}</span>
+                <span v-if="item.variant && item.variant !== '-'" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-medium">
+                  {{ item.variant }}
+                </span>
+                <span class="text-zinc-400 text-xs flex items-center gap-1 font-sans">
+                  📁 {{ item.floppyInfo.name }}
+                  <span class="text-zinc-500 font-mono text-[10.5px]">({{ item.floppyInfo.garment }})</span>
+                </span>
+              </div>
+
+              <!-- Status Workflow Badge -->
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded bg-zinc-850 border border-zinc-700 text-zinc-100 font-bold text-[10px]">#{{ accIdx + 1 }}</span>
-                <span class="font-bold text-white text-xs">CMT {{ item.cmt }}</span>
-                <span v-if="item.variant && item.variant !== '-'" class="text-zinc-300 text-[11px] font-medium">• {{ item.variant }}</span>
-                <span v-if="item.flopy" class="text-zinc-500 text-[10px]">({{ item.flopy }})</span>
+                <!-- Status Sedang Berjalan -->
+                <span
+                  v-if="item.status === 'running'"
+                  class="px-2.5 py-0.5 rounded bg-white text-zinc-950 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-950 animate-pulse"></span>
+                  <span>Sedang Berjalan (Mesin 1 & 2)</span>
+                </span>
+
+                <!-- Status ACC Siap Naik Mesin -->
+                <span
+                  v-else-if="item.status === 'acc'"
+                  class="px-2 py-0.5 rounded bg-zinc-800 border border-white text-white font-bold text-[10px] uppercase tracking-wider ring-1 ring-white/60 shadow-sm"
+                >
+                  ● ACC • Siap Naik Mesin
+                </span>
+
+                <!-- Status Menunggu Trial -->
+                <span
+                  v-else-if="item.status === 'pending'"
+                  class="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-800/80 text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                >
+                  <span>⏳</span>
+                  <span>Menunggu Trial Benang</span>
+                </span>
+
+                <!-- Status Selesai Bordir -->
+                <span
+                  v-else-if="item.completed"
+                  class="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                >
+                  <span>✓</span>
+                  <span>Selesai Bordir</span>
+                </span>
               </div>
-              <span class="px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider" :class="accIdx === 0 ? 'bg-white/15 text-white border border-white/40' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'">
-                {{ accIdx === 0 ? '▶ Sedang Berjalan di Mesin 1 & 2' : '⏳ Antrean Berikutnya' }}
+            </div>
+
+            <!-- Benang Section: Resep Benang ACC vs Opsi Calon Trial -->
+            <div class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-3 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                  {{ item.hasAcc ? 'Benang Disetujui (ACC):' : 'Calon Opsi Trial:' }}
+                </span>
+
+                <!-- Jika Ada Benang ACC -->
+                <template v-if="item.hasAcc">
+                  <div
+                    v-for="(th, tIdx) in item.accThreads"
+                    :key="tIdx"
+                    @click="toggleThreadAcc(item, th)"
+                    title="Klik untuk ubah status ACC benang ini"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 border border-white rounded-md text-xs text-white font-bold ring-1 ring-white/60 shadow-sm cursor-pointer hover:bg-zinc-750 transition-colors"
+                  >
+                    <span class="w-3 h-3 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                    <span>{{ th }}</span>
+                  </div>
+
+                  <!-- Tampilkan juga benang kandidat lainnya yang tidak di-ACC jika ada -->
+                  <template v-if="item.threads && item.threads.some(t => !isThreadAcc(item, t))">
+                    <span class="text-zinc-600 text-[10.5px] ml-1 font-sans">Opsi lain:</span>
+                    <div
+                      v-for="(th, oIdx) in item.threads.filter(t => !isThreadAcc(item, t))"
+                      :key="'cand_' + oIdx"
+                      @click="toggleThreadAcc(item, th)"
+                      title="Klik untuk setujui ACC benang ini"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/80 border border-zinc-800 hover:border-zinc-600 rounded text-[10px] text-zinc-400 cursor-pointer transition-colors"
+                    >
+                      <span class="w-2 h-2 rounded-full border border-white/10 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                      <span>{{ th }}</span>
+                    </div>
+                  </template>
+                </template>
+
+                <!-- Jika Belum Ada Benang ACC -->
+                <template v-else>
+                  <div
+                    v-for="(th, tIdx) in item.threads"
+                    :key="tIdx"
+                    @click="toggleThreadAcc(item, th)"
+                    title="Klik untuk langsung setujui kode benang ini"
+                    class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-zinc-900 border border-zinc-750 hover:border-zinc-500 rounded text-[11px] text-zinc-300 cursor-pointer transition-colors"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                    <span>{{ th }}</span>
+                  </div>
+                  <span class="text-amber-400/80 text-[10.5px] font-sans italic ml-1">
+                    (Belum di-ACC atasan • klik kode di atas untuk ACC langsung)
+                  </span>
+                </template>
+              </div>
+
+              <!-- Quick Link ke Trial -->
+              <button
+                @click="activeModule = 'trial'; activeTab = 'operator'"
+                title="Buka proses trial untuk CMT ini"
+                class="text-[11px] text-zinc-400 hover:text-white underline font-sans flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <span>Uji di Trial Benang</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            <!-- Detail Wilcom: Komponen, Tusukan & Estimasi Panjang Benang -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-[10.5px] text-zinc-400">
+                <span class="font-semibold text-zinc-300 uppercase tracking-wider text-[10px]">Data Wilcom & Komponen Floppy:</span>
+                <span class="font-mono text-zinc-400">Total: <strong class="text-white">{{ item.stitches.toLocaleString() }}</strong> tusukan • <strong class="text-white">~{{ item.threadMeters }}m</strong> / pcs</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10.5px]">
+                <div
+                  v-for="(comp, cIdx) in item.floppyInfo.components"
+                  :key="cIdx"
+                  class="p-1.5 rounded bg-zinc-900/40 border border-zinc-850 flex items-center justify-between gap-1"
+                >
+                  <span class="text-zinc-300 truncate font-sans">{{ comp.name }}</span>
+                  <span class="text-zinc-500 font-mono text-[9.5px] shrink-0">{{ comp.stitch.toLocaleString() }}st</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detail Estimasi Mesin (24 Kepala, 800 SPM, 4 Menit Jeda) -->
+            <div class="pt-2 border-t border-zinc-850 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px]">
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Perkiraan Order</div>
+                <div class="font-bold text-white mt-0.5 text-xs">{{ item.orderPcs.toLocaleString() }} pcs</div>
+              </div>
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Putaran (24 Kepala)</div>
+                <div class="font-bold text-amber-300 mt-0.5 text-xs">{{ item.rounds }} Angkatan</div>
+              </div>
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Waktu / Angkatan</div>
+                <div class="font-bold text-zinc-200 mt-0.5 text-xs">~{{ item.minutesPerRound }} Menit</div>
+              </div>
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase tracking-wider">Total Estimasi Jam</div>
+                <div class="font-bold text-emerald-400 mt-0.5 text-xs">~{{ item.totalHours }} Jam</div>
+              </div>
+            </div>
+
+            <!-- Footer Action Bar -->
+            <div class="pt-1.5 border-t border-zinc-850/60 flex items-center justify-between text-xs font-sans">
+              <span class="text-[10px] text-zinc-500 font-mono">
+                Est. Kebutuhan Benang Lot: <strong class="text-zinc-300">~{{ (item.threadMeters * item.orderPcs / 1000).toFixed(1) }} km</strong> ({{ Math.ceil((item.threadMeters * item.orderPcs) / 4000) }} Cone)
               </span>
-            </div>
 
-            <!-- Thread Recipe Approved -->
-            <div class="flex items-center gap-2 flex-wrap text-[11px]">
-              <span class="text-zinc-500 text-[10px] uppercase">Benang ACC:</span>
-              <template v-if="getAccThreads(item).length > 0">
-                <div v-for="(th, tIdx) in getAccThreads(item)" :key="tIdx" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-zinc-800 border border-white rounded text-[10.5px] text-white font-bold ring-1 ring-white/60 shadow-sm">
-                  <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                  <span>{{ th }}</span>
-                </div>
-              </template>
-              <template v-else>
-                <div v-for="(th, tIdx) in item.threads" :key="tIdx" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[10.5px] text-zinc-400">
-                  <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                  <span>{{ th }}</span>
-                </div>
-              </template>
-            </div>
-
-            <!-- Estimated Output -->
-            <div class="pt-2 border-t border-zinc-850/60 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px]">
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase">Perkiraan Order</div>
-                <div class="font-bold text-white mt-0.5">1.200 pcs</div>
-              </div>
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase">Putaran (24 Kpl)</div>
-                <div class="font-bold text-amber-300 mt-0.5">50 Angkatan</div>
-              </div>
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase">Waktu / Angkatan</div>
-                <div class="font-bold text-zinc-200 mt-0.5">~31 Menit</div>
-              </div>
-              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
-                <div class="text-[9.5px] text-zinc-500 uppercase">Total Estimasi</div>
-                <div class="font-bold text-emerald-400 mt-0.5">~25,8 Jam</div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="toggleItemComplete(item)"
+                  class="px-2.5 py-1 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer"
+                  :class="item.completed ? 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-700' : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900/80'"
+                >
+                  {{ item.completed ? '↺ Batal Selesai' : '✓ Tandai Selesai' }}
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Empty ACC State -->
-        <div v-else class="p-6 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
-          <div class="text-amber-400 text-sm font-bold">Belum Ada CMT yang di-ACC</div>
-          <p class="text-xs text-zinc-400 font-sans max-w-md mx-auto">
-            Silakan buka menu <strong>Trial Benang</strong>, uji coba variasi warna, lalu klik kode warna benang yang disetujui atasan untuk memunculkannya di jadwal ini.
+        <!-- Empty State Filter -->
+        <div v-else class="p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
+          <div class="text-zinc-400 text-sm font-bold">Tidak ada data CMT yang sesuai filter</div>
+          <p class="text-xs text-zinc-500 font-sans">
+            Coba ubah kata kunci pencarian atau ganti filter status di atas.
           </p>
           <div class="pt-2">
-            <button @click="activeModule = 'trial'" style="background-color: #ffffff !important; color: #09090b !important" class="btn-white-solid px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-bold transition-colors">Buka Trial Benang →</button>
+            <button
+              @click="scheduleSearch = ''; scheduleFilter = 'all'"
+              class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono transition-colors cursor-pointer"
+            >
+              Reset Filter
+            </button>
           </div>
         </div>
       </section>
@@ -3215,6 +3431,178 @@
             return cmts.value.filter((c) => isAcc(c));
           });
 
+          // ================= DATABASE FILM & FLOPPY WILCOM =================
+          const FLOPPY_DATABASE = {
+            'FLOPY B': {
+              name: 'Flopy B',
+              garment: 'Kemeja Koko Al-Raaz',
+              components: [
+                { name: 'Plaket Depan', stitch: 8500, threadMeters: 28 },
+                { name: 'Pocket / Saku', stitch: 3200, threadMeters: 11 },
+                { name: 'Cuff / Manset', stitch: 4100, threadMeters: 14 },
+                { name: 'Collar / Kerah', stitch: 2800, threadMeters: 9 },
+              ],
+              totalStitches: 18600,
+              totalMeters: 62,
+            },
+            'FLOPY C': {
+              name: 'Flopy C',
+              garment: 'Gamis Bordir Al-Raaz',
+              components: [
+                { name: 'Dada & Leher', stitch: 14200, threadMeters: 48 },
+                { name: 'Lengan Manset', stitch: 5300, threadMeters: 18 },
+              ],
+              totalStitches: 19500,
+              totalMeters: 66,
+            },
+          };
+
+          const getFloppyInfo = (flopyName) => {
+            const raw = (flopyName || '').toString().trim();
+            const key = raw.toUpperCase();
+            if (FLOPPY_DATABASE[key]) {
+              return FLOPPY_DATABASE[key];
+            }
+            return {
+              name: raw || 'Wilcom Standar',
+              garment: 'Komponen Bordir',
+              components: [
+                { name: 'Bordir Komponen Utama', stitch: 16000, threadMeters: 53 },
+              ],
+              totalStitches: 16000,
+              totalMeters: 53,
+            };
+          };
+
+          const getItemKey = (item) => {
+            if (!item) return '';
+            if (item.key) return item.key;
+            return `${item.flopy ? item.flopy + '_' : ''}${item.cmt}_${item.variant || '-'}`;
+          };
+
+          const isItemCompleted = (item) => {
+            if (!item) return false;
+            const keyWithFlopy = `${item.flopy ? item.flopy + '_' : ''}${item.cmt}_${item.variant || '-'}`;
+            const keyLegacy = `${item.cmt}_${item.variant || '-'}`;
+            return !!(completedMap.value[keyWithFlopy] || completedMap.value[keyLegacy]);
+          };
+
+          const toggleItemComplete = (item) => {
+            if (!item) return;
+            const keyWithFlopy = `${item.flopy ? item.flopy + '_' : ''}${item.cmt}_${item.variant || '-'}`;
+            const keyLegacy = `${item.cmt}_${item.variant || '-'}`;
+            if (completedMap.value[keyWithFlopy] || completedMap.value[keyLegacy]) {
+              delete completedMap.value[keyWithFlopy];
+              delete completedMap.value[keyLegacy];
+            } else {
+              completedMap.value[keyWithFlopy] = true;
+            }
+            completedMap.value = { ...completedMap.value };
+            if (activeSessionId.value) {
+              const s = savedSessions.value.find((it) => it.id === activeSessionId.value);
+              if (s) s.completedMap = { ...completedMap.value };
+            }
+            broadcastSync('CHECKLIST_UPDATE', {
+              completedMap: completedMap.value,
+              sessionId: activeSessionId.value,
+            });
+            debounceSyncArchivesToCloud();
+          };
+
+          const scheduleSearch = ref('');
+          const scheduleFilter = ref('all'); // 'all', 'running', 'acc', 'pending', 'completed'
+
+          const scheduleCmtList = computed(() => {
+            let runningAssigned = false;
+            return cmts.value.map((item, index) => {
+              const key = getItemKey(item);
+              const floppyInfo = getFloppyInfo(item.flopy);
+              const completed = isItemCompleted(item);
+              const accThreads = getAccThreads(item);
+              const hasAcc = accThreads.length > 0;
+
+              let status = 'pending';
+              if (completed) {
+                status = 'completed';
+              } else if (hasAcc) {
+                if (!runningAssigned) {
+                  status = 'running';
+                  runningAssigned = true;
+                } else {
+                  status = 'acc';
+                }
+              } else {
+                status = 'pending';
+              }
+
+              // Parameter operasional Pabrik Al-Raaz:
+              const stitches = floppyInfo.totalStitches;
+              const threadMeters = floppyInfo.totalMeters;
+              const orderPcs = 1200; // Standar 1 lot order
+              const heads = 24; // 2 mesin total 24 kepala
+              const rounds = Math.ceil(orderPcs / heads); // 50 angkatan
+              const spm = 800;
+              const tolerance = 1.20;
+              const changeoverMinutes = 4; // jeda ganti kertas sobek & bidangan
+              const minutesPerRound = Math.round(((stitches / spm) * tolerance) + changeoverMinutes);
+              const totalHours = ((rounds * minutesPerRound) / 60).toFixed(1);
+
+              return {
+                ...item,
+                key,
+                originalIndex: index,
+                floppyInfo,
+                completed,
+                hasAcc,
+                accThreads,
+                status,
+                stitches,
+                threadMeters,
+                orderPcs,
+                heads,
+                rounds,
+                minutesPerRound,
+                totalHours,
+              };
+            });
+          });
+
+          const filteredScheduleCmts = computed(() => {
+            const query = scheduleSearch.value.trim().toLowerCase();
+            const filter = scheduleFilter.value;
+
+            return scheduleCmtList.value.filter((item) => {
+              // Filter status
+              if (filter === 'running' && item.status !== 'running') return false;
+              if (filter === 'acc' && (item.status !== 'acc' && item.status !== 'running')) return false;
+              if (filter === 'pending' && item.status !== 'pending') return false;
+              if (filter === 'completed' && item.status !== 'completed') return false;
+
+              // Filter pencarian teks
+              if (query) {
+                const matchCmt = String(item.cmt).toLowerCase().includes(query);
+                const matchVariant = String(item.variant || '').toLowerCase().includes(query);
+                const matchFlopy = String(item.flopy || '').toLowerCase().includes(query);
+                const matchGarment = String(item.floppyInfo?.garment || '').toLowerCase().includes(query);
+                const matchThreads = (item.threads || []).some((t) => String(t).toLowerCase().includes(query));
+                if (!matchCmt && !matchVariant && !matchFlopy && !matchGarment && !matchThreads) return false;
+              }
+
+              return true;
+            });
+          });
+
+          const scheduleCounts = computed(() => {
+            const list = scheduleCmtList.value;
+            return {
+              total: list.length,
+              running: list.filter((i) => i.status === 'running').length,
+              acc: list.filter((i) => i.hasAcc && !i.completed).length,
+              pending: list.filter((i) => i.status === 'pending').length,
+              completed: list.filter((i) => i.status === 'completed').length,
+            };
+          });
+
           const confirmResetCompleted = async () => {
             const ok = await showConfirm({
               title: 'Reset Ceklis',
@@ -4029,6 +4417,14 @@
             getAccThreads,
             accCount,
             accList,
+            scheduleSearch,
+            scheduleFilter,
+            scheduleCmtList,
+            filteredScheduleCmts,
+            scheduleCounts,
+            toggleItemComplete,
+            isItemCompleted,
+            getFloppyInfo,
             colorMap,
             savedSessions,
             sessionNote,
