@@ -4343,7 +4343,7 @@
             }
           };
 
-          const compressImageBase64 = (dataUrl, maxDimension = 1200, quality = 0.78) => {
+          const compressImageBase64 = (dataUrl, maxDimension = 1280, quality = 0.80) => {
             return new Promise((resolve) => {
               const img = new Image();
               img.onload = () => {
@@ -4362,11 +4362,31 @@
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, w, h);
-                const compressed = canvas.toDataURL('image/jpeg', quality);
-                resolve(compressed);
+
+                // Cek dukungan WebP untuk kompresi teks & grafik yang tajam tanpa artefak
+                let outputType = 'image/webp';
+                let compressed = '';
+                try {
+                  compressed = canvas.toDataURL('image/webp', quality);
+                  if (!compressed.startsWith('data:image/webp')) {
+                    outputType = 'image/jpeg';
+                    compressed = canvas.toDataURL('image/jpeg', quality);
+                  }
+                } catch (err) {
+                  outputType = 'image/jpeg';
+                  compressed = canvas.toDataURL('image/jpeg', quality);
+                }
+
+                const sizeKb = Math.round((compressed.length * 3) / 4 / 1024);
+                resolve({ dataUrl: compressed, sizeKb, format: outputType.split('/')[1].toUpperCase() });
               };
-              img.onerror = () => resolve(dataUrl);
+              img.onerror = () => {
+                const sizeKb = Math.round((dataUrl.length * 3) / 4 / 1024);
+                resolve({ dataUrl, sizeKb, format: 'RAW' });
+              };
               img.src = dataUrl;
             });
           };
@@ -4385,9 +4405,9 @@
             const reader = new FileReader();
             reader.onload = async (evt) => {
               try {
-                const optimized = await compressImageBase64(evt.target.result);
-                floppyForm.value.screenshot = optimized;
-                showToast('Screenshot Wilcom berhasil dimuat & dioptimalkan');
+                const res = await compressImageBase64(evt.target.result);
+                floppyForm.value.screenshot = res.dataUrl;
+                showToast(`✓ Screenshot Wilcom dioptimalkan (${res.sizeKb} KB, tajam & hemat cloud)`);
               } catch (err) {
                 floppyForm.value.screenshot = evt.target.result;
                 showToast('Screenshot Wilcom berhasil dimuat');
@@ -4405,9 +4425,9 @@
                 const reader = new FileReader();
                 reader.onload = async (evt) => {
                   try {
-                    const optimized = await compressImageBase64(evt.target.result);
-                    floppyForm.value.screenshot = optimized;
-                    showToast('Screenshot dari clipboard berhasil ditempel & dioptimalkan!');
+                    const res = await compressImageBase64(evt.target.result);
+                    floppyForm.value.screenshot = res.dataUrl;
+                    showToast(`✓ Screenshot clipboard dioptimalkan (${res.sizeKb} KB, hemat cloud)`);
                   } catch (err) {
                     floppyForm.value.screenshot = evt.target.result;
                     showToast('Screenshot dari clipboard berhasil ditempel!');
