@@ -2433,13 +2433,13 @@
           </div>
           <!-- Total Cone Utuh -->
           <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
-            <div class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">Stok Cone Utuh</div>
+            <div class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">Total Stok Cone</div>
             <div class="text-lg font-bold text-white mt-1">{{ inventoryCounts.totalCones }} <span class="text-xs font-normal text-zinc-500">Cone</span></div>
           </div>
-          <!-- Total Kelos Sisa -->
+          <!-- Total Varian Aman -->
           <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between">
-            <div class="text-[10px] text-amber-400/90 uppercase tracking-wider font-semibold">Sisa Kelos Mesin</div>
-            <div class="text-lg font-bold text-amber-300 mt-1">{{ inventoryCounts.totalPartials }} <span class="text-xs font-normal text-zinc-500">Kelos</span></div>
+            <div class="text-[10px] text-emerald-400/90 uppercase tracking-wider font-semibold">Stok Aman</div>
+            <div class="text-lg font-bold text-emerald-400 mt-1">{{ inventoryCounts.safeCount }} <span class="text-xs font-normal text-zinc-500">Warna</span></div>
           </div>
           <!-- Status Peringatan -->
           <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex flex-col justify-between" :class="inventoryCounts.alertCount > 0 ? 'border-amber-700/60 ring-1 ring-amber-500/20' : ''">
@@ -2546,54 +2546,34 @@
                 </div>
               </div>
 
-              <!-- Quick In-Place Steppers: Cone Utuh & Kelos Sisa -->
-              <div class="grid grid-cols-2 gap-2 bg-zinc-900/60 border border-zinc-850 rounded-lg p-2 font-mono">
-                <!-- Cone Utuh Stepper -->
-                <div class="flex flex-col items-center justify-between p-1 bg-zinc-950/80 rounded border border-zinc-850">
-                  <div class="text-[9.5px] text-zinc-400 uppercase font-semibold flex items-center justify-between w-full px-1">
-                    <span>Cone Utuh</span>
-                    <span class="text-[8.5px] text-zinc-500">Min: {{ item.minStock }}</span>
-                  </div>
-                  <div class="flex items-center gap-2 my-1">
-                    <button
-                      @click="quickAdjustCones(item, -1)"
-                      :disabled="item.cones <= 0"
-                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-xs font-bold cursor-pointer"
-                    >
-                      -
-                    </button>
-                    <span class="text-sm font-bold text-white min-w-[28px] text-center">{{ item.cones }}</span>
-                    <button
-                      @click="quickAdjustCones(item, 1)"
-                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-zinc-200 flex items-center justify-center text-xs font-bold cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
+              <!-- Quick In-Place Stepper: Stok Cone -->
+              <div class="flex items-center justify-between bg-zinc-900/70 border border-zinc-850 rounded-lg p-2.5 font-mono">
+                <div class="flex flex-col">
+                  <span class="text-[10px] text-zinc-400 uppercase font-semibold">Stok Cone</span>
+                  <span class="text-[9px] text-zinc-500 font-sans">Min: {{ item.minStock }} cone</span>
                 </div>
-
-                <!-- Sisa Kelos Stepper -->
-                <div class="flex flex-col items-center justify-between p-1 bg-zinc-950/80 rounded border border-zinc-850">
-                  <div class="text-[9.5px] text-amber-400/90 uppercase font-semibold flex items-center justify-between w-full px-1">
-                    <span>Sisa Kelos</span>
-                    <span class="text-[8.5px] text-zinc-500">Terbuka</span>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    @click.stop="quickAdjustCones(item, -1)"
+                    :disabled="item.cones <= 0"
+                    class="w-8 h-8 rounded-lg bg-zinc-850 hover:bg-zinc-750 active:scale-95 text-zinc-200 disabled:opacity-25 disabled:pointer-events-none flex items-center justify-center text-sm font-bold cursor-pointer transition-all border border-zinc-750 shadow-sm"
+                    title="Kurangi 1 Cone"
+                  >
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                  <div class="min-w-[46px] text-center">
+                    <span class="text-base font-bold text-white tracking-tight">{{ item.cones }}</span>
+                    <span class="text-[9.5px] text-zinc-400 block font-sans -mt-0.5">cone</span>
                   </div>
-                  <div class="flex items-center gap-2 my-1">
-                    <button
-                      @click="quickAdjustPartials(item, -1)"
-                      :disabled="item.partialCones <= 0"
-                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-amber-200 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-xs font-bold cursor-pointer"
-                    >
-                      -
-                    </button>
-                    <span class="text-sm font-bold text-amber-300 min-w-[28px] text-center">{{ item.partialCones }}</span>
-                    <button
-                      @click="quickAdjustPartials(item, 1)"
-                      class="w-6 h-6 rounded bg-zinc-850 hover:bg-zinc-750 text-amber-200 flex items-center justify-center text-xs font-bold cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    @click.stop="quickAdjustCones(item, 1)"
+                    class="w-8 h-8 rounded-lg bg-zinc-850 hover:bg-zinc-750 active:scale-95 text-zinc-200 flex items-center justify-center text-sm font-bold cursor-pointer transition-all border border-zinc-750 shadow-sm"
+                    title="Tambah 1 Cone"
+                  >
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
                 </div>
               </div>
 
@@ -2648,7 +2628,7 @@
           <div class="space-y-1">
             <h3 class="text-sm font-bold text-zinc-200">Database Inventory Stok Benang Kosong</h3>
             <p class="text-xs text-zinc-400 font-sans max-w-lg mx-auto leading-relaxed">
-              Modul inventory ini telah berdiri sendiri secara mandiri untuk pencatatan stok fisik benang gudang (cone utuh &amp; kelos terbuka), terpisah dari mesin trial 1 kepala. Anda dapat mulai menambahkan stok secara manual atau memuat sampel katalog standar.
+              Modul inventory ini telah berdiri sendiri secara mandiri untuk pencatatan stok fisik benang gudang (jumlah cone per warna), terpisah dari mesin trial 1 kepala. Anda dapat mulai menambahkan stok secara manual atau memuat sampel katalog standar.
             </p>
           </div>
           <div class="flex items-center justify-center gap-2.5 pt-1 flex-wrap">
@@ -3279,48 +3259,34 @@
                 </div>
               </div>
 
-              <!-- Baris 3: Stok Cone Utuh, Sisa Kelos, dan Batas Minimal -->
-              <div class="grid grid-cols-3 gap-2.5 p-3 rounded-lg bg-zinc-950 border border-zinc-800">
+              <!-- Baris 3: Stok Cone & Batas Minimum -->
+              <div class="grid grid-cols-2 gap-3 p-3 rounded-lg bg-zinc-950 border border-zinc-800">
                 <div>
-                  <label class="block text-[10px] uppercase tracking-wider text-zinc-300 font-bold mb-1">
-                    Cone Utuh
+                  <label class="block text-[10.5px] uppercase tracking-wider text-zinc-200 font-bold mb-1">
+                    Jumlah Stok Cone
                   </label>
                   <input
                     v-model.number="inventoryForm.cones"
                     type="number"
                     min="0"
                     placeholder="0"
-                    class="w-full h-8 bg-zinc-900 border border-zinc-750 rounded px-2 text-xs font-mono font-bold text-center text-white focus:border-white focus:outline-none"
+                    class="w-full h-9 bg-zinc-900 border border-zinc-750 rounded-md px-3 text-sm font-mono font-bold text-center text-white focus:border-white focus:outline-none"
                   />
-                  <span class="text-[9px] text-zinc-500 block text-center mt-0.5">4.000m/cone</span>
+                  <span class="text-[9.5px] text-zinc-500 block text-center mt-1">jumlah cone fisik di gudang</span>
                 </div>
 
                 <div>
-                  <label class="block text-[10px] uppercase tracking-wider text-amber-300 font-bold mb-1">
-                    Sisa Kelos
-                  </label>
-                  <input
-                    v-model.number="inventoryForm.partialCones"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    class="w-full h-8 bg-zinc-900 border border-zinc-750 rounded px-2 text-xs font-mono font-bold text-center text-amber-200 focus:border-white focus:outline-none"
-                  />
-                  <span class="text-[9px] text-zinc-500 block text-center mt-0.5">pecahan mesin</span>
-                </div>
-
-                <div>
-                  <label class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
-                    Batas Min.
+                  <label class="block text-[10.5px] uppercase tracking-wider text-amber-300/90 font-bold mb-1">
+                    Batas Minimum Stok
                   </label>
                   <input
                     v-model.number="inventoryForm.minStock"
                     type="number"
-                    min="1"
+                    min="0"
                     placeholder="2"
-                    class="w-full h-8 bg-zinc-900 border border-zinc-750 rounded px-2 text-xs font-mono text-center text-zinc-300 focus:border-white focus:outline-none"
+                    class="w-full h-9 bg-zinc-900 border border-zinc-750 rounded-md px-3 text-sm font-mono font-bold text-center text-zinc-200 focus:border-white focus:outline-none"
                   />
-                  <span class="text-[9px] text-zinc-500 block text-center mt-0.5">peringatan restock</span>
+                  <span class="text-[9.5px] text-zinc-500 block text-center mt-1">peringatan jika stok &lt;= batas ini</span>
                 </div>
               </div>
 
@@ -3489,16 +3455,16 @@
 
       // Sampel katalog stok benang standar Rayon Elephant 120g (opsional jika dimuat manual)
       const SAMPLE_INVENTORY = [
-        { id: 'inv_1179', code: '1179', name: 'Hitam / Black', brand: 'Rayon Elephant 120g', cones: 12, partialCones: 4, minStock: 3, rack: 'Rak A-01', notes: 'Warna utama reguler' },
-        { id: 'inv_1319', code: '1319', name: 'Putih / Pure White', brand: 'Rayon Elephant 120g', cones: 15, partialCones: 6, minStock: 4, rack: 'Rak A-02', notes: 'Stok utama bordir' },
-        { id: 'inv_1320', code: '1320', name: 'Putih Tulang / Broken White', brand: 'Rayon Elephant 120g', cones: 8, partialCones: 3, minStock: 2, rack: 'Rak A-03', notes: 'Koko standar Al-Raaz' },
-        { id: 'inv_2216', code: '2216', name: 'Gold Terang / Bright Gold', brand: 'Rayon Elephant 120g', cones: 5, partialCones: 2, minStock: 2, rack: 'Rak B-01', notes: 'Benang variasi bordir' },
-        { id: 'inv_1135', code: '1135', name: 'Gold Tua / Antique Gold', brand: 'Rayon Elephant 120g', cones: 4, partialCones: 1, minStock: 2, rack: 'Rak B-02', notes: 'Kombinasi motif klasik' },
-        { id: 'inv_1144', code: '1144', name: 'Coklat Tua / Dark Brown', brand: 'Rayon Elephant 120g', cones: 2, partialCones: 1, minStock: 2, rack: 'Rak B-03', notes: 'Perlu restock segera' },
-        { id: 'inv_1184', code: '1184', name: 'Coklat Susu / Mocca', brand: 'Rayon Elephant 120g', cones: 6, partialCones: 2, minStock: 2, rack: 'Rak B-04', notes: 'Stok aman' },
-        { id: 'inv_1070', code: '1070', name: 'Silver / Grey', brand: 'Rayon Elephant 120g', cones: 1, partialCones: 2, minStock: 2, rack: 'Rak C-01', notes: 'Menipis' },
-        { id: 'inv_1175', code: '1175', name: 'Abu Tua / Charcoal', brand: 'Rayon Elephant 120g', cones: 3, partialCones: 1, minStock: 2, rack: 'Rak C-02', notes: 'Stok aman' },
-        { id: 'inv_1304', code: '1304', name: 'Merah Maroon / Crimson', brand: 'Rayon Elephant 120g', cones: 0, partialCones: 1, minStock: 2, rack: 'Rak C-03', notes: 'Cone utuh habis, tersisa 1 kelos' },
+        { id: 'inv_1179', code: '1179', name: 'Hitam / Black', brand: 'Rayon Elephant 120g', cones: 12, minStock: 3, rack: 'Rak A-01', notes: 'Warna utama reguler' },
+        { id: 'inv_1319', code: '1319', name: 'Putih / Pure White', brand: 'Rayon Elephant 120g', cones: 15, minStock: 4, rack: 'Rak A-02', notes: 'Stok utama bordir' },
+        { id: 'inv_1320', code: '1320', name: 'Putih Tulang / Broken White', brand: 'Rayon Elephant 120g', cones: 8, minStock: 2, rack: 'Rak A-03', notes: 'Koko standar Al-Raaz' },
+        { id: 'inv_2216', code: '2216', name: 'Gold Terang / Bright Gold', brand: 'Rayon Elephant 120g', cones: 5, minStock: 2, rack: 'Rak B-01', notes: 'Benang variasi bordir' },
+        { id: 'inv_1135', code: '1135', name: 'Gold Tua / Antique Gold', brand: 'Rayon Elephant 120g', cones: 4, minStock: 2, rack: 'Rak B-02', notes: 'Kombinasi motif klasik' },
+        { id: 'inv_1144', code: '1144', name: 'Coklat Tua / Dark Brown', brand: 'Rayon Elephant 120g', cones: 2, minStock: 2, rack: 'Rak B-03', notes: 'Perlu restock segera' },
+        { id: 'inv_1184', code: '1184', name: 'Coklat Susu / Mocca', brand: 'Rayon Elephant 120g', cones: 6, minStock: 2, rack: 'Rak B-04', notes: 'Stok aman' },
+        { id: 'inv_1070', code: '1070', name: 'Silver / Grey', brand: 'Rayon Elephant 120g', cones: 1, minStock: 2, rack: 'Rak C-01', notes: 'Menipis' },
+        { id: 'inv_1175', code: '1175', name: 'Abu Tua / Charcoal', brand: 'Rayon Elephant 120g', cones: 3, minStock: 2, rack: 'Rak C-02', notes: 'Stok aman' },
+        { id: 'inv_1304', code: '1304', name: 'Merah Maroon / Crimson', brand: 'Rayon Elephant 120g', cones: 0, minStock: 2, rack: 'Rak C-03', notes: 'Stok habis, perlu restock' },
       ];
 
       createApp({
@@ -5829,7 +5795,6 @@
             name: '',
             brand: 'Rayon Elephant 120g',
             cones: 1,
-            partialCones: 0,
             minStock: 2,
             rack: '',
             notes: '',
@@ -5845,19 +5810,16 @@
           const inventoryCounts = computed(() => {
             const list = inventoryList.value || [];
             let totalCones = 0;
-            let totalPartials = 0;
             let safeCount = 0;
             let lowCount = 0;
             let outCount = 0;
 
             list.forEach((item) => {
               const cones = Number(item.cones) || 0;
-              const partials = Number(item.partialCones) || 0;
               const min = Number(item.minStock) || 2;
               totalCones += cones;
-              totalPartials += partials;
 
-              if (cones === 0 && partials === 0) {
+              if (cones === 0) {
                 outCount++;
               } else if (cones <= min) {
                 lowCount++;
@@ -5869,7 +5831,6 @@
             return {
               total: list.length,
               totalCones,
-              totalPartials,
               safeCount,
               lowCount,
               outCount,
@@ -5884,12 +5845,11 @@
             return (inventoryList.value || [])
               .map((item) => {
                 const cones = Number(item.cones) || 0;
-                const partials = Number(item.partialCones) || 0;
                 const min = Number(item.minStock) || 2;
                 let status = 'safe';
                 let statusLabel = 'Aman';
 
-                if (cones === 0 && partials === 0) {
+                if (cones === 0) {
                   status = 'out';
                   statusLabel = 'Habis';
                 } else if (cones <= min) {
@@ -5905,7 +5865,6 @@
                 return {
                   ...item,
                   cones,
-                  partialCones: partials,
                   minStock: min,
                   status,
                   statusLabel,
@@ -5939,7 +5898,6 @@
               name: '',
               brand: 'Rayon Elephant 120g',
               cones: 1,
-              partialCones: 0,
               minStock: 2,
               rack: '',
               notes: '',
@@ -5956,7 +5914,6 @@
               name: item.name || '',
               brand: item.brand || 'Rayon Elephant 120g',
               cones: Number(item.cones) || 0,
-              partialCones: Number(item.partialCones) || 0,
               minStock: Number(item.minStock) || 2,
               rack: item.rack || '',
               notes: item.notes || '',
@@ -5981,7 +5938,6 @@
               name: (inventoryForm.value.name || '').trim() || (THREAD_METADATA[code]?.name || 'Warna ' + code),
               brand: (inventoryForm.value.brand || '').trim() || 'Rayon Elephant 120g',
               cones: Math.max(0, parseInt(inventoryForm.value.cones, 10) || 0),
-              partialCones: Math.max(0, parseInt(inventoryForm.value.partialCones, 10) || 0),
               minStock: Math.max(0, parseInt(inventoryForm.value.minStock, 10) || 2),
               rack: (inventoryForm.value.rack || '').trim(),
               notes: (inventoryForm.value.notes || '').trim(),
@@ -6031,18 +5987,19 @@
             }
           };
 
-          const quickAdjustCones = (item, delta) => {
-            const current = Number(item.cones) || 0;
-            const updated = Math.max(0, current + delta);
-            item.cones = updated;
-            localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
-            debounceSyncInventoryToCloud(300);
-          };
-
-          const quickAdjustPartials = (item, delta) => {
-            const current = Number(item.partialCones) || 0;
-            const updated = Math.max(0, current + delta);
-            item.partialCones = updated;
+          const quickAdjustCones = (target, delta) => {
+            const targetId = target?.id;
+            const targetCode = target?.code;
+            const realItem = (inventoryList.value || []).find(
+              (it) => (targetId && it.id === targetId) || (it.code && it.code === targetCode)
+            );
+            if (realItem) {
+              const current = Number(realItem.cones) || 0;
+              realItem.cones = Math.max(0, current + delta);
+              if (target) target.cones = realItem.cones;
+            } else if (target) {
+              target.cones = Math.max(0, (Number(target.cones) || 0) + delta);
+            }
             localStorage.setItem('embro_inventory_list', JSON.stringify(inventoryList.value));
             debounceSyncInventoryToCloud(300);
           };
@@ -6533,7 +6490,6 @@
             saveInventoryItem,
             deleteInventoryItem,
             quickAdjustCones,
-            quickAdjustPartials,
             clearAllInventory,
             loadSampleInventory,
             colorMap,
