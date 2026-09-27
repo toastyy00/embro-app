@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="color-scheme" content="only light" />
     <meta name="theme-color" content="#09090b" />
-    <title>trialbenangembro — Industrial Thread Allocation</title>
+    <title>EMBRO-AR APP — Divisi Embroidery Al-Raaz</title>
 
     <!-- Industrial Favicon (Tactical Thread & Needle Emblem) -->
     <link
@@ -476,33 +476,166 @@
     </style>
   </head>
   <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased pb-16 selection:bg-zinc-700 selection:text-white">
-    <div id="app" class="app-shell max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-5 transition-all duration-200">
+    <div id="app" class="app-shell max-w-3xl lg:max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-5 transition-all duration-200">
       <!-- Dedicated Print Header (Hanya muncul saat dicetak ke kertas A4) -->
       <div class="hidden print:block mb-3 pb-2 border-b-2 border-black font-mono">
         <div class="flex justify-between items-baseline">
-          <h1 class="text-sm font-bold uppercase tracking-tight text-black">SPK BORDIR — LEMBAR KERJA OPERATOR</h1>
+          <h1 class="text-sm font-bold uppercase tracking-tight text-black">EMBRO-AR — SPK BORDIR & LEMBAR KERJA OPERATOR</h1>
           <span class="text-xs text-black">{{ currentDateString }}</span>
         </div>
-        <div class="text-[11px] text-zinc-800 mt-0.5">trialbenangembro • Setup: {{ needleCapacity }} Jarum • Slot Swap: Jarum {{ swapNeedle }} (J{{ swapNeedle }})</div>
+        <div class="text-[11px] text-zinc-800 mt-0.5">EMBRO-AR APP • Divisi Embroidery Al-Raaz • Setup: {{ needleCapacity }} Jarum • Slot Swap: Jarum {{ swapNeedle }} (J{{ swapNeedle }})</div>
       </div>
 
-      <!-- ================= HEADER SECTION (CLEAN & MINIMALIST) ================= -->
-      <header class="app-header pb-2 mb-3 border-b border-zinc-800/80">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <div class="brand-mark w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- MAIN CONTAINER: SIDEBAR + CONTENT -->
+      <div class="lg:flex lg:gap-5 lg:items-start">
+        <!-- ================= DESKTOP SIDEBAR ================= -->
+        <aside class="hidden lg:flex flex-col w-52 xl:w-56 shrink-0 bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-3.5 font-mono sticky top-4 no-print shadow-sm">
+          <!-- Brand Logo & Name -->
+          <div class="flex items-center gap-2.5 pb-2.5 border-b border-zinc-800/70">
+            <div class="w-8 h-8 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center shrink-0 shadow-inner">
+              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2v20"></path>
                 <path d="M9 5h6"></path>
                 <path d="M10 9h4"></path>
                 <circle cx="12" cy="18" r="1.5"></circle>
               </svg>
             </div>
-            <div>
-              <h1 class="brand-name text-sm font-mono font-bold tracking-tight text-zinc-100 uppercase">trialbenangembro</h1>
-              <p class="text-[10px] text-zinc-500 font-mono tracking-tight hidden sm:block">OPTIMASI ALOKASI JARUM & INPUT PANEL MESIN</p>
+            <div class="min-w-0">
+              <div class="font-bold text-xs tracking-tight text-white uppercase leading-none">EMBRO-AR</div>
+              <div class="text-[9.5px] text-zinc-500 font-sans tracking-tight mt-0.5 truncate">Al-Raaz Embroidery</div>
             </div>
           </div>
+
+          <!-- Nav Items -->
+          <nav class="space-y-1 text-xs">
+            <!-- 1. Trial Benang -->
+            <button
+              @click="activeModule = 'trial'"
+              :class="activeModule === 'trial' ? 'bg-zinc-800 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border-transparent'"
+              class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg border transition-all text-left group cursor-pointer"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v20M9 5h6M10 9h4" />
+                </svg>
+                <span>Trial Benang</span>
+              </div>
+              <span v-if="totalCmtCount > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-300 font-semibold">{{ totalCmtCount }}</span>
+            </button>
+
+            <!-- 2. Master Floppy -->
+            <button
+              @click="activeModule = 'floppy'"
+              :class="activeModule === 'floppy' ? 'bg-zinc-800 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border-transparent'"
+              class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg border transition-all text-left group cursor-pointer"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+                </svg>
+                <span>Master Floppy</span>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-sky-950/80 border border-sky-800/80 text-sky-300 font-medium">Phase 2</span>
+            </button>
+
+            <!-- 3. Jadwal Mesin -->
+            <button
+              @click="activeModule = 'schedule'"
+              :class="activeModule === 'schedule' ? 'bg-zinc-800 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border-transparent'"
+              class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg border transition-all text-left group cursor-pointer"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Jadwal Mesin</span>
+              </div>
+              <span v-if="accCount > 0" class="text-[9.5px] px-1.5 py-0.2 rounded bg-white/10 border border-white/20 text-white font-bold">{{ accCount }} ACC</span>
+              <span v-else class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950/80 border border-amber-800/80 text-amber-300 font-medium">Phase 3</span>
+            </button>
+
+            <!-- 4. Stok Benang -->
+            <button
+              @click="activeModule = 'inventory'"
+              :class="activeModule === 'inventory' ? 'bg-zinc-800 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border-transparent'"
+              class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg border transition-all text-left group cursor-pointer"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                </svg>
+                <span>Stok Benang</span>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-950/80 border border-indigo-800/80 text-indigo-300 font-medium">Phase 4</span>
+            </button>
+
+            <!-- 5. Arsip & SPK -->
+            <button
+              @click="activeModule = 'archives'"
+              :class="activeModule === 'archives' ? 'bg-zinc-800 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border-transparent'"
+              class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg border transition-all text-left group cursor-pointer"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                  <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>
+                <span>Arsip & SPK</span>
+              </div>
+              <span v-if="savedSessions.length > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400">{{ savedSessions.length }}</span>
+            </button>
+          </nav>
+
+          <!-- Sidebar Footer: Room & Sync Status -->
+          <div class="pt-2.5 border-t border-zinc-800/70 space-y-2 text-[10.5px]">
+            <button
+              @click="openCloudSettingsModal"
+              class="w-full p-2 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-zinc-700 flex items-center justify-between gap-1 text-zinc-300 transition-colors cursor-pointer"
+              title="Klik untuk ganti ruangan cloud"
+            >
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="w-2 h-2 rounded-full shrink-0" :class="isSyncConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+                <span class="font-bold truncate text-[11px]">{{ currentRoomCode }}</span>
+              </div>
+              <span class="text-[9px] text-zinc-500 uppercase font-sans">Ganti</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- ================= RIGHT CONTENT AREA ================= -->
+        <div class="flex-1 min-w-0">
+          <!-- ================= HEADER SECTION (CLEAN & MINIMALIST) ================= -->
+          <header class="app-header pb-2 mb-3 border-b border-zinc-800/80">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <!-- Mobile Sidebar Hamburger Button -->
+                <button
+                  @click="isSidebarOpen = true"
+                  type="button"
+                  title="Buka Menu Sidebar"
+                  class="lg:hidden w-7 h-7 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0 mr-0.5"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                  </svg>
+                </button>
+                <div class="brand-mark w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20"></path>
+                    <path d="M9 5h6"></path>
+                    <path d="M10 9h4"></path>
+                    <circle cx="12" cy="18" r="1.5"></circle>
+                  </svg>
+                </div>
+                <div>
+                  <h1 class="brand-name text-sm font-mono font-bold tracking-tight text-zinc-100 uppercase">EMBRO-AR APP</h1>
+                  <p class="text-[10px] text-zinc-400 font-mono tracking-tight hidden sm:block">DIVISI EMBROIDERY AL-RAAZ • SISTEM PRODUKSI & ALOKASI BENANG</p>
+                </div>
+              </div>
 
           <!-- Header Actions -->
           <div class="flex items-center gap-1.5 no-print">
@@ -578,8 +711,10 @@
         </div>
       </header>
 
-      <!-- ================= TAB NAVIGATION (COMPACT) ================= -->
-      <nav class="workspace-nav grid grid-cols-3 gap-1 bg-zinc-900 border border-zinc-800/80 p-1 rounded-lg mb-3 text-xs font-mono font-medium no-print">
+      <!-- ================= MODULE 1: TRIAL BENANG & JARUM ================= -->
+      <div v-show="activeModule === 'trial'" class="space-y-3.5">
+        <!-- ================= TAB NAVIGATION (COMPACT) ================= -->
+        <nav class="workspace-nav grid grid-cols-3 gap-1 bg-zinc-900 border border-zinc-800/80 p-1 rounded-lg mb-3 text-xs font-mono font-medium no-print">
         <button
           @click="activeTab = 'operator'"
           :class="activeTab === 'operator' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
@@ -745,7 +880,7 @@
               >
                 <!-- Card Top Row: CMT info and Action Button -->
                 <div class="flex items-center justify-between gap-2">
-                  <!-- Clean Text Header: CMT | Varian | Floppy -->
+                  <!-- Clean Text Header: CMT | Varian | Floppy | ACC Badge -->
                   <div class="flex items-center gap-1.5 text-[11px] font-mono min-w-0 flex-wrap leading-tight">
                     <!-- CMT Identifier (Plain text) -->
                     <span class="font-bold text-white tracking-tight text-[11.5px]" :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"> CMT {{ item.cmt }} </span>
@@ -761,53 +896,63 @@
                       <span class="text-zinc-600 select-none text-[9px]">|</span>
                       <span class="text-zinc-400 font-medium text-[10px]" :class="{ 'line-through text-zinc-600': isCompleted(item.key) }"> {{ item.flopy }} </span>
                     </template>
+
                   </div>
 
-                  <!-- Ergonomic Checklist Action -->
-                  <button
-                    @click="toggleComplete(item.key)"
-                    :class="isCompleted(item.key) 
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' 
-                    : 'bg-zinc-900 hover:bg-zinc-850 border-zinc-750 text-zinc-400 hover:text-zinc-200'"
-                    class="h-7 px-2.5 rounded-md border font-mono text-[10px] font-semibold flex items-center gap-1.5 transition-all select-none no-print shrink-0 active:scale-95"
-                  >
-                    <svg v-if="isCompleted(item.key)" class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span v-else class="w-2 h-2 rounded-full border border-zinc-500 inline-block shrink-0"></span>
-                    <span>{{ isCompleted(item.key) ? 'SELESAI' : 'BELUM' }}</span>
-                  </button>
+                  <!-- Actions: Ergonomic Checklist Action -->
+                  <div class="flex items-center gap-1.5 shrink-0 no-print">
+                    <button
+                      @click="toggleComplete(item.key)"
+                      :class="isCompleted(item.key) 
+                      ? 'bg-zinc-800 border-zinc-650 text-white font-bold' 
+                      : 'bg-zinc-900 hover:bg-zinc-850 border-zinc-750 text-zinc-400 hover:text-zinc-200'"
+                      class="h-7 px-2.5 rounded-md border font-mono text-[10px] font-semibold flex items-center gap-1.5 transition-all select-none shrink-0 active:scale-95"
+                    >
+                      <svg v-if="isCompleted(item.key)" class="w-3.5 h-3.5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span v-else class="w-2 h-2 rounded-full border border-zinc-500 inline-block shrink-0"></span>
+                      <span>{{ isCompleted(item.key) ? 'SELESAI' : 'BELUM' }}</span>
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Keypad Machine Sequence (Tactile Segmented Patch Keycaps - Direct, No Clutter) -->
+                <!-- Keypad Machine Sequence (Tactile Segmented Patch Keycaps - Clickable per-thread ACC with modern white highlight) -->
                 <div class="machine-input mt-2 pt-1.5 border-t border-zinc-850/60">
                   <div class="flex flex-wrap items-center gap-y-1.5 gap-x-1">
                     <template v-for="(needle, nIndex) in item.needleSequence" :key="nIndex">
                       <div class="inline-flex items-center gap-1">
-                        <div
-                          class="needle-keycap inline-flex items-stretch rounded-md overflow-hidden border font-mono text-xs shadow-sm transition-all"
-                          :class="getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
-                          ? 'border-zinc-300/80 bg-zinc-850 ring-1 ring-white/20 shadow-sm' 
-                          : 'border-zinc-800 bg-zinc-900/90'"
+                        <button
+                          type="button"
+                          @click="toggleThreadAcc(item, item.threads[nIndex])"
+                          :title="isThreadAcc(item, item.threads[nIndex]) ? `Batal ACC benang ${item.threads[nIndex]}` : `Pilih ACC benang ${item.threads[nIndex]}`"
+                          class="needle-keycap inline-flex items-stretch rounded-md overflow-hidden border font-mono text-xs shadow-sm transition-all select-none cursor-pointer active:scale-95 text-left group print:border-black"
+                          :class="isThreadAcc(item, item.threads[nIndex])
+                            ? 'border-white bg-zinc-800 ring-2 ring-white/60 shadow-sm shadow-white/15 print:bg-zinc-100'
+                            : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
+                              ? 'border-zinc-300/80 bg-zinc-850 ring-1 ring-white/20 shadow-sm hover:border-zinc-400' 
+                              : 'border-zinc-800 bg-zinc-900/90 hover:border-zinc-650')"
                         >
                           <!-- Needle Segment -->
                           <div
                             class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px]"
-                            :class="getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
-                            ? 'bg-white/20 border-white/40 text-white font-bold' 
-                            : 'bg-zinc-850 border-zinc-750 text-zinc-200'"
+                            :class="isThreadAcc(item, item.threads[nIndex])
+                              ? 'bg-white text-zinc-950 font-extrabold border-white'
+                              : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
+                                ? 'bg-white/20 border-white/40 text-white font-bold' 
+                                : 'bg-zinc-850 border-zinc-750 text-zinc-200')"
                           >
                             {{ needle }}
                           </div>
                           <!-- Thread Code & Swatch -->
                           <div
                             class="px-2 py-0.5 flex items-center gap-1.5 text-[11px]"
-                            :class="getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', ''))) ? 'text-white font-bold' : 'text-zinc-300'"
+                            :class="isThreadAcc(item, item.threads[nIndex]) ? 'text-white font-bold' : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', ''))) ? 'text-white font-bold' : 'text-zinc-300')"
                           >
                             <span class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(item.threads[nIndex]) }"></span>
                             <span class="font-medium"> {{ item.threads[nIndex] }} </span>
                           </div>
-                        </div>
+                        </button>
 
                         <span v-if="nIndex < item.needleSequence.length - 1" class="text-zinc-600 font-mono text-[10px] font-bold select-none px-0.5"> → </span>
                       </div>
@@ -1064,64 +1209,127 @@
                   class="w-full h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
                 />
               </div>
-              <!-- Spacer sinkronisasi ketika tombol hapus muncul di baris variasi -->
-              <div v-if="variantRows.length > 1" class="w-10 shrink-0"></div>
             </div>
 
-            <!-- Section 2: Variasi & Kode Benang (Satu Baris, Variasi Lebih Kecil) -->
-            <div class="space-y-2 pt-1">
-              <!-- Column Labels -->
-              <div class="flex items-center gap-2.5 text-[10.5px] font-mono uppercase tracking-wider text-zinc-400 font-semibold px-0.5">
-                <span class="w-24 sm:w-28 shrink-0">Variasi</span>
-                <span class="flex-1 min-w-0">Kode Benang <span class="text-rose-400 font-bold">*</span></span>
-                <span v-if="variantRows.length > 1" class="w-10 shrink-0"></span>
+            <!-- Section 2: Variasi & Opsi Kode Benang (Repeater Variasi dengan Opsi Warna Memanjang ke Samping) -->
+            <div class="space-y-3 pt-1">
+              <!-- Header Section -->
+              <div class="flex items-center justify-between text-[10.5px] font-mono uppercase tracking-wider text-zinc-400 font-semibold px-0.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
+                  <span>Variasi &amp; Opsi Warna Trial</span>
+                </div>
+                <span class="text-[10px] text-zinc-500 font-normal">Kombinasi warna: pisahkan spasi (cth: 1171 1070)</span>
               </div>
 
-              <!-- Repeater Rows -->
-              <div class="space-y-2">
-                <div v-for="(row, rIdx) in variantRows" :key="rIdx" class="flex items-center gap-2.5">
-                  <!-- Variasi (Kecil, cth: C1) -->
-                  <input
-                    v-model="row.variant"
-                    :placeholder="getVariantPlaceholder(rIdx)"
-                    class="w-24 sm:w-28 shrink-0 h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono font-medium text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
-                  />
+              <!-- List Kartu Tiap Variasi (C1, C2, dst.) -->
+              <div class="space-y-2.5">
+                <div
+                  v-for="(row, rIdx) in variantRows"
+                  :key="rIdx"
+                  class="bg-zinc-950/80 border border-zinc-800 hover:border-zinc-750 rounded-lg p-2.5 sm:p-3 space-y-2.5 transition-all shadow-sm"
+                >
+                  <!-- Baris Header Variasi: Label Variasi & Tombol Hapus Variasi -->
+                  <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-zinc-850">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-5 h-5 rounded bg-zinc-850 text-zinc-300 text-[10px] font-bold flex items-center justify-center font-mono border border-zinc-750">
+                        {{ rIdx + 1 }}
+                      </span>
+                      <span class="text-[11px] font-mono uppercase font-bold text-zinc-300">Variasi:</span>
+                      <input
+                        v-model="row.variant"
+                        :placeholder="getVariantPlaceholder(rIdx)"
+                        class="w-24 sm:w-28 h-7 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded px-2 text-xs font-mono font-bold text-zinc-100 placeholder:text-zinc-600 focus:outline-none uppercase transition-all"
+                        title="Nama variasi (cth: C1, C2, Navy, dll)"
+                      />
+                      <span class="text-[10px] font-mono text-zinc-500">
+                        • {{ (row.options || []).filter(o => (o || '').trim()).length }} Opsi Terisi
+                      </span>
+                    </div>
 
-                  <!-- Kode Benang (Lebar) -->
-                  <input
-                    v-model="row.threads"
-                    placeholder="1070 1323 1319 1320..."
-                    class="flex-1 min-w-0 h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
-                    @keyup.enter="rIdx === variantRows.length - 1 ? addCMT() : null"
-                  />
+                    <!-- Tombol Hapus Baris Variasi Ini (Hanya muncul jika variasi > 1) -->
+                    <button
+                      v-if="variantRows.length > 1"
+                      @click="removeVariantRow(rIdx)"
+                      type="button"
+                      title="Hapus variasi ini"
+                      class="h-6 px-2 rounded flex items-center gap-1 text-[10.5px] font-mono text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      <span>Hapus Variasi</span>
+                    </button>
+                  </div>
 
-                  <!-- Tombol Hapus Baris -->
-                  <button
-                    v-if="variantRows.length > 1"
-                    @click="removeVariantRow(rIdx)"
-                    type="button"
-                    title="Hapus baris variasi ini"
-                    class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md border border-zinc-750 bg-zinc-900 hover:bg-rose-500/15 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 transition-all cursor-pointer"
-                  >
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
+                  <!-- Baris Opsi Warna Memanjang ke Samping (Horizontal Scrollable) -->
+                  <div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1.5 px-0.5">
+                      <span class="uppercase tracking-wider font-semibold">Opsi Kode Benang (Geser ke samping):</span>
+                      <span class="text-[9.5px] text-zinc-500 lowercase">(1 input = 1 opsi)</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin -mx-1 px-1">
+                      <!-- Kotak Input Tiap Opsi -->
+                      <div
+                        v-for="(opt, optIdx) in (row.options || [''])"
+                        :key="optIdx"
+                        class="shrink-0 w-36 sm:w-44 bg-zinc-900 border border-zinc-750 hover:border-zinc-650 rounded-lg p-2 space-y-1.5 transition-all shadow-sm"
+                      >
+                        <!-- Header Opsi: Nomor Opsi & Hapus Opsi -->
+                        <div class="flex items-center justify-between pb-1 border-b border-zinc-800">
+                          <span class="text-[10px] font-mono font-bold text-zinc-300 uppercase">
+                            Opsi {{ optIdx + 1 }}
+                          </span>
+                          <button
+                            v-if="row.options && row.options.length > 1"
+                            @click="removeOptionFromRow(rIdx, optIdx)"
+                            type="button"
+                            title="Hapus opsi ini"
+                            class="w-4 h-4 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors text-[10px]"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        <!-- Input Kode Benang untuk Opsi Ini -->
+                        <div>
+                          <input
+                            v-model="row.options[optIdx]"
+                            placeholder="cth: 1171 1070"
+                            class="w-full h-8 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded px-2 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+                            @keyup.enter="rIdx === variantRows.length - 1 && optIdx === row.options.length - 1 ? addCMT() : null"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Tombol Tambah Opsi Baru ke Samping (+) -->
+                      <button
+                        @click="addOptionToRow(rIdx)"
+                        type="button"
+                        title="Tambah Opsi Warna Baru ke Samping"
+                        class="shrink-0 w-24 sm:w-28 h-[60px] rounded-lg border border-dashed border-zinc-750 hover:border-zinc-500 bg-zinc-900/40 hover:bg-zinc-850 text-zinc-400 hover:text-white font-mono text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all select-none cursor-pointer p-1.5"
+                      >
+                        <span class="text-sm font-bold leading-none">+</span>
+                        <span class="text-[10px] font-medium">+ Opsi</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Tombol Tambah Variasi -->
+              <!-- Tombol Tambah Variasi Baru (C2, C3, dst.) -->
               <button
                 @click="addVariantRow"
                 type="button"
-                class="w-full h-9 rounded-md border border-dashed border-zinc-700 hover:border-zinc-500 bg-zinc-900/60 hover:bg-zinc-850 text-zinc-300 hover:text-white font-mono text-xs font-semibold flex items-center justify-center gap-2 transition-all select-none cursor-pointer mt-1"
+                class="w-full h-9 rounded-md border border-dashed border-zinc-700 hover:border-zinc-500 bg-zinc-900/60 hover:bg-zinc-850 text-zinc-300 hover:text-white font-mono text-xs font-semibold flex items-center justify-center gap-2 transition-all select-none cursor-pointer"
               >
                 <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span>Tambah Variasi</span>
+                <span>+ Tambah Variasi Baru {{ getVariantPlaceholder(variantRows.length) ? `(${getVariantPlaceholder(variantRows.length)})` : '' }}</span>
               </button>
             </div>
 
@@ -1203,7 +1411,7 @@
                 <div v-for="(v, vIdx) in group.variants" :key="vIdx" class="bg-zinc-900/60 border border-zinc-850/80 hover:border-zinc-750/70 rounded p-2 transition-colors space-y-1.5">
                   <!-- Sub-baris Variasi: Nama Variasi & Tombol Hapus Variasi -->
                   <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="text-[11px] font-mono font-bold text-zinc-200"> {{ v.variant && v.variant !== '-' ? v.variant : `Variasi ${vIdx + 1}` }} </span>
                       <span class="text-[9.5px] font-mono text-zinc-500"> • {{ v.threads.length }} warna </span>
                     </div>
@@ -1221,26 +1429,48 @@
                     </button>
                   </div>
 
-                  <!-- Urutan Benang Variasi -->
-                  <div class="flex flex-wrap items-center gap-1">
+                  <!-- Urutan Benang Variasi (Clickable per-thread ACC with modern white highlight) -->
+                  <div class="flex flex-wrap items-center gap-1.5">
                     <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
-                    <div v-for="(th, thIdx) in v.threads" :key="thIdx" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded text-[10px] text-zinc-300 font-mono">
+                    <button
+                      v-for="(th, thIdx) in v.threads"
+                      :key="thIdx"
+                      type="button"
+                      @click="toggleThreadAcc(v.itemRef, th)"
+                      :title="isThreadAcc(v.itemRef, th) ? `Klik untuk membatalkan ACC benang ${th}` : `Klik untuk menyetujui (ACC) benang ${th}`"
+                      :class="isThreadAcc(v.itemRef, th)
+                        ? 'bg-zinc-800 border-white text-white font-bold ring-1 ring-white/60 shadow-sm'
+                        : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 border rounded text-[10px] font-mono transition-all cursor-pointer active:scale-95"
+                    >
                       <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
                       <span>{{ th }}</span>
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
 
               <!-- Kondisi B: Hanya 1 Variasi (Tampilan Ringkas & Rapi) -->
-              <div v-else class="space-y-1">
-                <div v-if="group.variants[0].variant && group.variants[0].variant !== '-'" class="text-[10.5px] font-mono font-medium text-zinc-300">{{ group.variants[0].variant }}</div>
-                <div class="flex flex-wrap items-center gap-1">
+              <div v-else class="space-y-1.5">
+                <div v-if="group.variants[0].variant && group.variants[0].variant !== '-'" class="flex items-center gap-1.5">
+                  <span class="text-[10.5px] font-mono font-medium text-zinc-300">{{ group.variants[0].variant }}</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5">
                   <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
-                  <div v-for="(th, thIdx) in group.variants[0].threads" :key="thIdx" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900 border border-zinc-800/80 rounded text-[10px] text-zinc-300 font-mono">
+                  <button
+                    v-for="(th, thIdx) in group.variants[0].threads"
+                    :key="thIdx"
+                    type="button"
+                    @click="toggleThreadAcc(group.variants[0].itemRef, th)"
+                    :title="isThreadAcc(group.variants[0].itemRef, th) ? `Klik untuk membatalkan ACC benang ${th}` : `Klik untuk menyetujui (ACC) benang ${th}`"
+                    :class="isThreadAcc(group.variants[0].itemRef, th)
+                      ? 'bg-zinc-800 border-white text-white font-bold ring-1 ring-white/60 shadow-sm'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700'"
+                    class="inline-flex items-center gap-1.5 px-2 py-0.5 border rounded text-[10px] font-mono transition-all cursor-pointer active:scale-95"
+                  >
                     <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
                     <span>{{ th }}</span>
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1372,6 +1602,399 @@
           </div>
         </div>
       </section>
+      </div>
+      <!-- END OF MODULE 1: TRIAL BENANG -->
+
+      <!-- ================= MODULE 2: MASTER FLOPPY & WILCOM ================= -->
+      <section v-if="activeModule === 'floppy'" class="space-y-4 no-print font-mono">
+        <!-- Module Header Banner -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-sky-950 border border-sky-800/80 flex items-center justify-center text-sky-400">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-white uppercase tracking-tight">Master Film & Floppy Wilcom</h2>
+              <p class="text-[11px] text-zinc-400 font-sans">Database desain bordir, komponen pakaian, dan panjang meter benang</p>
+            </div>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 font-bold uppercase tracking-wider">Fase 2 Preview</span>
+        </div>
+
+        <!-- Floppy Cards List -->
+        <div class="grid gap-3 sm:grid-cols-2">
+          <!-- Card Flopy B -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm hover:border-zinc-700 transition-colors">
+            <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-xs">Flopy B</span>
+                <span class="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400">Kemeja Koko Al-Raaz</span>
+              </div>
+              <span class="text-[10px] text-emerald-400 font-bold">4 Komponen</span>
+            </div>
+
+            <!-- Komponen Breakdown -->
+            <div class="space-y-1.5 text-[11px]">
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <span class="text-zinc-200">1. Plaket Depan</span>
+                <span class="text-zinc-400 font-mono text-[10.5px]">8.500 st • ~28m</span>
+              </div>
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <span class="text-zinc-200">2. Pocket / Saku</span>
+                <span class="text-zinc-400 font-mono text-[10.5px]">3.200 st • ~11m</span>
+              </div>
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <span class="text-zinc-200">3. Cuff / Manset</span>
+                <span class="text-zinc-400 font-mono text-[10.5px]">4.100 st • ~14m</span>
+              </div>
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <span class="text-zinc-200">4. Collar / Kerah</span>
+                <span class="text-zinc-400 font-mono text-[10.5px]">2.800 st • ~9m</span>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-zinc-850 flex items-center justify-between text-[10px] text-zinc-500">
+              <span>Total: 18.600 tusukan</span>
+              <span class="text-zinc-400">Dipakai di CMT: 617, 618, 619, 620</span>
+            </div>
+          </div>
+
+          <!-- Card Flopy C -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm hover:border-zinc-700 transition-colors">
+            <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-xs">Flopy C</span>
+                <span class="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400">Gamis Bordir Al-Raaz</span>
+              </div>
+              <span class="text-[10px] text-emerald-400 font-bold">2 Komponen</span>
+            </div>
+
+            <div class="space-y-1.5 text-[11px]">
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <span class="text-zinc-200">1. Dada & Leher</span>
+                <span class="text-zinc-400 font-mono text-[10.5px]">14.200 st • ~48m</span>
+              </div>
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <span class="text-zinc-200">2. Lengan Manset</span>
+                <span class="text-zinc-400 font-mono text-[10.5px]">5.300 st • ~18m</span>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-zinc-850 flex items-center justify-between text-[10px] text-zinc-500">
+              <span>Total: 19.500 tusukan</span>
+              <span class="text-zinc-400">Dipakai di CMT: 657</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-zinc-900/40 border border-dashed border-zinc-800 rounded-xl text-center text-xs text-zinc-400 font-sans">
+          <span>Form input data Wilcom & upload screenshot komponen akan diaktifkan secara komprehensif pada Fase 2.</span>
+          <div class="mt-2">
+            <button @click="activeModule = 'trial'" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-white font-mono text-[11px] font-bold transition-colors">Ke Modul Trial Benang →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 3: JADWAL & ESTIMASI MESIN ================= -->
+      <section v-if="activeModule === 'schedule'" class="space-y-4 no-print font-mono">
+        <!-- Module Header Banner -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-950 border border-amber-800/80 flex items-center justify-center text-amber-400">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-white uppercase tracking-tight">Jadwal & Estimator Mesin Bordir</h2>
+              <p class="text-[11px] text-zinc-400 font-sans">2 Mesin • 24 Kepala Total • 800 SPM • Jeda Kertas Sobek & Bidangan 4 Menit</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] px-2 py-0.5 rounded bg-white/10 border border-white/25 text-white font-bold uppercase tracking-wider">{{ accCount }} Variasi ACC</span>
+          </div>
+        </div>
+
+        <!-- Formula Callout -->
+        <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs space-y-1 text-zinc-300">
+          <div class="text-[11px] text-amber-400 font-bold">⚙️ Parameter Operasional Pabrik Al-Raaz:</div>
+          <div class="text-[10.5px] text-zinc-400 font-sans leading-relaxed">
+            Estimasi waktu per angkatan = <span class="text-zinc-200 font-mono">(Tusukan / 800 SPM × 1,20 toleransi) + 4 menit</span> jeda ganti kertas sobek, bongkar bidangan, dan penanganan spul.
+          </div>
+        </div>
+
+        <!-- List CMTs with ACC Status (Siap Naik Mesin) -->
+        <div v-if="accList.length > 0" class="space-y-3">
+          <div class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span>Antrean CMT Siap Produksi (Sudah di-ACC)</span>
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+          </div>
+
+          <div v-for="(item, accIdx) in accList" :key="item.key" class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-2.5 shadow-sm">
+            <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-zinc-850 border border-zinc-700 text-zinc-100 font-bold text-[10px]">#{{ accIdx + 1 }}</span>
+                <span class="font-bold text-white text-xs">CMT {{ item.cmt }}</span>
+                <span v-if="item.variant && item.variant !== '-'" class="text-zinc-300 text-[11px] font-medium">• {{ item.variant }}</span>
+                <span v-if="item.flopy" class="text-zinc-500 text-[10px]">({{ item.flopy }})</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider" :class="accIdx === 0 ? 'bg-white/15 text-white border border-white/40' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'">
+                {{ accIdx === 0 ? '▶ Sedang Berjalan di Mesin 1 & 2' : '⏳ Antrean Berikutnya' }}
+              </span>
+            </div>
+
+            <!-- Thread Recipe Approved -->
+            <div class="flex items-center gap-2 flex-wrap text-[11px]">
+              <span class="text-zinc-500 text-[10px] uppercase">Benang ACC:</span>
+              <template v-if="getAccThreads(item).length > 0">
+                <div v-for="(th, tIdx) in getAccThreads(item)" :key="tIdx" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-zinc-800 border border-white rounded text-[10.5px] text-white font-bold ring-1 ring-white/60 shadow-sm">
+                  <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                  <span>{{ th }}</span>
+                </div>
+              </template>
+              <template v-else>
+                <div v-for="(th, tIdx) in item.threads" :key="tIdx" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[10.5px] text-zinc-400">
+                  <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                  <span>{{ th }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Estimated Output -->
+            <div class="pt-2 border-t border-zinc-850/60 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px]">
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase">Perkiraan Order</div>
+                <div class="font-bold text-white mt-0.5">1.200 pcs</div>
+              </div>
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase">Putaran (24 Kpl)</div>
+                <div class="font-bold text-amber-300 mt-0.5">50 Angkatan</div>
+              </div>
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase">Waktu / Angkatan</div>
+                <div class="font-bold text-zinc-200 mt-0.5">~31 Menit</div>
+              </div>
+              <div class="p-2 rounded bg-zinc-900/60 border border-zinc-850">
+                <div class="text-[9.5px] text-zinc-500 uppercase">Total Estimasi</div>
+                <div class="font-bold text-emerald-400 mt-0.5">~25,8 Jam</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty ACC State -->
+        <div v-else class="p-6 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
+          <div class="text-amber-400 text-sm font-bold">Belum Ada CMT yang di-ACC</div>
+          <p class="text-xs text-zinc-400 font-sans max-w-md mx-auto">
+            Silakan buka menu <strong>Trial Benang</strong>, uji coba variasi warna, lalu klik kode warna benang yang disetujui atasan untuk memunculkannya di jadwal ini.
+          </p>
+          <div class="pt-2">
+            <button @click="activeModule = 'trial'" style="background-color: #ffffff !important; color: #09090b !important" class="btn-white-solid px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-bold transition-colors">Buka Trial Benang →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 4: INVENTORY STOK BENANG ================= -->
+      <section v-if="activeModule === 'inventory'" class="space-y-4 no-print font-mono">
+        <!-- Module Header Banner -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-indigo-950 border border-indigo-800/80 flex items-center justify-center text-indigo-400">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-white uppercase tracking-tight">Inventory & Monitoring Benang</h2>
+              <p class="text-[11px] text-zinc-400 font-sans">Rayon Elephant 120g (4.000m/Cone) • Peringatan murni berbasis total volume meter</p>
+            </div>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-bold uppercase tracking-wider">Fase 4 Preview</span>
+        </div>
+
+        <!-- Note on Cone Splitting -->
+        <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs space-y-1 text-zinc-300 font-sans">
+          <div class="text-[11px] text-indigo-400 font-bold font-mono">💡 Praktik Pabrik Al-Raaz (Cone Dipecah 4-6 Kelos):</div>
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Sistem menghitung kecukupan stok berdasarkan total meter benang Wilcom vs ketersediaan cone utuh/sisa di gudang. Tidak ada batasan 24 cone utuh karena operator membagi 1 cone menjadi beberapa kelos kecil di mesin.
+          </p>
+        </div>
+
+        <!-- Active Thread Codes from CMTs Table -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm">
+          <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
+            <span class="text-xs font-bold text-white uppercase">Daftar Kode Benang Aktif di CMT Saat Ini</span>
+            <span class="text-[10.5px] text-zinc-400">Total Jarum: {{ needleCapacity }}</span>
+          </div>
+
+          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div v-for="nd in needleList" :key="nd.needle" class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: nd.color }"></span>
+                <div>
+                  <div class="font-bold text-white text-xs">{{ nd.thread }}</div>
+                  <div class="text-[9.5px] text-zinc-400 font-sans truncate max-w-[120px]">{{ nd.colorName || 'Standar Al-Raaz' }}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="px-1.5 py-0.5 rounded text-[9.5px] font-bold uppercase" :class="nd.isSwap ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
+                  {{ nd.isSwap ? 'Swap J' + nd.needle : 'Jarum ' + nd.needle }}
+                </span>
+                <div class="text-[9px] text-emerald-400 mt-1 font-bold">🟢 Stok Aman</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 5: ARSIP SESI & SPK ================= -->
+      <section v-if="activeModule === 'archives'" class="space-y-4 no-print font-mono">
+        <!-- Module Header Banner -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-750 flex items-center justify-center text-zinc-300">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-white uppercase tracking-tight">Arsip Sesi & Cetak SPK A4</h2>
+              <p class="text-[11px] text-zinc-400 font-sans">Kelola riwayat sesi yang tersimpan dan cetak lembar kerja resmi operator</p>
+            </div>
+          </div>
+          <button @click="printWorksheet" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold border border-zinc-700 flex items-center gap-1.5 transition-colors cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>Cetak SPK A4</span>
+          </button>
+        </div>
+
+        <!-- Saved Sessions List -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm">
+          <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
+            <span class="text-xs font-bold text-white uppercase">Daftar Arsip Sesi Tersimpan ({{ savedSessions.length }})</span>
+            <button @click="activeModule = 'trial'; activeTab = 'manage'" class="text-[11px] text-zinc-400 hover:text-white underline">Simpan Sesi Saat Ini</button>
+          </div>
+
+          <div v-if="savedSessions.length === 0" class="py-8 text-center text-xs text-zinc-500">
+            Belum ada arsip sesi tersimpan.
+          </div>
+
+          <div v-else class="space-y-2">
+            <div v-for="(sess, sIdx) in savedSessions" :key="sess.id" class="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-850 flex items-center justify-between gap-2" :class="activeSessionId === sess.id ? 'border-emerald-500/60 bg-emerald-950/20' : ''">
+              <div>
+                <div class="font-bold text-white text-xs flex items-center gap-2">
+                  <span>{{ sess.name || `Sesi #${sIdx + 1}` }}</span>
+                  <span v-if="activeSessionId === sess.id" class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">AKTIF</span>
+                </div>
+                <div class="text-[10px] text-zinc-400 mt-0.5">{{ getSessionCmtSummary(sess) }} • {{ sess.cmts ? sess.cmts.length : 0 }} Variasi</div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button v-if="activeSessionId !== sess.id" @click="activateSession(sess)" class="h-6 px-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[10px] font-bold border border-zinc-700">Aktifkan</button>
+                <button @click="copySessionLink(sess)" class="h-6 px-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 text-[10px] border border-zinc-700">Link</button>
+                <button @click="deleteSession(sIdx)" class="h-6 px-2 rounded bg-zinc-900 hover:bg-rose-950 text-zinc-500 hover:text-rose-400 text-[10px] border border-zinc-800">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- END OF RIGHT CONTENT AREA -->
+      </div>
+
+      <!-- END OF MAIN CONTAINER: SIDEBAR + CONTENT -->
+      </div>
+
+      <!-- Mobile Drawer Modal -->
+      <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="lg:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex no-print">
+          <div @click.stop class="w-64 max-w-[80vw] h-full bg-zinc-950 border-r border-zinc-800 p-4 flex flex-col justify-between font-mono shadow-2xl">
+            <div class="space-y-4">
+              <!-- Drawer Header -->
+              <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M9 5h6M10 9h4"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-xs text-white uppercase leading-none">EMBRO-AR</div>
+                    <div class="text-[9.5px] text-zinc-500 font-sans mt-0.5">Al-Raaz Embroidery</div>
+                  </div>
+                </div>
+                <button @click="isSidebarOpen = false" class="w-7 h-7 rounded-md bg-zinc-900 text-zinc-400 hover:text-white flex items-center justify-center">✕</button>
+              </div>
+
+              <!-- Drawer Nav Items -->
+              <nav class="space-y-1 text-xs">
+                <button
+                  @click="activeModule = 'trial'; isSidebarOpen = false"
+                  :class="activeModule === 'trial' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
+                  class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left transition-colors"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">🪡</span>
+                    <span>Trial Benang</span>
+                  </div>
+                  <span v-if="totalCmtCount > 0" class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 font-semibold">{{ totalCmtCount }}</span>
+                </button>
+
+                <button
+                  @click="activeModule = 'floppy'; isSidebarOpen = false"
+                  :class="activeModule === 'floppy' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
+                  class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left transition-colors"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">📁</span>
+                    <span>Master Floppy</span>
+                  </div>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-950 border border-sky-800 text-sky-300">Phase 2</span>
+                </button>
+
+                <button
+                  @click="activeModule = 'schedule'; isSidebarOpen = false"
+                  :class="activeModule === 'schedule' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
+                  class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left transition-colors"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">⏱️</span>
+                    <span>Jadwal Mesin</span>
+                  </div>
+                  <span v-if="accCount > 0" class="text-[9.5px] px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white font-bold">{{ accCount }} ACC</span>
+                  <span v-else class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950 border border-amber-800 text-amber-300">Phase 3</span>
+                </button>
+
+                <button
+                  @click="activeModule = 'inventory'; isSidebarOpen = false"
+                  :class="activeModule === 'inventory' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
+                  class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left transition-colors"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">📦</span>
+                    <span>Stok Benang</span>
+                  </div>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 border border-indigo-800 text-indigo-300">Phase 4</span>
+                </button>
+
+                <button
+                  @click="activeModule = 'archives'; isSidebarOpen = false"
+                  :class="activeModule === 'archives' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
+                  class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left transition-colors"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">📄</span>
+                    <span>Arsip & SPK</span>
+                  </div>
+                  <span v-if="savedSessions.length > 0" class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">{{ savedSessions.length }}</span>
+                </button>
+              </nav>
+            </div>
+
+            <!-- Drawer Bottom -->
+            <div class="pt-3 border-t border-zinc-800 space-y-2">
+              <button @click="openCloudSettingsModal; isSidebarOpen = false" class="w-full p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs flex items-center justify-between text-zinc-300">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" :class="isSyncConnected ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+                  <span>{{ currentRoomCode }}</span>
+                </span>
+                <span class="text-[10px] text-zinc-500">Ganti</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
 
       <!-- ================= NATIVE IN-PAGE MODAL POPUP (NO BROWSER POPUPS) ================= -->
       <transition
@@ -1439,6 +2062,8 @@
           </div>
         </div>
       </transition>
+
+
 
       <!-- Cloud & Room Settings Modal -->
       <transition
@@ -1569,10 +2194,13 @@
       createApp({
         setup() {
           const activeTab = ref('operator');
+          const activeModule = ref('trial'); // 'trial', 'floppy', 'schedule', 'inventory', 'archives'
+          const isSidebarOpen = ref(false);
           const needleCapacity = ref(11);
           const swapNeedle = ref(11); // Default ke jarum paling akhir / ujung
           const cmts = ref([]);
           const completedMap = ref({});
+          const accMap = ref({});
           const colorMap = ref({});
           const savedSessions = ref([]);
           const sessionNote = ref('');
@@ -1602,7 +2230,7 @@
 
           const newFlopy = ref('');
           const newCmt = ref('');
-          const variantRows = ref([{ variant: '', threads: '' }]);
+          const variantRows = ref([{ variant: '', options: ['', '', '', ''] }]);
 
           const getNextVariant = (existingRows) => {
             let lastVal = '';
@@ -1653,13 +2281,28 @@
             return `C${index + 1}`;
           };
 
+          const addOptionToRow = (rIdx) => {
+            if (variantRows.value[rIdx]) {
+              if (!Array.isArray(variantRows.value[rIdx].options)) {
+                variantRows.value[rIdx].options = [];
+              }
+              variantRows.value[rIdx].options.push('');
+            }
+          };
+
+          const removeOptionFromRow = (rIdx, optIdx) => {
+            if (variantRows.value[rIdx] && Array.isArray(variantRows.value[rIdx].options) && variantRows.value[rIdx].options.length > 1) {
+              variantRows.value[rIdx].options.splice(optIdx, 1);
+            }
+          };
+
           const addVariantRow = () => {
             // Jika baris pertama masih kosong saat menambah baris baru, isi baris pertama dengan default C1
             if (variantRows.value.length === 1 && !variantRows.value[0].variant.trim()) {
               variantRows.value[0].variant = 'C1';
             }
             const nextName = getNextVariant(variantRows.value);
-            variantRows.value.push({ variant: nextName, threads: '' });
+            variantRows.value.push({ variant: nextName, options: ['', '', '', ''] });
           };
 
           const removeVariantRow = (index) => {
@@ -1671,7 +2314,7 @@
           const resetCmtForm = () => {
             newFlopy.value = '';
             newCmt.value = '';
-            variantRows.value = [{ variant: '', threads: '' }];
+            variantRows.value = [{ variant: '', options: ['', '', '', ''] }];
           };
 
           // ================= CUSTOM NATIVE IN-PAGE MODAL =================
@@ -1818,6 +2461,7 @@
             swapNeedle: swapNeedle.value,
             cmts: JSON.parse(JSON.stringify(cmts.value || [])),
             completedMap: JSON.parse(JSON.stringify(completedMap.value || {})),
+            accMap: JSON.parse(JSON.stringify(accMap.value || {})),
             colorMap: JSON.parse(JSON.stringify(colorMap.value || {})),
             activeSessionId: activeSessionId.value,
             activeSessionName: activeSessionName.value,
@@ -1909,6 +2553,12 @@
                 completedMap.value = JSON.parse(JSON.stringify(payload.completedMap));
               } else {
                 completedMap.value = {};
+              }
+
+              if (payload.accMap && typeof payload.accMap === 'object') {
+                accMap.value = JSON.parse(JSON.stringify(payload.accMap));
+              } else {
+                accMap.value = {};
               }
 
               if (payload.colorMap && typeof payload.colorMap === 'object') {
@@ -2130,6 +2780,7 @@
             needleCapacity.value = sess.needleCapacity || 11;
             swapNeedle.value = sess.swapNeedle || sess.needleCapacity || 11;
             completedMap.value = sess.completedMap ? JSON.parse(JSON.stringify(sess.completedMap)) : {};
+            accMap.value = sess.accMap ? JSON.parse(JSON.stringify(sess.accMap)) : {};
             activeSessionId.value = sess.id;
             activeSessionName.value = sess.name || sess.note || `Sesi ${sess.date}`;
 
@@ -2282,6 +2933,13 @@
                 } catch (e) {}
               }
 
+              const storedAcc = localStorage.getItem('embro_acc_map');
+              if (storedAcc) {
+                try {
+                  accMap.value = JSON.parse(storedAcc);
+                } catch (e) {}
+              }
+
               const storedCap = localStorage.getItem('embro_needle_capacity');
               if (storedCap) {
                 const parsedCap = parseInt(storedCap, 10);
@@ -2326,6 +2984,15 @@
             completedMap,
             (val) => {
               localStorage.setItem('embro_completed_map', JSON.stringify(val));
+              if (!isRemoteUpdating) debounceSyncRoomState(150);
+            },
+            { deep: true },
+          );
+
+          watch(
+            accMap,
+            (val) => {
+              localStorage.setItem('embro_acc_map', JSON.stringify(val));
               if (!isRemoteUpdating) debounceSyncRoomState(150);
             },
             { deep: true },
@@ -2409,6 +3076,77 @@
             });
             debounceSyncArchivesToCloud();
           };
+
+          // ================= MANAJEMEN ACC (THREAD-SPECIFIC APPROVAL) =================
+          const getAccThreads = (keyOrItem) => {
+            if (!keyOrItem) return [];
+            const key = typeof keyOrItem === 'string' ? keyOrItem : (keyOrItem.key || `${keyOrItem.flopy ? keyOrItem.flopy + '_' : ''}${keyOrItem.cmt}_${keyOrItem.variant || '-'}`);
+            let val = accMap.value[key];
+
+            // Cek fallback legacy key tanpa flopy jika belum ada
+            if (!val && typeof keyOrItem === 'object') {
+              const keyLegacy = `${keyOrItem.cmt}_${keyOrItem.variant || '-'}`;
+              val = accMap.value[keyLegacy];
+            }
+
+            if (!val) return [];
+
+            if (typeof val === 'object') {
+              return Object.keys(val).filter((k) => !!val[k]);
+            }
+
+            // Jika status legacy adalah boolean true:
+            if (val === true) {
+              if (typeof keyOrItem === 'object' && Array.isArray(keyOrItem.threads) && keyOrItem.threads.length > 0) {
+                return keyOrItem.threads;
+              }
+              return ['ACC'];
+            }
+
+            return [];
+          };
+
+          const isThreadAcc = (keyOrItem, threadCode) => {
+            if (!threadCode) return false;
+            const approvedList = getAccThreads(keyOrItem);
+            return approvedList.includes(String(threadCode).trim());
+          };
+
+          const isAcc = (keyOrItem) => {
+            return getAccThreads(keyOrItem).length > 0;
+          };
+
+          const toggleThreadAcc = (item, threadCode) => {
+            if (!item || !threadCode) return;
+            const key = item.key || `${item.flopy ? item.flopy + '_' : ''}${item.cmt}_${item.variant || '-'}`;
+            const th = String(threadCode).trim();
+            if (!accMap.value[key] || typeof accMap.value[key] !== 'object') {
+              accMap.value[key] = {};
+            }
+            const isCurrentlyAcc = !!accMap.value[key][th];
+            if (isCurrentlyAcc) {
+              delete accMap.value[key][th];
+              if (Object.keys(accMap.value[key]).length === 0) {
+                delete accMap.value[key];
+              }
+              showToast(`Batal ACC benang ${th} untuk CMT ${item.cmt}`);
+            } else {
+              accMap.value[key][th] = true;
+              const varTxt = item.variant && item.variant !== '-' ? ` (${item.variant})` : '';
+              showToast(`Benang ${th} di-ACC untuk CMT ${item.cmt}${varTxt}`);
+            }
+            accMap.value = { ...accMap.value };
+            localStorage.setItem('embro_acc_map', JSON.stringify(accMap.value));
+            if (!isRemoteUpdating) debounceSyncRoomState(150);
+          };
+
+          const accCount = computed(() => {
+            return cmts.value.filter((c) => isAcc(c)).length;
+          });
+
+          const accList = computed(() => {
+            return cmts.value.filter((c) => isAcc(c));
+          });
 
           const confirmResetCompleted = async () => {
             const ok = await showConfirm({
@@ -2846,6 +3584,7 @@
             needleCapacity.value = 11;
             swapNeedle.value = 11;
             completedMap.value = {};
+            accMap.value = {};
             activeSessionId.value = null;
             activeSessionName.value = 'Data Sampel Bawaan';
             syncRoomStateToCloud();
@@ -2863,11 +3602,13 @@
             if (ok) {
               cmts.value = [];
               completedMap.value = {};
+              accMap.value = {};
               activeSessionId.value = null;
               activeSessionName.value = '';
               sessionNote.value = '';
               localStorage.setItem('embro_active_cmts', JSON.stringify([]));
               localStorage.setItem('embro_completed_map', JSON.stringify({}));
+              localStorage.setItem('embro_acc_map', JSON.stringify({}));
               localStorage.removeItem('embro_active_session_id');
               localStorage.removeItem('embro_active_session_name');
               syncRoomStateToCloud();
@@ -2890,26 +3631,43 @@
             const rowsToInsert = [];
             for (let i = 0; i < variantRows.value.length; i++) {
               const row = variantRows.value[i];
-              const rawThreads = (row.threads || '').trim();
               const varLabel = row.variant.trim() || (variantRows.value.length > 1 ? getVariantPlaceholder(i) : '-');
 
-              if (!rawThreads) {
+              // Kumpulkan seluruh opsi yang terisi
+              const rawOptions = (row.options || []).map((o) => (o || '').trim()).filter(Boolean);
+
+              // Dukungan fallback legacy jika row.threads ada
+              if (rawOptions.length === 0 && row.threads) {
+                const legacyTh = String(row.threads).trim();
+                if (legacyTh) rawOptions.push(legacyTh);
+              }
+
+              if (rawOptions.length === 0) {
                 await showAlert({
-                  title: 'Kode Benang Kosong',
-                  message: `Variasi #${i + 1} (${varLabel}) belum memiliki kode benang. Silakan isi kode benang terlebih dahulu.`,
+                  title: 'Opsi Benang Kosong',
+                  message: `Variasi #${i + 1} (${varLabel}) belum memiliki opsi kode benang. Silakan isi minimal satu opsi kode benang.`,
                   type: 'warning',
                 });
                 return;
               }
 
-              const parsed = rawThreads
-                .split(/[, -]+/)
-                .map((t) => t.trim())
-                .filter(Boolean);
-              if (parsed.length === 0) {
+              const allParsedThreads = [];
+              const parsedOptions = [];
+              for (const optStr of rawOptions) {
+                const optThreads = optStr
+                  .split(/[, -]+/)
+                  .map((t) => t.trim())
+                  .filter(Boolean);
+                if (optThreads.length > 0) {
+                  allParsedThreads.push(...optThreads);
+                  parsedOptions.push(optThreads);
+                }
+              }
+
+              if (allParsedThreads.length === 0) {
                 await showAlert({
                   title: 'Format Tidak Valid',
-                  message: `Format kode benang pada Variasi #${i + 1} (${varLabel}) tidak valid. Gunakan format contoh: 1179, 1180, 1164`,
+                  message: `Format kode benang pada Variasi #${i + 1} (${varLabel}) tidak valid. Gunakan format kode angka contoh: 1171 1070 atau 1139`,
                   type: 'warning',
                 });
                 return;
@@ -2919,7 +3677,8 @@
                 flopy: (newFlopy.value || '').trim(),
                 cmt: cmtNum,
                 variant: varLabel,
-                threads: parsed,
+                threads: allParsedThreads,
+                threadOptions: parsedOptions,
               });
             }
 
@@ -2930,6 +3689,9 @@
 
             // Reset formulir kembali bersih
             resetCmtForm();
+            activeTab.value = 'operator';
+            showToast(`✓ CMT ${cmtNum} berhasil ditambahkan (${rowsToInsert.length} variasi)!`);
+            syncRoomStateToCloud();
           };
 
           // Pengelompokan CMT agar variasi dari CMT yang sama berada dalam satu kartu
@@ -3067,6 +3829,7 @@
                     activeSess.needleCapacity = needleCapacity.value;
                     activeSess.swapNeedle = swapNeedle.value;
                     activeSess.completedMap = JSON.parse(JSON.stringify(completedMap.value));
+                    activeSess.accMap = JSON.parse(JSON.stringify(accMap.value || {}));
                     if (rawNote) {
                       activeSess.name = rawNote;
                       activeSess.note = rawNote;
@@ -3117,6 +3880,7 @@
               swapNeedle: swapNeedle.value,
               cmts: JSON.parse(JSON.stringify(cmts.value)),
               completedMap: JSON.parse(JSON.stringify(completedMap.value)),
+              accMap: JSON.parse(JSON.stringify(accMap.value || {})),
             };
 
             savedSessions.value.unshift(newSession);
@@ -3185,10 +3949,19 @@
 
           return {
             activeTab,
+            activeModule,
+            isSidebarOpen,
             needleCapacity,
             swapNeedle,
             cmts,
             completedMap,
+            accMap,
+            isAcc,
+            isThreadAcc,
+            toggleThreadAcc,
+            getAccThreads,
+            accCount,
+            accList,
             colorMap,
             savedSessions,
             sessionNote,
@@ -3198,6 +3971,8 @@
             variantRows,
             addVariantRow,
             removeVariantRow,
+            addOptionToRow,
+            removeOptionFromRow,
             resetCmtForm,
             modalState,
             showConfirm,
