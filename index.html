@@ -1,0 +1,3344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>trialbenangembro — Industrial Thread Allocation</title>
+  
+  <!-- Industrial Favicon (Tactical Thread & Needle Emblem) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23121215' stroke='%2327272a' stroke-width='2'/%3E%3Cpath d='M16 5v22M12 9h8M13 14h6' stroke='%2310b981' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='22' r='2' fill='%2310b981'/%3E%3C/svg%3E">
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+          },
+          colors: {
+            zinc: {
+              950: '#09090b',
+              900: '#121215',
+              850: '#18181b',
+              800: '#27272a',
+              750: '#323238',
+              700: '#3f3f46',
+              600: '#52525b',
+              500: '#71717a',
+              400: '#a1a1aa',
+              300: '#d4d4d8',
+              200: '#e4e4e7',
+              100: '#f4f4f5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Vue 3 Production CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+
+  <!-- Firebase App & Database Compat SDK (Centralized Cloud Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --surface-0: #000000;
+      --surface-1: #101010;
+      --surface-2: #1a1a1a;
+      --line: #393939;
+      --line-soft: #262626;
+      --ink: #fafafa;
+      --muted: #a3a3a3;
+      --signal: #ffffff;
+      --signal-soft: rgba(255, 255, 255, 0.1);
+      --ready: #45d39a;
+    }
+
+    body {
+      background-color: var(--surface-0) !important;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.065) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.065) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--ink);
+    }
+
+    .app-shell {
+      max-width: 54rem;
+    }
+
+    .app-header {
+      position: relative;
+      padding: 0.5rem 0 1rem;
+      border-bottom-color: var(--line) !important;
+    }
+
+    .app-header::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2.5rem;
+      height: 2px;
+      background: var(--signal);
+      content: "";
+    }
+
+    .brand-mark {
+      background: #171717 !important;
+      border-color: #3f3f3f !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+    }
+
+    .brand-name {
+      letter-spacing: 0.035em !important;
+    }
+
+    .status-strip {
+      background: rgba(16, 16, 16, 0.94) !important;
+      border-color: var(--line) !important;
+      border-radius: 0.5rem !important;
+      padding: 0.625rem 0.75rem !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    .workspace-nav {
+      position: sticky;
+      top: 0.5rem;
+      z-index: 10;
+      background: rgba(16, 16, 16, 0.96) !important;
+      border-color: var(--line) !important;
+      border-radius: 0.5rem !important;
+      padding: 0.25rem !important;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+      backdrop-filter: blur(10px);
+    }
+
+    .workspace-nav button {
+      min-height: 2.5rem;
+      border-radius: 0.3rem !important;
+    }
+
+    .workspace-nav button[class*="bg-zinc-800"] {
+      background: #262626 !important;
+      border-color: #525252 !important;
+      box-shadow: inset 0 -2px 0 var(--signal);
+    }
+
+    .stage-panel {
+      border-radius: 0.5rem !important;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.13);
+    }
+
+    .stage-panel > div:first-child {
+      min-height: 3.5rem;
+      border-bottom-color: var(--line-soft) !important;
+    }
+
+    .work-item {
+      border-radius: 0.4rem !important;
+      border-color: #383838 !important;
+      box-shadow: none !important;
+    }
+
+    .work-item:hover {
+      transform: translateY(-1px);
+      border-color: #686868 !important;
+      background: #090909 !important;
+    }
+
+    .machine-input {
+      border-top-color: #292929 !important;
+    }
+
+    .needle-keycap {
+      border-radius: 0.3rem !important;
+    }
+
+    button, select, input {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid var(--signal);
+      outline-offset: 2px;
+    }
+
+    @media (min-width: 768px) {
+      .stage-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app-shell {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+
+      .workspace-nav span {
+        font-size: 0.625rem;
+      }
+
+      .status-strip {
+        align-items: flex-start !important;
+      }
+    }
+
+    .data-switch {
+      display: inline-flex;
+      gap: 0.125rem;
+      padding: 0.1875rem;
+      background: #151a1b;
+      border: 1px solid var(--line);
+      border-radius: 0.375rem;
+    }
+
+    .data-switch button {
+      min-height: 2rem;
+      padding: 0 0.75rem;
+      border-radius: 0.25rem;
+      font: 600 0.6875rem/1 "JetBrains Mono", monospace;
+    }
+
+    .data-switch button.is-active {
+      background: #2b3434;
+      color: #f4f6f5;
+    }
+
+    .feasibility-alert {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 3px solid var(--signal);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.375rem;
+    }
+
+    .mid-run-swap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      padding: 0.375rem 0.5rem;
+      border: 1px dashed #505050;
+      border-radius: 0.25rem;
+      background: #111111;
+      color: #d4d4d4;
+      font: 600 0.625rem/1.25 "JetBrains Mono", monospace;
+    }
+
+    /* Modern Industrial Head Carriage & Needle Slot */
+    .needle-slot-card {
+      min-height: 4.8rem;
+    }
+
+
+    @media (max-width: 640px) {
+      body { padding-bottom: 1.5rem !important; }
+
+      .app-header {
+        padding-bottom: 0.625rem !important;
+        margin-bottom: 0.625rem !important;
+      }
+
+      .app-header p { display: none; }
+      .brand-mark { width: 2rem !important; height: 2rem !important; }
+      .app-header > div:first-child { min-height: 2rem; }
+
+      .status-strip {
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 0.5rem !important;
+        margin-top: 0.625rem !important;
+        padding: 0.5rem 0.625rem !important;
+      }
+
+      .status-strip > div {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .status-strip > div:first-child { justify-content: flex-start; }
+      .status-strip .w-12 { width: 4rem !important; }
+
+      .workspace-nav {
+        top: 0.25rem;
+        margin-bottom: 0.625rem !important;
+      }
+
+      .workspace-nav button { min-height: 2.75rem; }
+      .workspace-nav button span { font-size: 0.6875rem; }
+      .workspace-nav button svg { width: 0.875rem; height: 0.875rem; }
+
+      main.space-y-3\.5, section.space-y-3 { row-gap: 0.625rem; }
+      .stage-panel > div:first-child { min-height: 3rem; padding: 0.5rem 0.625rem !important; }
+      .stage-list { padding: 0.5rem !important; gap: 0.5rem !important; }
+      .work-item { min-height: 0; padding: 0.625rem !important; }
+      .work-item .machine-input { margin-top: 0.5rem !important; padding-top: 0.5rem !important; }
+      .work-item .machine-input > div:first-child { margin-bottom: 0.375rem !important; }
+      .needle-keycap > div { padding: 0.25rem 0.45rem !important; }
+      .needle-keycap { font-size: 0.6875rem !important; }
+      .needle-grid { gap: 0.375rem; }
+      .needle-slot { min-height: 4.125rem; padding: 0.4375rem; }
+      .needle-slot__thread { margin-top: 0.625rem; font-size: 0.6875rem; }
+      .swap-rotation { margin-top: 0.5rem; }
+
+      /* Four machine selections fit in one operator-card row. */
+      .machine-input > div:last-child {
+        column-gap: 0.1875rem !important;
+        row-gap: 0.375rem !important;
+      }
+
+      .machine-input .needle-keycap {
+        font-size: 0.625rem !important;
+        letter-spacing: 0 !important;
+      }
+
+      .machine-input .needle-keycap > div {
+        padding: 0.25rem 0.375rem !important;
+      }
+
+      .machine-input .needle-keycap > div:first-child {
+        min-width: 1.625rem;
+      }
+
+      .machine-input .needle-keycap > div:last-child {
+        gap: 0.25rem !important;
+      }
+
+      .machine-input .needle-keycap .w-2\.5 {
+        width: 0.5rem !important;
+        height: 0.5rem !important;
+      }
+
+      .machine-input .px-0\.5 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        font-size: 0.5rem !important;
+      }
+    }
+
+    /* Industrial utility scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* Print styles for factory workshop paper sheets */
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print { display: none !important; }
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 9.5pt !important;
+        padding-bottom: 0 !important;
+      }
+      .bg-zinc-950, .bg-zinc-900, .bg-zinc-850, .bg-zinc-800 {
+        background-color: #ffffff !important;
+      }
+      .text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400, .text-zinc-500 {
+        color: #000000 !important;
+      }
+      .border-zinc-800, .border-zinc-750, .border-zinc-700 {
+        border-color: #94a3b8 !important;
+      }
+      .print-card {
+        background-color: #ffffff !important;
+        border: 1px solid #475569 !important;
+        color: #000000 !important;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+        margin-bottom: 10px !important;
+        padding: 8px !important;
+      }
+      .print-keycap {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border: 1px solid #334155 !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased pb-16 selection:bg-zinc-700 selection:text-white">
+  <div id="app" class="app-shell max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-5 transition-all duration-200">
+
+    <!-- Dedicated Print Header (Hanya muncul saat dicetak ke kertas A4) -->
+    <div class="hidden print:block mb-3 pb-2 border-b-2 border-black font-mono">
+      <div class="flex justify-between items-baseline">
+        <h1 class="text-sm font-bold uppercase tracking-tight text-black">SPK BORDIR — LEMBAR KERJA OPERATOR</h1>
+        <span class="text-xs text-black">{{ currentDateString }}</span>
+      </div>
+      <div class="text-[11px] text-zinc-800 mt-0.5">
+        trialbenangembro • Setup: {{ needleCapacity }} Jarum • Slot Swap: Jarum {{ swapNeedle }} (J{{ swapNeedle }})
+      </div>
+    </div>
+
+    <!-- ================= HEADER SECTION (CLEAN & MINIMALIST) ================= -->
+    <header class="app-header pb-2 mb-3 border-b border-zinc-800/80">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div class="brand-mark w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20"></path>
+              <path d="M9 5h6"></path>
+              <path d="M10 9h4"></path>
+              <circle cx="12" cy="18" r="1.5"></circle>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-name text-sm font-mono font-bold tracking-tight text-zinc-100 uppercase">
+              trialbenangembro
+            </h1>
+            <p class="text-[10px] text-zinc-500 font-mono tracking-tight hidden sm:block">
+              OPTIMASI ALOKASI JARUM & INPUT PANEL MESIN
+            </p>
+          </div>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center gap-1.5 no-print">
+          <button 
+            @click="openCloudSettingsModal"
+            :title="'Terhubung ke Ruangan Cloud: ' + currentRoomCode + ' (Klik untuk ganti ruangan)'"
+            type="button"
+            class="h-7 px-2 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-[10.5px] font-mono border border-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <span class="w-1.5 h-1.5 rounded-full" :class="isSyncConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+            <span class="font-bold uppercase tracking-wider text-zinc-200">{{ currentRoomCode }}</span>
+          </button>
+
+          <button 
+            @click="printWorksheet"
+            title="Cetak SPK Lembar Kerja (A4)"
+            class="h-7 px-2.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-[11px] font-mono font-medium border border-zinc-800 transition-colors flex items-center gap-1.5"
+          >
+            <svg class="w-3 h-3 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span class="hidden sm:inline">Cetak SPK</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Industrial HUD Status Strip (Focused on Sesi & Workflow Stages) -->
+      <div class="status-strip mt-2.5 bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-2 sm:px-3 sm:py-2 font-mono text-[11px] space-y-1.5">
+        <!-- Baris 1: Sesi Aktif & Tombol Salin Link -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 min-w-0 flex-1">
+            <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold shrink-0">SESI:</span>
+            <span 
+              class="font-bold text-zinc-100 truncate text-xs"
+              :title="activeSessionName || 'Standar'"
+            >
+              {{ activeSessionName || 'Standar' }}
+            </span>
+          </div>
+
+          <!-- Tombol Salin Link (Pure Icon Compact) -->
+          <button 
+            @click="copyCurrentActiveShareLink"
+            title="Salin Sharelink sesi aktif untuk dibagikan"
+            type="button"
+            class="w-6 h-6 rounded bg-zinc-800 hover:bg-zinc-750 active:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 flex items-center justify-center transition-colors cursor-pointer shrink-0 no-print shadow-sm"
+          >
+            <svg class="w-3 h-3 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Baris 2: Alur Tahap & Progres CMT -->
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-zinc-800/50 text-[10.5px]">
+          <!-- Alur Kerja -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">ALUR:</span>
+            <span class="font-bold text-zinc-200">{{ calculation.stagesList.length }} Tahap</span>
+          </div>
+
+          <!-- Progres CMT & Reset -->
+          <div class="flex items-center gap-2 no-print shrink-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400 font-bold">{{ completedCount }}</span>
+              <span class="text-zinc-400 font-medium">/{{ totalCmtCount }} Variasi</span>
+              <div class="w-12 sm:w-16 h-1 bg-zinc-800 rounded-full overflow-hidden shrink-0 ml-0.5">
+                <div 
+                  class="h-full bg-emerald-500 transition-all duration-300"
+                  :style="{ width: progressPercent + '%' }"
+                ></div>
+              </div>
+            </div>
+
+            <button 
+              v-if="completedCount > 0"
+              @click="confirmResetCompleted" 
+              title="Reset semua status ceklis"
+              class="text-[10px] text-zinc-500 hover:text-zinc-300 underline ml-0.5"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= TAB NAVIGATION (COMPACT) ================= -->
+    <nav class="workspace-nav grid grid-cols-3 gap-1 bg-zinc-900 border border-zinc-800/80 p-1 rounded-lg mb-3 text-xs font-mono font-medium no-print">
+      <button 
+        @click="activeTab = 'operator'"
+        :class="activeTab === 'operator' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
+        class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
+      >
+        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        <span>Trial</span>
+      </button>
+
+      <button 
+        @click="activeTab = 'rack'"
+        :class="activeTab === 'rack' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
+        class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
+      >
+        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+        </svg>
+        <span>Mesin</span>
+      </button>
+
+      <button 
+        @click="activeTab = 'manage'"
+        :class="['manage', 'colors'].includes(activeTab) ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
+        class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
+      >
+        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="21 8 21 21 3 21 3 8"></polyline>
+          <rect x="1" y="3" width="22" height="5"></rect>
+          <line x1="10" y1="12" x2="14" y2="12"></line>
+        </svg>
+        <span>Data</span>
+      </button>
+    </nav>
+
+    <!-- ================= TAB 1: TRIAL BORDIR ================= -->
+    <main v-if="activeTab === 'operator'" class="space-y-3.5">
+      <!-- Empty state when no CMT exists -->
+      <div v-if="cmts.length === 0" class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 text-center font-mono">
+        <div class="text-xs text-zinc-300 font-bold mb-1">Daftar Pengerjaan Kosong</div>
+        <p class="text-[11px] text-zinc-500 font-sans">
+          Silakan tambahkan data CMT atau muat sampel melalui tab <button @click="activeTab = 'manage'" class="text-zinc-300 underline font-semibold">Data</button>.
+        </p>
+      </div>
+
+      <!-- Stage Cards -->
+      <div v-else class="space-y-3.5">
+        <div 
+          v-for="(stage, idx) in calculation.stagesList" 
+          :key="idx"
+          class="stage-panel border rounded-xl transition-all print-card overflow-hidden"
+          :class="{
+            'bg-zinc-950/40 border-zinc-850/80 opacity-50': getStageState(stage, idx) === 'completed',
+            'bg-zinc-900 border-zinc-300 ring-1 ring-white/30 shadow-[0_0_24px_-4px_rgba(255,255,255,0.1)]': getStageState(stage, idx) === 'active' && stage.isSwapStage,
+            'bg-zinc-900 border-zinc-600 shadow-sm ring-1 ring-zinc-600/50': getStageState(stage, idx) === 'active' && !stage.isSwapStage,
+            'bg-zinc-950/60 border-zinc-800/80': getStageState(stage, idx) === 'upcoming'
+          }"
+        >
+          <!-- Stage Header / Phase Bar -->
+          <div 
+            class="px-3 py-2 sm:px-3.5 sm:py-2.5 border-b font-mono flex items-center justify-between gap-2"
+            :class="{
+              'border-zinc-850/70 bg-zinc-950/60': getStageState(stage, idx) === 'completed',
+              'border-zinc-700 bg-zinc-850/90': getStageState(stage, idx) === 'active',
+              'border-zinc-800/60 bg-zinc-900/40': getStageState(stage, idx) === 'upcoming'
+            }"
+          >
+            <!-- Left: Stage Index & Action Directive -->
+            <div class="flex items-center gap-2 min-w-0 flex-wrap">
+              <!-- Stage Index Pill -->
+              <span 
+                class="font-bold text-[10px] px-2 py-0.5 rounded border uppercase shrink-0 tracking-wider"
+                :class="{
+                  'bg-zinc-850 border-zinc-800 text-zinc-500': getStageState(stage, idx) === 'completed',
+                  'bg-zinc-800 border-zinc-700 text-zinc-100 font-semibold': getStageState(stage, idx) === 'active',
+                  'bg-zinc-850 border-zinc-800 text-zinc-400': getStageState(stage, idx) === 'upcoming'
+                }"
+              >
+                Tahap {{ String(idx + 1).padStart(2, '0') }}
+              </span>
+
+              <!-- Directive Label -->
+              <template v-if="!stage.isSwapStage">
+                <span 
+                  class="text-xs font-bold uppercase tracking-tight"
+                  :class="getStageState(stage, idx) === 'completed' ? 'text-zinc-500 line-through' : 'text-zinc-100'"
+                >
+                  Setup Awal
+                </span>
+                <span 
+                  v-if="stage.swaps && stage.swaps.length > 0" 
+                  class="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
+                  :class="getStageState(stage, idx) === 'completed' 
+                    ? 'bg-zinc-850 border-zinc-800 text-zinc-500' 
+                    : 'text-zinc-200 bg-white/10 border-white/25 font-bold'"
+                >
+                  J{{ stage.swaps[0].needle }}: {{ stage.swaps[0].thread }}
+                </span>
+              </template>
+            </div>
+
+            <!-- Right: Stage Counter & Status Badge -->
+            <div class="flex items-center gap-1.5 font-mono text-[11px] shrink-0">
+              <div 
+                class="flex items-center gap-1.5 px-2 py-0.5 rounded border"
+                :class="getStageState(stage, idx) === 'completed' 
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold' 
+                  : 'bg-zinc-950/80 border-zinc-800 text-zinc-200'"
+              >
+                <span v-if="getStageState(stage, idx) === 'completed'">
+                  ✓ SELESAI
+                </span>
+                <div v-else class="flex items-center gap-1 font-bold">
+                  <span>{{ getStageCompletedCount(stage) }}/{{ stage.items.length }}</span>
+                  <span class="text-[10px] text-zinc-400 font-normal">{{ getStageSubtitle(stage) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Guidance Callout for Stage 1 (Callout Instruction - Amber Border-Left) -->
+          <div v-if="idx === 0 && getStageState(stage, idx) !== 'completed'" class="p-2 sm:px-3 sm:py-2.5 bg-zinc-950/40 border-b border-zinc-850/80 no-print">
+            <div class="flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-none bg-amber-950/25 border border-amber-500/25 border-l-[3.5px] border-l-amber-500 text-zinc-100 text-xs font-sans shadow-sm">
+              <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span class="font-medium text-[11.5px] sm:text-xs text-zinc-100">
+                Sesuaikan urutan kode benang pada mesin seperti di tab Mesin
+              </span>
+            </div>
+          </div>
+
+          <!-- Swap Callout Instruction (Callout Instruction - Amber Border-Left) -->
+          <div v-if="stage.isSwapStage && getStageState(stage, idx) !== 'completed'" class="p-2 sm:px-3 sm:py-2.5 bg-zinc-950/40 border-b border-zinc-850/80 no-print">
+            <div class="flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-none bg-amber-950/25 border border-amber-500/25 border-l-[3.5px] border-l-amber-500 text-zinc-100 text-xs font-mono shadow-sm">
+              <!-- Needle Icon for Jarum Swap -->
+              <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21l3.5-1.5l14.5-14.5a2.121 2.121 0 0 0-3-3l-14.5 14.5z"/>
+                <path d="M16.5 6.5l1 1"/>
+                <path d="M19 4c-.5-1.5-2-1.5-3-1s-2 1.5-3.5 1.5s-2.5-1-3.5-1s-2 1-2 2"/>
+              </svg>
+              <div class="text-[11.5px] sm:text-xs font-mono font-medium flex items-center gap-1.5 flex-wrap">
+                <span class="text-white font-bold uppercase">Ganti:</span>
+                <template v-for="(sw, swIdx) in stage.swaps" :key="sw.needle">
+                  <span class="text-zinc-100 font-semibold">
+                    J{{ sw.needle }}<span v-if="sw.prevThread" class="text-zinc-400 font-normal"> ({{ sw.prevThread }})</span>
+                    <span class="text-amber-400 font-bold mx-1">→</span>
+                    <span class="text-amber-300 font-bold underline underline-offset-2">{{ sw.thread }}</span>
+                  </span>
+                  <span v-if="swIdx < stage.swaps.length - 1" class="text-zinc-600 font-bold">, </span>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- List of Variant Items under this Stage -->
+          <div class="stage-list grid gap-2 p-2.5 sm:p-3">
+            <div 
+              v-for="(item, i) in stage.items" 
+              :key="item.key"
+              :class="isCompleted(item.key) 
+                ? 'bg-zinc-950/40 border-zinc-850/60 opacity-40' 
+                : 'bg-zinc-950 border-zinc-800/80 hover:border-zinc-700/80'"
+              class="work-item border rounded-lg p-2.5 sm:p-3 transition-all print-card shadow-sm"
+            >
+              <!-- Card Top Row: CMT info and Action Button -->
+              <div class="flex items-center justify-between gap-2">
+                <!-- Clean Text Header: CMT | Varian | Floppy -->
+                <div class="flex items-center gap-1.5 text-[11px] font-mono min-w-0 flex-wrap leading-tight">
+                  <!-- CMT Identifier (Plain text) -->
+                  <span 
+                    class="font-bold text-white tracking-tight text-[11.5px]"
+                    :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"
+                  >
+                    CMT {{ item.cmt }}
+                  </span>
+
+                  <!-- Variant (Plain text) -->
+                  <template v-if="item.variant && item.variant !== '-'">
+                    <span class="text-zinc-600 select-none text-[9px]">|</span>
+                    <span 
+                      class="text-zinc-300 font-medium text-[10.5px]"
+                      :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"
+                    >
+                      {{ item.variant }}
+                    </span>
+                  </template>
+
+                  <!-- Floppy Name (Plain text) -->
+                  <template v-if="item.flopy">
+                    <span class="text-zinc-600 select-none text-[9px]">|</span>
+                    <span 
+                      class="text-zinc-400 font-medium text-[10px]"
+                      :class="{ 'line-through text-zinc-600': isCompleted(item.key) }"
+                    >
+                      {{ item.flopy }}
+                    </span>
+                  </template>
+                </div>
+
+                <!-- Ergonomic Checklist Action -->
+                <button 
+                  @click="toggleComplete(item.key)"
+                  :class="isCompleted(item.key) 
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' 
+                    : 'bg-zinc-900 hover:bg-zinc-850 border-zinc-750 text-zinc-400 hover:text-zinc-200'"
+                  class="h-7 px-2.5 rounded-md border font-mono text-[10px] font-semibold flex items-center gap-1.5 transition-all select-none no-print shrink-0 active:scale-95"
+                >
+                  <svg v-if="isCompleted(item.key)" class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span v-else class="w-2 h-2 rounded-full border border-zinc-500 inline-block shrink-0"></span>
+                  <span>{{ isCompleted(item.key) ? 'SELESAI' : 'BELUM' }}</span>
+                </button>
+              </div>
+
+              <!-- Keypad Machine Sequence (Tactile Segmented Patch Keycaps - Direct, No Clutter) -->
+              <div class="machine-input mt-2 pt-1.5 border-t border-zinc-850/60">
+                <div class="flex flex-wrap items-center gap-y-1.5 gap-x-1">
+                  <template v-for="(needle, nIndex) in item.needleSequence" :key="nIndex">
+                    <div class="inline-flex items-center gap-1">
+                      <div 
+                        class="needle-keycap inline-flex items-stretch rounded-md overflow-hidden border font-mono text-xs shadow-sm transition-all"
+                        :class="getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
+                          ? 'border-zinc-300/80 bg-zinc-850 ring-1 ring-white/20 shadow-sm' 
+                          : 'border-zinc-800 bg-zinc-900/90'"
+                      >
+                        <!-- Needle Segment -->
+                        <div 
+                          class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px]"
+                          :class="getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
+                            ? 'bg-white/20 border-white/40 text-white font-bold' 
+                            : 'bg-zinc-850 border-zinc-750 text-zinc-200'"
+                        >
+                          {{ needle }}
+                        </div>
+                        <!-- Thread Code & Swatch -->
+                        <div 
+                          class="px-2 py-0.5 flex items-center gap-1.5 text-[11px]"
+                          :class="getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', ''))) ? 'text-white font-bold' : 'text-zinc-300'"
+                        >
+                          <span 
+                            class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" 
+                            :style="{ backgroundColor: getThreadColor(item.threads[nIndex]) }"
+                          ></span>
+                          <span class="font-medium">
+                            {{ item.threads[nIndex] }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span 
+                        v-if="nIndex < item.needleSequence.length - 1" 
+                        class="text-zinc-600 font-mono text-[10px] font-bold select-none px-0.5"
+                      >
+                        →
+                      </span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ================= TAB 2: PENGATURAN JARUM (SETUP) ================= -->
+    <section v-if="activeTab === 'rack'" class="space-y-3">
+      <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl p-3 sm:p-4 shadow-sm space-y-3.5">
+        
+        <!-- Unified Controls Console: Jumlah Jarum & Jarum Ganti (Single Compact Section) -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-850">
+          <!-- Control 1: Jumlah Jarum -->
+          <div class="flex items-center justify-between gap-3 sm:pr-3">
+            <div>
+              <div class="text-[10.5px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">
+                Jumlah Jarum
+              </div>
+              <div class="text-[10px] text-zinc-500 font-mono mt-0.5">Total jarum mesin</div>
+            </div>
+
+            <div class="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-md p-0.5 shrink-0">
+              <button 
+                @click="decrementCapacity"
+                :disabled="needleCapacity <= 2"
+                title="Kurangi 1 Jarum"
+                class="w-7 h-7 rounded bg-zinc-850 hover:bg-zinc-750 active:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 flex items-center justify-center transition-all active:scale-95"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              
+              <div class="w-10 text-center font-mono font-bold text-sm text-zinc-100 select-none">
+                {{ needleCapacity }}J
+              </div>
+
+              <button 
+                @click="incrementCapacity"
+                :disabled="needleCapacity >= 24"
+                title="Tambah 1 Jarum"
+                class="w-7 h-7 rounded bg-zinc-850 hover:bg-zinc-750 active:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 flex items-center justify-center transition-all active:scale-95"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Control 2: Jarum Ganti (Simple Wording) -->
+          <div class="flex items-center justify-between gap-3 pt-2.5 sm:pt-0 sm:pl-3">
+            <div>
+              <div class="text-[10.5px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">
+                Jarum Ganti
+              </div>
+              <div class="text-[10px] text-zinc-500 font-mono mt-0.5">Posisi rotasi benang</div>
+            </div>
+
+            <div class="relative shrink-0">
+              <select 
+                v-model.number="swapNeedle" 
+                class="h-8 bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-md pl-2.5 pr-7 text-xs font-mono font-bold text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 cursor-pointer appearance-none transition-colors"
+              >
+                <option v-for="n in needleCapacity" :key="n" :value="n">
+                  Jarum {{ n }} (J{{ n }})
+                </option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Susunan Benang Rack Visual -->
+        <div class="pt-3 border-t border-zinc-800/80">
+          <div class="flex items-center gap-2 mb-2.5">
+            <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
+            <h3 class="text-xs font-mono font-bold text-zinc-200 uppercase tracking-wider">
+              SUSUNAN BENANG
+            </h3>
+          </div>
+
+          <!-- Needle Rack Grid (Responsive, Dynamic across Mobile & Desktop) -->
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2 sm:gap-2.5">
+            <div 
+              v-for="needle in needleList" 
+              :key="needle.num"
+              class="relative rounded-lg border overflow-hidden transition-all flex flex-col justify-between"
+              :class="needle.isSwap 
+                ? 'bg-zinc-900 border-zinc-400/80 shadow-[0_0_12px_-2px_rgba(255,255,255,0.08)] ring-1 ring-white/20' 
+                : 'bg-zinc-950 border-zinc-800/90 hover:border-zinc-700'"
+            >
+              <!-- Color Indicator Stripe -->
+              <div 
+                class="h-1 w-full shrink-0"
+                :style="{ backgroundColor: getThreadColor(needle.rawCode) }"
+              ></div>
+
+              <div class="p-2 sm:p-2.5 flex flex-col items-center text-center">
+                <!-- Needle Index & Role Badge -->
+                <div class="w-full flex items-center justify-between gap-1 mb-1.5">
+                  <span 
+                    class="font-mono font-bold text-[10px] px-1 py-0.5 rounded"
+                    :class="needle.isSwap ? 'bg-white/20 text-white font-bold' : 'bg-zinc-850 text-zinc-300'"
+                  >
+                    J{{ needle.num }}
+                  </span>
+                  <span 
+                    class="text-[8.5px] font-mono font-bold tracking-wider uppercase px-1 py-0.5 rounded"
+                    :class="needle.isSwap ? 'bg-white text-zinc-950 font-extrabold shadow-sm' : 'text-zinc-500'"
+                  >
+                    {{ needle.isSwap ? 'GANTI' : 'FIX' }}
+                  </span>
+                </div>
+
+                <!-- Swatch Circle + Thread Code (No Redundant Text, No Cutoff) -->
+                <div class="flex flex-col items-center justify-center my-1 gap-1">
+                  <span 
+                    class="w-4 h-4 rounded-full border border-white/20 shadow-sm shrink-0" 
+                    :style="{ backgroundColor: getThreadColor(needle.rawCode) }"
+                  ></span>
+                  <span 
+                    class="font-mono font-bold text-xs sm:text-sm tracking-tight"
+                    :class="needle.rawCode ? (needle.isSwap ? 'text-white font-bold' : 'text-zinc-100') : 'text-zinc-600'"
+                  >
+                    {{ needle.rawCode || '-' }}
+                  </span>
+                </div>
+
+                <!-- Color Label / Name (Shortened, Clean & Multi-line on small spaces) -->
+                <span 
+                  class="text-[9.5px] text-zinc-400 font-sans w-full mt-0.5 leading-tight line-clamp-2 min-h-[1.25rem] text-center"
+                  :title="needle.colorName || (needle.rawCode ? 'Warna Custom' : 'Kosong')"
+                >
+                  {{ needle.colorName ? needle.colorName.split('/')[0].trim() : (needle.rawCode ? 'Warna Custom' : 'Kosong') }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rotation Pipeline Section (Clean Visual Steps) -->
+          <div v-if="calculation.overflowThreads && calculation.overflowThreads.length > 0" class="mt-4 pt-3 border-t border-zinc-800/80">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-200">
+                <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span>ROTASI JARUM {{ swapNeedle }}</span>
+              </div>
+              <span class="text-[10px] font-mono text-zinc-500">
+                {{ calculation.overflowThreads.length }} Kode
+              </span>
+            </div>
+
+            <!-- Steps Pipeline Carousel / Flex Row (Dynamic desktop wrap / mobile scroll) -->
+            <div class="flex items-center gap-2 overflow-x-auto lg:overflow-visible flex-nowrap lg:flex-wrap pb-1 pt-0.5">
+              <template v-for="(code, rIdx) in calculation.overflowThreads" :key="code">
+                <!-- Step Pill -->
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700/80 text-xs font-mono shrink-0 shadow-sm">
+                  <span class="text-[10px] text-zinc-400 font-bold">
+                    T{{ String(rIdx + 1).padStart(2, '0') }}:
+                  </span>
+                  <span 
+                    class="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                    :style="{ backgroundColor: getThreadColor(code) }"
+                  ></span>
+                  <span class="font-bold text-zinc-100">
+                    {{ code }}
+                  </span>
+                  <span class="text-[10.5px] text-zinc-400 font-sans hidden sm:inline">
+                    {{ THREAD_METADATA[code]?.name ? THREAD_METADATA[code].name.split('/')[0].trim() : '' }}
+                  </span>
+                </div>
+
+                <!-- Arrow Connector -->
+                <svg 
+                  v-if="rIdx < calculation.overflowThreads.length - 1" 
+                  class="w-3 h-3 text-zinc-600 shrink-0" 
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </template>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: PALET WARNA (DICTIONARY) ================= -->
+    <section v-if="activeTab === 'colors'" class="space-y-3 no-print">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300">Data Produksi</h2>
+        <div class="data-switch">
+          <button @click="activeTab = 'manage'">CMT</button>
+          <button class="is-active">Warna</button>
+        </div>
+      </div>
+      <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-lg p-3 sm:p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="text-xs font-mono font-bold text-zinc-200 uppercase tracking-wider">
+            KAMUS WARNA BENANG (STAR ELEPHANT RAYON)
+          </h3>
+          <span class="text-[10px] font-mono text-zinc-500">PT ANTELAS / 120D</span>
+        </div>
+        <p class="text-[11px] text-zinc-400 font-sans mb-3">
+          Warna standar katalog rayon garmen lokal. Klik kotak warna jika perlu penyesuaian:
+        </p>
+
+        <!-- Color Grid (Compact) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+          <div 
+            v-for="(hex, code) in activeColorMap" 
+            :key="code"
+            class="flex items-center justify-between bg-zinc-950 px-2.5 py-1.5 rounded-lg border border-zinc-800"
+          >
+            <div class="flex items-center gap-2">
+              <label class="relative cursor-pointer shrink-0">
+                <input 
+                  type="color" 
+                  v-model="colorMap[code]" 
+                  class="w-6 h-6 rounded border border-zinc-700 bg-transparent cursor-pointer p-0 overflow-hidden"
+                />
+              </label>
+
+              <div>
+                <div class="flex items-center gap-1">
+                  <span class="font-mono font-bold text-zinc-100 text-xs">{{ code }}</span>
+                  <span v-if="THREAD_METADATA[code]" class="text-[10px] text-zinc-400 font-sans truncate max-w-[130px]">
+                    • {{ THREAD_METADATA[code].name }}
+                  </span>
+                </div>
+                <span class="text-[10px] text-zinc-500 font-mono">
+                  {{ colorMap[code] || hex }}
+                </span>
+              </div>
+            </div>
+
+            <span 
+              class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border border-zinc-700"
+              :style="{ 
+                backgroundColor: getThreadColor(code), 
+                color: getTextColor(getThreadColor(code)) 
+              }"
+            >
+              {{ code }}
+            </span>
+          </div>
+        </div>
+
+        <button 
+          @click="resetColors" 
+          class="w-full h-8.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 text-xs font-mono font-medium rounded-lg border border-zinc-800 transition-colors flex items-center justify-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          Reset Warna ke Standar Star Elephant
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: KELOLA CMT & ARSIP ================= -->
+    <section v-if="activeTab === 'manage'" class="space-y-3.5 no-print">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
+          <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-200">Data Produksi</h2>
+        </div>
+        <div class="data-switch">
+          <button class="is-active">CMT</button>
+          <button @click="activeTab = 'colors'">Warna</button>
+        </div>
+      </div>
+
+      <!-- 1. Form Tambah Data CMT (Parent-Child Multi-Variasi Repeater) -->
+      <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm space-y-3.5">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-2.5 border-b border-zinc-800/80">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs font-mono font-bold text-zinc-100 uppercase tracking-wider">
+              TAMBAH CMT BARU
+            </h3>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-750 font-semibold">
+              {{ variantRows.length }} Variasi
+            </span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest font-semibold">INPUT PANEL</span>
+        </div>
+        
+        <div class="space-y-3">
+          <!-- Section 1: Identitas CMT (No. CMT & Nama Film/Floppy Satu Baris) -->
+          <div class="flex items-center gap-2.5">
+            <!-- No. CMT (Sejajar & Persis Ukuran Variasi) -->
+            <div class="w-24 sm:w-28 shrink-0">
+              <label class="block text-[10.5px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-1.5 truncate">
+                No. CMT <span class="text-rose-400 font-bold">*</span>
+              </label>
+              <input 
+                v-model="newCmt" 
+                placeholder="620" 
+                class="w-full h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+              />
+            </div>
+            <!-- Nama Film/Floppy (Sejajar & Persis Ukuran Kode Benang) -->
+            <div class="flex-1 min-w-0">
+              <label class="block text-[10.5px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-1.5 truncate">
+                Nama Film/Floppy
+              </label>
+              <input 
+                v-model="newFlopy" 
+                placeholder="Flopy B / Film 01" 
+                class="w-full h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+              />
+            </div>
+            <!-- Spacer sinkronisasi ketika tombol hapus muncul di baris variasi -->
+            <div v-if="variantRows.length > 1" class="w-10 shrink-0"></div>
+          </div>
+
+          <!-- Section 2: Variasi & Kode Benang (Satu Baris, Variasi Lebih Kecil) -->
+          <div class="space-y-2 pt-1">
+            <!-- Column Labels -->
+            <div class="flex items-center gap-2.5 text-[10.5px] font-mono uppercase tracking-wider text-zinc-400 font-semibold px-0.5">
+              <span class="w-24 sm:w-28 shrink-0">Variasi</span>
+              <span class="flex-1 min-w-0">Kode Benang <span class="text-rose-400 font-bold">*</span></span>
+              <span v-if="variantRows.length > 1" class="w-10 shrink-0"></span>
+            </div>
+
+            <!-- Repeater Rows -->
+            <div class="space-y-2">
+              <div 
+                v-for="(row, rIdx) in variantRows" 
+                :key="rIdx"
+                class="flex items-center gap-2.5"
+              >
+                <!-- Variasi (Kecil, cth: C1) -->
+                <input 
+                  v-model="row.variant" 
+                  :placeholder="getVariantPlaceholder(rIdx)"
+                  class="w-24 sm:w-28 shrink-0 h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono font-medium text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+                />
+
+                <!-- Kode Benang (Lebar) -->
+                <input 
+                  v-model="row.threads" 
+                  placeholder="1070 1323 1319 1320..."
+                  class="flex-1 min-w-0 h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+                  @keyup.enter="rIdx === variantRows.length - 1 ? addCMT() : null"
+                />
+
+                <!-- Tombol Hapus Baris -->
+                <button 
+                  v-if="variantRows.length > 1"
+                  @click="removeVariantRow(rIdx)"
+                  type="button"
+                  title="Hapus baris variasi ini"
+                  class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md border border-zinc-750 bg-zinc-900 hover:bg-rose-500/15 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 transition-all cursor-pointer"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tombol Tambah Variasi -->
+            <button 
+              @click="addVariantRow"
+              type="button"
+              class="w-full h-9 rounded-md border border-dashed border-zinc-700 hover:border-zinc-500 bg-zinc-900/60 hover:bg-zinc-850 text-zinc-300 hover:text-white font-mono text-xs font-semibold flex items-center justify-center gap-2 transition-all select-none cursor-pointer mt-1"
+            >
+              <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Tambah Variasi</span>
+            </button>
+          </div>
+
+          <!-- Section 3: Tombol Simpan CMT -->
+          <div class="pt-1.5 border-t border-zinc-800/80">
+            <button 
+              @click="addCMT" 
+              class="w-full h-10 rounded-md bg-white hover:bg-zinc-200 active:bg-zinc-300 text-zinc-950 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm cursor-pointer select-none"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Simpan CMT {{ variantRows.length > 1 ? `(${variantRows.length} Variasi)` : '' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Daftar CMT Aktif -->
+      <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <!-- Header with subtle actions -->
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800/70">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs font-mono font-bold text-zinc-200 uppercase tracking-wider">
+              DAFTAR CMT AKTIF
+            </h3>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 font-semibold">
+              {{ uniqueTotalCmts }} CMT
+            </span>
+          </div>
+
+          <!-- Subtle Action Buttons (Kosongkan) -->
+          <div class="flex items-center gap-2 text-xs font-mono">
+            <button 
+              v-if="cmts.length > 0"
+              @click="clearAllCMTs" 
+              title="Kosongkan seluruh daftar CMT"
+              class="text-[11px] font-mono text-zinc-500 hover:text-rose-400 transition-colors py-0.5 px-1.5 rounded hover:bg-rose-500/10"
+            >
+              Kosongkan
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-if="cmts.length === 0" class="text-center py-6 px-4 rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40">
+          <div class="text-xs font-mono font-medium text-zinc-400 mb-1">Daftar CMT masih kosong</div>
+          <div class="text-[11px] text-zinc-500 font-mono">
+            Input data di atas atau <button @click="loadSampleData" class="text-zinc-300 underline hover:text-white">muat sampel</button>.
+          </div>
+        </div>
+
+        <!-- CMT Cards List (Grouped by CMT) -->
+        <div v-else class="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+          <div 
+            v-for="group in groupedCmts" 
+            :key="group.cmt"
+            class="bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700/80 rounded-lg p-2.5 sm:p-3 transition-colors text-xs font-mono shadow-sm space-y-2"
+          >
+            <!-- Card Header: CMT ID, Floppy, Badge Variasi, dan Tombol Hapus Seluruh CMT -->
+            <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-zinc-850/80">
+              <div class="flex items-center gap-1.5 text-[11px] font-mono min-w-0 flex-wrap leading-tight">
+                <!-- CMT Identifier -->
+                <span class="font-bold text-white tracking-tight text-[11.5px]">
+                  CMT {{ group.cmt }}
+                </span>
+
+                <!-- Floppy Name (if any) -->
+                <template v-if="group.flopy">
+                  <span class="text-zinc-600 select-none text-[9px]">|</span>
+                  <span class="text-zinc-400 font-medium text-[10px]">
+                    {{ group.flopy }}
+                  </span>
+                </template>
+
+                <!-- Badge Jumlah Variasi (jika > 1) -->
+                <span 
+                  v-if="group.variants.length > 1" 
+                  class="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-750 text-amber-300 font-semibold"
+                >
+                  {{ group.variants.length }} Variasi
+                </span>
+              </div>
+
+              <!-- Tombol Hapus Seluruh CMT -->
+              <button 
+                @click="removeCMTGroup(group)" 
+                :title="group.variants.length > 1 ? `Hapus seluruh CMT ${group.cmt} (${group.variants.length} variasi)` : `Hapus CMT ${group.cmt}`"
+                class="w-6 h-6 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <!-- List Variasi dalam Kartu yang Sama -->
+            <!-- Kondisi A: Lebih dari 1 Variasi (Tampilkan per sub-baris rapi) -->
+            <div v-if="group.variants.length > 1" class="space-y-1.5">
+              <div 
+                v-for="(v, vIdx) in group.variants" 
+                :key="vIdx"
+                class="bg-zinc-900/60 border border-zinc-850/80 hover:border-zinc-750/70 rounded p-2 transition-colors space-y-1.5"
+              >
+                <!-- Sub-baris Variasi: Nama Variasi & Tombol Hapus Variasi -->
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[11px] font-mono font-bold text-zinc-200">
+                      {{ v.variant && v.variant !== '-' ? v.variant : `Variasi ${vIdx + 1}` }}
+                    </span>
+                    <span class="text-[9.5px] font-mono text-zinc-500">
+                      • {{ v.threads.length }} warna
+                    </span>
+                  </div>
+
+                  <!-- Tombol Hapus Hanya Variasi Ini -->
+                  <button 
+                    @click="removeCMTVariant(v.itemRef)" 
+                    :title="`Hapus variasi ${v.variant || (vIdx + 1)}`"
+                    class="w-5 h-5 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
+                  >
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Urutan Benang Variasi -->
+                <div class="flex flex-wrap items-center gap-1">
+                  <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
+                  <div 
+                    v-for="(th, thIdx) in v.threads" 
+                    :key="thIdx"
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded text-[10px] text-zinc-300 font-mono"
+                  >
+                    <span 
+                      class="w-2 h-2 rounded-full border border-white/20 shrink-0" 
+                      :style="{ backgroundColor: getThreadColor(th) }"
+                    ></span>
+                    <span>{{ th }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kondisi B: Hanya 1 Variasi (Tampilan Ringkas & Rapi) -->
+            <div v-else class="space-y-1">
+              <div v-if="group.variants[0].variant && group.variants[0].variant !== '-'" class="text-[10.5px] font-mono font-medium text-zinc-300">
+                {{ group.variants[0].variant }}
+              </div>
+              <div class="flex flex-wrap items-center gap-1">
+                <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
+                <div 
+                  v-for="(th, thIdx) in group.variants[0].threads" 
+                  :key="thIdx"
+                  class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900 border border-zinc-800/80 rounded text-[10px] text-zinc-300 font-mono"
+                >
+                  <span 
+                    class="w-2 h-2 rounded-full border border-white/20 shrink-0" 
+                    :style="{ backgroundColor: getThreadColor(th) }"
+                  ></span>
+                  <span>{{ th }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Arsip Sesi / Snapshot (Collapsible & Compact) -->
+      <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-xl overflow-hidden shadow-sm transition-all">
+        <!-- Collapsible Header Button -->
+        <button 
+          type="button"
+          @click="isSnapshotOpen = !isSnapshotOpen"
+          class="w-full flex items-center justify-between p-2.5 sm:px-3 hover:bg-zinc-850/40 transition-colors select-none text-left"
+        >
+          <div class="flex items-center gap-2 font-mono text-[11px] font-semibold text-zinc-400">
+            <svg class="w-3.5 h-3.5 text-zinc-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="21 8 21 21 3 21 3 8"></polyline>
+              <rect x="1" y="3" width="22" height="5"></rect>
+              <line x1="10" y1="12" x2="14" y2="12"></line>
+            </svg>
+            <span class="tracking-wider uppercase text-zinc-300">Arsip Sesi</span>
+            <span 
+              class="px-1.5 py-0.2 rounded text-[10px] font-mono border"
+              :class="savedSessions.length > 0 ? 'bg-zinc-800 border-zinc-700 text-zinc-300' : 'bg-zinc-950/80 border-zinc-850 text-zinc-600'"
+            >
+              {{ savedSessions.length }}
+            </span>
+          </div>
+
+          <svg 
+            class="w-3.5 h-3.5 text-zinc-400 transition-transform duration-200"
+            :class="{ 'rotate-180': isSnapshotOpen }"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <!-- Collapsible Content -->
+        <div v-show="isSnapshotOpen" class="p-2.5 sm:p-3 pt-0 border-t border-zinc-800/60 space-y-2.5 mt-1 font-mono">
+          <!-- Cloud Room & Status Bar -->
+          <div class="flex items-center justify-between pb-1.5 border-b border-zinc-850/80 text-[10.5px]">
+            <div class="flex items-center gap-1.5 text-zinc-400">
+              <span class="w-2 h-2 rounded-full" :class="isSyncConnected ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+              <span>Ruangan Cloud: <strong class="text-zinc-200">{{ currentRoomCode }}</strong></span>
+            </div>
+            <button 
+              @click="openCloudSettingsModal" 
+              type="button"
+              class="text-zinc-400 hover:text-zinc-200 underline text-[10.5px] cursor-pointer"
+            >
+              Ganti Ruangan
+            </button>
+          </div>
+
+          <!-- Save Input Row -->
+          <div class="flex gap-2">
+            <input 
+              v-model="sessionNote" 
+              placeholder="Nama arsip (cth: Shift Pagi 28 Sep - CMT 620)..." 
+              class="flex-1 h-9 bg-zinc-950 border border-zinc-800 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none transition-all"
+              @keyup.enter="saveCurrentSession"
+            />
+            <button 
+              @click="saveCurrentSession" 
+              type="button"
+              class="h-9 px-3.5 rounded-md bg-white hover:bg-zinc-200 active:bg-zinc-300 text-zinc-950 font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-sm"
+            >
+              Simpan Sesi
+            </button>
+          </div>
+
+          <!-- Session List -->
+          <div v-if="savedSessions.length === 0" class="text-center py-3 px-2 text-[10.5px] text-zinc-600 bg-zinc-950/60 rounded-lg border border-zinc-850/80">
+            Belum ada arsip sesi tersimpan.
+          </div>
+          <div v-else class="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+            <div 
+              v-for="(sess, sIdx) in savedSessions" 
+              :key="sess.id"
+              class="bg-zinc-950/80 p-2 sm:px-2.5 rounded-lg border transition-all text-xs space-y-1"
+              :class="activeSessionId === sess.id ? 'border-emerald-500/60 bg-emerald-950/10 shadow-sm' : 'border-zinc-850 hover:border-zinc-750'"
+            >
+              <!-- Baris 1: Nama Sesi & Aksi Cepat -->
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                  <span 
+                    class="font-bold text-[11px] truncate"
+                    :class="activeSessionId === sess.id ? 'text-emerald-300' : 'text-white'"
+                  >
+                    {{ sess.name || `Sesi #${sIdx + 1}` }}
+                  </span>
+                </div>
+
+                <!-- Aksi: Aktifkan, Link, Hapus -->
+                <div class="flex items-center gap-1 shrink-0">
+                  <button 
+                    v-if="activeSessionId !== sess.id"
+                    @click="activateSession(sess)" 
+                    type="button"
+                    title="Aktifkan sesi ini untuk pengerjaan trial"
+                    class="h-5 px-2 rounded bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 text-[10px] font-medium transition-colors cursor-pointer"
+                  >
+                    Aktifkan
+                  </button>
+
+                  <button 
+                    @click="copySessionLink(sess)" 
+                    type="button"
+                    title="Salin Sharelink sesi ini"
+                    class="w-5 h-5 rounded bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-750 flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                  </button>
+
+                  <button 
+                    @click="deleteSession(sIdx)" 
+                    type="button"
+                    title="Hapus arsip ini"
+                    class="w-5 h-5 rounded hover:bg-rose-500/10 text-zinc-600 hover:text-rose-400 flex items-center justify-center transition-colors text-[11px] cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Baris 2: Ringkasan CMT & Progres -->
+              <div class="flex items-center justify-between gap-2 text-[10px] text-zinc-500">
+                <span class="truncate">
+                  {{ getSessionCmtSummary(sess) }} • {{ sess.cmts ? sess.cmts.length : 0 }} Variasi
+                </span>
+                <span v-if="getSessionProgress(sess)" class="text-zinc-400 shrink-0 font-mono">
+                  {{ getSessionProgress(sess) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Safe Sample Loader at bottom of Archive -->
+          <div class="pt-2 border-t border-zinc-800/50 flex items-center justify-between text-[10px] text-zinc-500">
+            <span>Sampel bawaan pabrik:</span>
+            <button 
+              @click="loadSampleData" 
+              type="button"
+              title="Muat dataset sampel bawaan (akan meminta konfirmasi)"
+              class="text-zinc-400 hover:text-zinc-200 underline transition-colors cursor-pointer"
+            >
+              Muat Sampel
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= NATIVE IN-PAGE MODAL POPUP (NO BROWSER POPUPS) ================= -->
+    <transition 
+      enter-active-class="transition duration-150 ease-out" 
+      enter-from-class="opacity-0 scale-95" 
+      enter-to-class="opacity-100 scale-100" 
+      leave-active-class="transition duration-100 ease-in" 
+      leave-from-class="opacity-100 scale-100" 
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="modalState.isOpen" 
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none"
+        @click.self="modalState.cancelText ? modalState.onCancel() : modalState.onConfirm()"
+      >
+        <div class="w-full max-w-sm bg-zinc-900 border border-zinc-700/90 rounded-xl shadow-2xl overflow-hidden font-mono p-4 sm:p-5 space-y-4">
+          <!-- Top Row: Icon + Title & Message -->
+          <div class="flex items-start gap-3">
+            <div 
+              class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border"
+              :class="{
+                'bg-rose-500/10 border-rose-500/30 text-rose-400': modalState.type === 'danger',
+                'bg-amber-500/10 border-amber-500/30 text-amber-400': modalState.type === 'warning' || modalState.type === 'confirm',
+                'bg-zinc-800 border-zinc-700 text-zinc-200': modalState.type === 'info'
+              }"
+            >
+              <svg v-if="modalState.type === 'danger' || modalState.type === 'warning' || modalState.type === 'confirm'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+
+            <div class="space-y-1">
+              <h3 class="text-sm font-bold text-white tracking-tight uppercase">
+                {{ modalState.title }}
+              </h3>
+              <p class="text-xs text-zinc-300 font-sans leading-relaxed whitespace-pre-line">
+                {{ modalState.message }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div class="flex items-center justify-end gap-2 pt-2.5 border-t border-zinc-800/80">
+            <button 
+              v-if="modalState.cancelText"
+              @click="modalState.onCancel"
+              class="h-8 px-3 rounded-md bg-zinc-800 hover:bg-zinc-750 text-zinc-300 text-xs font-semibold border border-zinc-700 transition-colors"
+            >
+              {{ modalState.cancelText }}
+            </button>
+            <button 
+              @click="modalState.onConfirm"
+              class="h-8 px-3.5 rounded-md text-xs font-bold transition-all shadow-sm flex items-center justify-center"
+              :class="{
+                'bg-rose-600 hover:bg-rose-500 text-white': modalState.type === 'danger',
+                'bg-white text-zinc-950 hover:bg-zinc-200': modalState.type !== 'danger'
+              }"
+            >
+              {{ modalState.confirmText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Cloud & Room Settings Modal -->
+    <transition
+      enter-active-class="transition duration-150 ease-out" 
+      enter-from-class="opacity-0 scale-95" 
+      enter-to-class="opacity-100 scale-100" 
+      leave-active-class="transition duration-100 ease-in" 
+      leave-from-class="opacity-100 scale-100" 
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="isCloudSettingsOpen" 
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm select-none"
+        @click.self="isCloudSettingsOpen = false"
+      >
+        <div class="w-full max-w-sm bg-zinc-900 border border-zinc-700/90 rounded-xl shadow-2xl overflow-hidden font-mono p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Pengaturan Ruangan</h3>
+            </div>
+            <button @click="isCloudSettingsOpen = false" class="text-zinc-500 hover:text-white text-sm cursor-pointer">✕</button>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block text-[10.5px] uppercase tracking-wider text-zinc-400 font-semibold mb-1">
+                Kode Ruangan (Room ID)
+              </label>
+              <input 
+                v-model="tempRoomCode" 
+                placeholder="cth: EMBRO atau LINE-A"
+                class="w-full h-9 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs text-zinc-100 font-mono uppercase focus:outline-none"
+              />
+              <p class="text-[10px] text-zinc-500 mt-1 leading-normal">
+                Perangkat yang membuka Ruangan yang sama akan otomatis saling berbagi data sesi dan progres ceklis secara real-time.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
+            <button 
+              @click="isCloudSettingsOpen = false" 
+              type="button"
+              class="h-8 px-3 rounded-md bg-zinc-800 hover:bg-zinc-750 text-zinc-300 text-xs font-semibold cursor-pointer border border-zinc-700"
+            >
+              Batal
+            </button>
+            <button 
+              @click="saveCloudSettings" 
+              type="button"
+              class="h-8 px-4 rounded-md bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold cursor-pointer shadow-sm"
+            >
+              Terapkan
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Floating Toast Notification -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 translate-y-3 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0 scale-100"
+      leave-to-class="opacity-0 translate-y-3 scale-95"
+    >
+      <div 
+        v-if="toastMessage" 
+        class="fixed bottom-5 right-5 z-50 bg-zinc-900 border border-zinc-700 text-zinc-100 px-3.5 py-2.5 rounded-lg shadow-2xl font-mono text-xs flex items-center gap-2.5 max-w-sm pointer-events-none"
+      >
+        <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+        <span class="leading-tight">{{ toastMessage }}</span>
+      </div>
+    </transition>
+
+  </div>
+
+  <!-- ================= VUE 3 APPLICATION SCRIPT ================= -->
+  <script>
+    const { createApp, ref, computed, watch, onMounted } = Vue;
+
+    // Database Standar Benang Bordir Rayon Star Elephant (Cap Gajah / PT Antelas Bandung)
+    const THREAD_METADATA = {
+      "1179": { name: "Putih Solid (Bleach White)", defaultHex: "#FFFFFF" },
+      "1180": { name: "Hitam Solid (Black)", defaultHex: "#121212" },
+      "1164": { name: "Broken White / Putih Tulang", defaultHex: "#F5EFE6" },
+      "1174": { name: "Abu Terang / Silver Grey", defaultHex: "#9E9E9E" },
+      "1175": { name: "Abu Sedang / Slate Grey", defaultHex: "#52525B" },
+      "1319": { name: "Dongker Tua / Deep Navy", defaultHex: "#0B192C" },
+      "1070": { name: "Biru Navy / Classic Navy", defaultHex: "#1E3A8A" },
+      "1320": { name: "Biru Benhur / Royal Blue", defaultHex: "#1D4ED8" },
+      "1323": { name: "Biru Hitam / Dark Ink", defaultHex: "#0A0E1A" },
+      "2216": { name: "Coklat Susu / Beige Khaki", defaultHex: "#D4B996" },
+      "2212": { name: "Camel / Khaki Sedang", defaultHex: "#A77B52" },
+      "1144": { name: "Coklat Kopi / Coklat Tua", defaultHex: "#3A2318" },
+      "1184": { name: "Coklat Mocca / Mocca Brown", defaultHex: "#664735" },
+      "1135": { name: "Kuning Kunyit / Mustard", defaultHex: "#D97706" },
+      "1304": { name: "Merah Maroon / Maroon Tua", defaultHex: "#5B142B" },
+
+      // Database Tambahan Katalog Rayon Garmen Lokal
+      "1001": { name: "Putih Bersih (Pure White)", defaultHex: "#FFFFFF" },
+      "1002": { name: "Krem Putih / Off White", defaultHex: "#FBF8F1" },
+      "1128": { name: "Krem Muda / Cream", defaultHex: "#F3E5C8" },
+      "1130": { name: "Kuning Lemon", defaultHex: "#FACC15" },
+      "1131": { name: "Kuning Terang", defaultHex: "#EAB308" },
+      "1138": { name: "Kuning Emas / Gold", defaultHex: "#CA8A04" },
+      "1150": { name: "Orange / Jingga", defaultHex: "#EA580C" },
+      "1188": { name: "Merah Cabe / Bright Red", defaultHex: "#DC2626" },
+      "1190": { name: "Merah Hati / Crimson", defaultHex: "#991B1B" },
+      "1205": { name: "Pink Muda / Baby Pink", defaultHex: "#F472B6" },
+      "1210": { name: "Fanta / Magenta", defaultHex: "#DB2777" },
+      "1240": { name: "Hijau Daun / Kelly Green", defaultHex: "#16A34A" },
+      "1245": { name: "Hijau Botol / Dark Green", defaultHex: "#14532D" },
+      "1250": { name: "Hijau Army / Olive", defaultHex: "#4D5D3A" },
+      "1280": { name: "Ungu Terong / Deep Violet", defaultHex: "#581C87" },
+      "1300": { name: "Biru Langit / Sky Blue", defaultHex: "#38BDF8" },
+      "1310": { name: "Biru Turkis / Cyan", defaultHex: "#0284C7" }
+    };
+
+    const DEFAULT_COLOR_MAP = Object.fromEntries(
+      Object.entries(THREAD_METADATA).map(([k, v]) => [k, v.defaultHex])
+    );
+
+    // Sampel dataset uji coba standar garmen (CMT 613–620)
+    // Sampel dataset uji coba standar garmen (CMT 613–657) dengan Flopy B dan Flopy C
+    const SAMPLE_DATA = [
+      { flopy: "Flopy B", cmt: "617", variant: "-", threads: ["1179", "1164", "1319"] },
+      { flopy: "Flopy B", cmt: "618", variant: "-", threads: ["2216", "1184", "1135"] },
+      { flopy: "Flopy B", cmt: "619", variant: "C1 (Navy)", threads: ["1319", "1070", "1320", "1175"] },
+      { flopy: "Flopy B", cmt: "620", variant: "C2 (Maroon)", threads: ["1304", "2216", "1135", "1304"] },
+      { flopy: "Flopy B", cmt: "620", variant: "C3 (Beige)", threads: ["1144", "2216", "2216", "1320"] },
+      { flopy: "Flopy B", cmt: "614", variant: "-", threads: ["2216", "1135", "1144", "1184"] },
+      { flopy: "Flopy B", cmt: "613", variant: "-", threads: ["1179", "1320", "1319", "1174"] },
+      { flopy: "Flopy B", cmt: "619", variant: "C4 (Grey)", threads: ["1319", "1320", "1175", "1174"] },
+      { flopy: "Flopy B", cmt: "619", variant: "C2 (Coklat)", threads: ["1144", "2212", "2216"] },
+      { flopy: "Flopy B", cmt: "619", variant: "C3 (Maroon)", threads: ["1304", "2212", "2216", "1144"] },
+      { flopy: "Flopy B", cmt: "620", variant: "C1 (Navy)", threads: ["1070", "1323", "1319", "1320"] },
+      { flopy: "Flopy C", cmt: "657", variant: "C1 Navy", threads: ["1178", "1172", "7723"] }
+    ];
+
+    // Daftar preferensi jarum tetap standar (J1-J3, J5-J11 pada mesin 11 jarum)
+    const PREFERRED_FIXED_ORDER = ["1179", "1320", "1319", "2216", "1135", "1144", "1184", "1070", "1175", "1304"];
+
+    createApp({
+      setup() {
+        const activeTab = ref('operator');
+        const needleCapacity = ref(11);
+        const swapNeedle = ref(11); // Default ke jarum paling akhir / ujung
+        const cmts = ref([]);
+        const completedMap = ref({});
+        const colorMap = ref({});
+        const savedSessions = ref([]);
+        const sessionNote = ref('');
+        const isSnapshotOpen = ref(true);
+
+        // State Sinkronisasi Live & Room
+        const DEFAULT_FIREBASE_URL = 'https://embro-1e285-default-rtdb.asia-southeast1.firebasedatabase.app/';
+        const currentRoomCode = ref('EMBRO');
+        const firebaseUrl = ref(DEFAULT_FIREBASE_URL);
+        const activeSessionId = ref(null);
+        const activeSessionName = ref('');
+        const isFirebaseConnected = ref(false);
+        const toastMessage = ref('');
+        const isCloudSettingsOpen = ref(false);
+        const tempRoomCode = ref('');
+        const tempFirebaseUrl = ref('');
+        const myClientId = 'client_' + Math.random().toString(36).substring(2, 9);
+        let broadcastChannel = null;
+        let firebaseDb = null;
+        let firebaseRoomRef = null;
+        let firebaseArchivesRef = null;
+        let isCloudArchivesLoaded = false;
+        let isUpdatingCloudArchives = false;
+        let checklistSyncTimeout = null;
+        let isRemoteUpdating = false;
+        let toastTimer = null;
+
+        const newFlopy = ref('');
+        const newCmt = ref('');
+        const variantRows = ref([
+          { variant: '', threads: '' }
+        ]);
+
+        const getNextVariant = (existingRows) => {
+          let lastVal = '';
+          for (let i = existingRows.length - 1; i >= 0; i--) {
+            const v = (existingRows[i]?.variant || '').trim();
+            if (v) {
+              lastVal = v;
+              break;
+            }
+          }
+
+          if (!lastVal) {
+            return `C${existingRows.length + 1}`;
+          }
+
+          // 1. Pola: Awalan huruf + nomor (cth: "C1", "B1", "b2", "WARNA-1", "V01", "C1 (Navy)")
+          const prefixNumMatch = lastVal.match(/^([a-zA-Z\s_-]+?)([\s._-]*)(\d+)(.*)$/);
+          if (prefixNumMatch) {
+            const prefix = prefixNumMatch[1];
+            const sep = prefixNumMatch[2] || '';
+            const numStr = prefixNumMatch[3];
+            const nextNum = parseInt(numStr, 10) + 1;
+            const paddedNum = numStr.startsWith('0') && numStr.length > 1
+              ? String(nextNum).padStart(numStr.length, '0')
+              : String(nextNum);
+            return `${prefix}${sep}${paddedNum}`;
+          }
+
+          // 2. Pola: Hanya angka (cth: "1" -> "2")
+          const numOnlyMatch = lastVal.match(/^(\d+)$/);
+          if (numOnlyMatch) {
+            return String(parseInt(numOnlyMatch[1], 10) + 1);
+          }
+
+          // 3. Pola: Hanya huruf tunggal tanpa angka (cth: "B" -> "B2")
+          const letterOnlyMatch = lastVal.match(/^([a-zA-Z]+)$/);
+          if (letterOnlyMatch) {
+            return `${letterOnlyMatch[1]}${existingRows.length + 1}`;
+          }
+
+          return `C${existingRows.length + 1}`;
+        };
+
+        const getVariantPlaceholder = (index) => {
+          if (index === 0) return 'C1';
+          const prev = (variantRows.value[index - 1]?.variant || '').trim();
+          if (prev) {
+            return getNextVariant(variantRows.value.slice(0, index));
+          }
+          return `C${index + 1}`;
+        };
+
+        const addVariantRow = () => {
+          // Jika baris pertama masih kosong saat menambah baris baru, isi baris pertama dengan default C1
+          if (variantRows.value.length === 1 && !variantRows.value[0].variant.trim()) {
+            variantRows.value[0].variant = 'C1';
+          }
+          const nextName = getNextVariant(variantRows.value);
+          variantRows.value.push({ variant: nextName, threads: '' });
+        };
+
+        const removeVariantRow = (index) => {
+          if (variantRows.value.length > 1) {
+            variantRows.value.splice(index, 1);
+          }
+        };
+
+        const resetCmtForm = () => {
+          newFlopy.value = '';
+          newCmt.value = '';
+          variantRows.value = [{ variant: '', threads: '' }];
+        };
+
+        // ================= CUSTOM NATIVE IN-PAGE MODAL =================
+        const modalState = ref({
+          isOpen: false,
+          title: '',
+          message: '',
+          type: 'confirm', // 'confirm' | 'danger' | 'warning' | 'info'
+          confirmText: 'Lanjutkan',
+          cancelText: 'Batal',
+          onConfirm: () => {},
+          onCancel: () => {}
+        });
+
+        const showConfirm = ({ title = 'Konfirmasi', message = '', confirmText = 'Lanjutkan', cancelText = 'Batal', type = 'confirm' }) => {
+          return new Promise((resolve) => {
+            modalState.value = {
+              isOpen: true,
+              title,
+              message,
+              type,
+              confirmText,
+              cancelText,
+              onConfirm: () => {
+                modalState.value.isOpen = false;
+                resolve(true);
+              },
+              onCancel: () => {
+                modalState.value.isOpen = false;
+                resolve(false);
+              }
+            };
+          });
+        };
+
+        const showAlert = ({ title = 'Informasi', message = '', confirmText = 'Mengerti', type = 'info' }) => {
+          return new Promise((resolve) => {
+            modalState.value = {
+              isOpen: true,
+              title,
+              message,
+              type,
+              confirmText,
+              cancelText: null,
+              onConfirm: () => {
+                modalState.value.isOpen = false;
+                resolve(true);
+              },
+              onCancel: () => {
+                modalState.value.isOpen = false;
+                resolve(true);
+              }
+            };
+          });
+        };
+
+        // Keyboard handler for modal (Escape to cancel/close, Enter to confirm)
+        if (typeof window !== 'undefined') {
+          window.addEventListener('keydown', (e) => {
+            if (!modalState.value.isOpen) return;
+            if (e.key === 'Escape') {
+              if (modalState.value.cancelText) {
+                modalState.value.onCancel();
+              } else {
+                modalState.value.onConfirm();
+              }
+            } else if (e.key === 'Enter') {
+              modalState.value.onConfirm();
+            }
+          });
+        }
+
+        // ================= TOAST & CLIPBOARD HELPERS =================
+        const showToast = (msg, duration = 3000) => {
+          toastMessage.value = msg;
+          if (toastTimer) clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => {
+            toastMessage.value = '';
+          }, duration);
+        };
+
+        const copyToClipboard = async (text) => {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+              await navigator.clipboard.writeText(text);
+              return true;
+            } catch (e) {}
+          }
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            return true;
+          } catch (e) {
+            return false;
+          }
+        };
+
+        // ================= URL DATA ENCODER / DECODER =================
+        const encodePayload = (obj) => {
+          try {
+            const str = JSON.stringify(obj);
+            return btoa(unescape(encodeURIComponent(str)));
+          } catch (e) {
+            return encodeURIComponent(JSON.stringify(obj));
+          }
+        };
+
+        const decodePayload = (str) => {
+          try {
+            const jsonStr = decodeURIComponent(escape(atob(str)));
+            return JSON.parse(jsonStr);
+          } catch (e) {
+            try {
+              return JSON.parse(decodeURIComponent(str));
+            } catch (e2) {
+              return null;
+            }
+          }
+        };
+
+        // ================= LIVE SYNC & CLOUD ENGINE =================
+        const isSyncConnected = computed(() => {
+          return isFirebaseConnected.value || (typeof window !== 'undefined' && 'BroadcastChannel' in window);
+        });
+
+        const syncBadgeText = computed(() => {
+          if (isFirebaseConnected.value) return 'Cloud Live';
+          if (typeof window !== 'undefined' && 'BroadcastChannel' in window) return 'Lokal Live';
+          return 'Offline';
+        });
+
+        let isInitialRoomStateLoaded = false;
+        let roomStateSyncTimer = null;
+
+        const getRoomStatePayload = () => ({
+          needleCapacity: needleCapacity.value,
+          swapNeedle: swapNeedle.value,
+          cmts: JSON.parse(JSON.stringify(cmts.value || [])),
+          completedMap: JSON.parse(JSON.stringify(completedMap.value || {})),
+          colorMap: JSON.parse(JSON.stringify(colorMap.value || {})),
+          activeSessionId: activeSessionId.value,
+          activeSessionName: activeSessionName.value,
+          updatedBy: myClientId,
+          timestamp: Date.now()
+        });
+
+        const syncRoomStateToCloud = () => {
+          if (isRemoteUpdating) return;
+          const payload = getRoomStatePayload();
+
+          if (broadcastChannel) {
+            try {
+              broadcastChannel.postMessage({ type: 'ROOM_STATE_UPDATE', payload });
+            } catch (e) {}
+          }
+
+          if (firebaseDb && isFirebaseConnected.value) {
+            try {
+              firebaseDb.ref('rooms/' + currentRoomCode.value + '/state').set(payload);
+            } catch (e) {
+              console.warn('Sync room state error:', e);
+            }
+          }
+        };
+
+        const debounceSyncRoomState = (delay = 350) => {
+          if (isRemoteUpdating) return;
+          if (roomStateSyncTimer) clearTimeout(roomStateSyncTimer);
+          roomStateSyncTimer = setTimeout(() => {
+            syncRoomStateToCloud();
+          }, delay);
+        };
+
+        const syncArchivesToCloud = () => {
+          if (!firebaseDb || !isFirebaseConnected.value) return;
+          try {
+            isUpdatingCloudArchives = true;
+            const cleanList = JSON.parse(JSON.stringify(savedSessions.value || []));
+            firebaseDb.ref('rooms/' + currentRoomCode.value + '/archives').set(cleanList).finally(() => {
+              setTimeout(() => { isUpdatingCloudArchives = false; }, 400);
+            });
+            if (broadcastChannel) {
+              try {
+                broadcastChannel.postMessage({ type: 'ARCHIVES_UPDATE', archives: cleanList, senderId: myClientId });
+              } catch (e) {}
+            }
+          } catch (e) {
+            console.warn('Sync archives to cloud error:', e);
+            isUpdatingCloudArchives = false;
+          }
+        };
+
+        const debounceSyncArchivesToCloud = () => {
+          if (checklistSyncTimeout) clearTimeout(checklistSyncTimeout);
+          checklistSyncTimeout = setTimeout(() => {
+            syncArchivesToCloud();
+          }, 1500);
+        };
+
+        const handleRemoteRoomState = (payload) => {
+          if (!payload) return;
+          if (payload.updatedBy === myClientId) return;
+
+          isRemoteUpdating = true;
+          try {
+            let notice = '';
+            if (typeof payload.needleCapacity === 'number' && payload.needleCapacity !== needleCapacity.value) {
+              needleCapacity.value = payload.needleCapacity;
+              notice = `Kapasitas jarum diubah ke ${payload.needleCapacity}`;
+            }
+
+            if (typeof payload.swapNeedle === 'number' && payload.swapNeedle !== swapNeedle.value) {
+              swapNeedle.value = payload.swapNeedle;
+            }
+
+            if (Array.isArray(payload.cmts)) {
+              cmts.value = JSON.parse(JSON.stringify(payload.cmts));
+            }
+
+            if (payload.completedMap && typeof payload.completedMap === 'object') {
+              completedMap.value = JSON.parse(JSON.stringify(payload.completedMap));
+            }
+
+            if (payload.colorMap && typeof payload.colorMap === 'object') {
+              colorMap.value = JSON.parse(JSON.stringify(payload.colorMap));
+            }
+
+            if (payload.activeSessionId !== undefined) {
+              const oldId = activeSessionId.value;
+              activeSessionId.value = payload.activeSessionId;
+              activeSessionName.value = payload.activeSessionName || '';
+              if (oldId !== payload.activeSessionId && payload.activeSessionName) {
+                notice = `Sesi "${payload.activeSessionName}" aktif dari rekan kerja`;
+              }
+            }
+
+            if (activeSessionId.value && savedSessions.value.length > 0) {
+              const s = savedSessions.value.find(item => item.id === activeSessionId.value);
+              if (s) {
+                s.completedMap = { ...completedMap.value };
+                s.needleCapacity = needleCapacity.value;
+                s.swapNeedle = swapNeedle.value;
+                if (payload.cmts) s.cmts = JSON.parse(JSON.stringify(payload.cmts));
+              }
+            }
+
+            if (notice && isInitialRoomStateLoaded) {
+              showToast(notice);
+            }
+          } catch (e) {
+            console.warn('Apply remote room state error:', e);
+          } finally {
+            setTimeout(() => { isRemoteUpdating = false; }, 150);
+          }
+        };
+
+        const initBroadcastChannel = () => {
+          if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+          try {
+            if (broadcastChannel) broadcastChannel.close();
+            broadcastChannel = new BroadcastChannel('embro_sync_' + currentRoomCode.value);
+            broadcastChannel.onmessage = (event) => {
+              const data = event.data;
+              if (data && data.payload && data.payload.updatedBy !== myClientId) {
+                if (data.type === 'ROOM_STATE_UPDATE') {
+                  handleRemoteRoomState(data.payload);
+                }
+              } else if (data && data.type === 'ARCHIVES_UPDATE' && data.senderId !== myClientId && Array.isArray(data.archives)) {
+                savedSessions.value = data.archives;
+              }
+            };
+          } catch (e) {
+            console.warn('BroadcastChannel error:', e);
+          }
+        };
+
+        const initFirebaseSync = () => {
+          if (typeof window === 'undefined' || typeof firebase === 'undefined') {
+            isFirebaseConnected.value = false;
+            return;
+          }
+          const dbUrl = (firebaseUrl.value || '').trim();
+          if (!dbUrl) {
+            isFirebaseConnected.value = false;
+            return;
+          }
+          try {
+            if (!firebase.apps || firebase.apps.length === 0) {
+              firebase.initializeApp({ databaseURL: dbUrl });
+            }
+            firebaseDb = firebase.database();
+
+            // 1. Sinkronisasi Seluruh State Ruangan (needleCapacity, swapNeedle, cmts, completedMap, colorMap, activeSession)
+            if (firebaseRoomRef) firebaseRoomRef.off();
+            firebaseRoomRef = firebaseDb.ref('rooms/' + currentRoomCode.value + '/state');
+            firebaseRoomRef.on('value', (snap) => {
+              const val = snap.val();
+              if (val) {
+                handleRemoteRoomState(val);
+                isInitialRoomStateLoaded = true;
+              } else {
+                if (!isInitialRoomStateLoaded) {
+                  const hasRealData = activeSessionId.value || (cmts.value.length > 0 && JSON.stringify(cmts.value) !== JSON.stringify(SAMPLE_DATA));
+                  if (hasRealData) {
+                    syncRoomStateToCloud();
+                  }
+                  isInitialRoomStateLoaded = true;
+                }
+              }
+            });
+
+            // 2. Sinkronisasi Seluruh Arsip Sesi Bersama (archives)
+            if (firebaseArchivesRef) firebaseArchivesRef.off();
+            firebaseArchivesRef = firebaseDb.ref('rooms/' + currentRoomCode.value + '/archives');
+            firebaseArchivesRef.on('value', (snap) => {
+              if (isUpdatingCloudArchives) return;
+              const val = snap.val();
+              if (val) {
+                let cloudList = [];
+                if (Array.isArray(val)) {
+                  cloudList = val.filter(Boolean);
+                } else if (typeof val === 'object') {
+                  cloudList = Object.values(val);
+                }
+
+                if (!isCloudArchivesLoaded && savedSessions.value.length > 0) {
+                  const cloudIds = new Set(cloudList.map(s => s.id));
+                  const localOnly = savedSessions.value.filter(s => !cloudIds.has(s.id));
+                  if (localOnly.length > 0) {
+                    const merged = [...cloudList, ...localOnly];
+                    savedSessions.value = merged;
+                    isCloudArchivesLoaded = true;
+                    syncArchivesToCloud();
+                    return;
+                  }
+                }
+
+                savedSessions.value = cloudList;
+                isCloudArchivesLoaded = true;
+              } else {
+                if (!isCloudArchivesLoaded && savedSessions.value.length > 0) {
+                  syncArchivesToCloud();
+                }
+                isCloudArchivesLoaded = true;
+              }
+            });
+
+            isFirebaseConnected.value = true;
+          } catch (e) {
+            console.warn('Firebase init error:', e);
+            isFirebaseConnected.value = false;
+          }
+        };
+
+        const broadcastSync = (type, payload = {}) => {
+          syncRoomStateToCloud();
+        };
+
+        // ================= SESSION & SHARE LINK HELPERS =================
+        const getSessionFingerprint = (cmtList, cap, swap) => {
+          if (!cmtList || !Array.isArray(cmtList) || cmtList.length === 0) return '';
+          const items = cmtList.map(c => {
+            const fl = (c.flopy || '').toString().trim().toUpperCase();
+            const cm = (c.cmt || '').toString().trim().toUpperCase();
+            const va = (c.variant || '').toString().trim().toUpperCase();
+            const th = Array.isArray(c.threads)
+              ? c.threads.map(t => String(t).trim().toUpperCase()).join(',')
+              : '';
+            return `${fl}|${cm}|${va}|${th}`;
+          });
+          items.sort();
+          return `${cap || 11}_${swap || 11}::` + items.join(';;');
+        };
+
+        const getSessionShareLink = (sess) => {
+          const payload = {
+            id: sess.id,
+            name: sess.name || sess.note || 'Sesi Trial',
+            cmts: sess.cmts || [],
+            needleCapacity: sess.needleCapacity || 11,
+            swapNeedle: sess.swapNeedle || 11,
+            completedMap: sess.completedMap || {},
+            room: currentRoomCode.value
+          };
+          const base = window.location.origin + window.location.pathname;
+          const hash = '#data=' + encodePayload(payload);
+          return `${base}?room=${encodeURIComponent(currentRoomCode.value)}&session=${encodeURIComponent(sess.id)}${hash}`;
+        };
+
+        const copySessionLink = async (sess) => {
+          const url = getSessionShareLink(sess);
+          await copyToClipboard(url);
+          showToast(`Tautan sesi "${sess.name || 'Sesi'}" berhasil disalin!`);
+        };
+
+        const copyCurrentActiveShareLink = async () => {
+          const sess = {
+            id: activeSessionId.value || Date.now(),
+            name: activeSessionName.value || 'Pengerjaan Trial Saat Ini',
+            cmts: cmts.value,
+            needleCapacity: needleCapacity.value,
+            swapNeedle: swapNeedle.value,
+            completedMap: completedMap.value
+          };
+          const url = getSessionShareLink(sess);
+          await copyToClipboard(url);
+          showToast('Tautan trial aktif berhasil disalin! Kirimkan ke Operator.');
+        };
+
+        const getSessionCmtSummary = (sess) => {
+          if (!sess || !sess.cmts || sess.cmts.length === 0) return '0 CMT';
+          const uniq = [...new Set(sess.cmts.map(c => c.cmt))];
+          if (uniq.length <= 3) {
+            return `CMT ${uniq.join(', ')}`;
+          }
+          return `CMT ${uniq.slice(0, 3).join(', ')} (+${uniq.length - 3})`;
+        };
+
+        const getSessionProgress = (sess) => {
+          if (!sess || !sess.cmts || sess.cmts.length === 0) return '';
+          const total = sess.cmts.length;
+          let done = 0;
+          const compMap = (activeSessionId.value === sess.id) ? completedMap.value : (sess.completedMap || {});
+          sess.cmts.forEach(c => {
+            const keyWithFlopy = `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`;
+            const keyLegacy = `${c.cmt}_${c.variant || '-'}`;
+            if (compMap[keyWithFlopy] || compMap[keyLegacy]) done++;
+          });
+          return `Selesai: ${done}/${total}`;
+        };
+
+        const activateSession = (sess) => {
+          if (!sess) return;
+          cmts.value = JSON.parse(JSON.stringify(sess.cmts || []));
+          needleCapacity.value = sess.needleCapacity || 11;
+          swapNeedle.value = sess.swapNeedle || sess.needleCapacity || 11;
+          completedMap.value = sess.completedMap ? JSON.parse(JSON.stringify(sess.completedMap)) : {};
+          activeSessionId.value = sess.id;
+          activeSessionName.value = sess.name || sess.note || `Sesi ${sess.date}`;
+          
+          syncRoomStateToCloud();
+          showToast(`Sesi "${activeSessionName.value}" telah diaktifkan!`);
+        };
+
+        const openCloudSettingsModal = () => {
+          tempRoomCode.value = currentRoomCode.value;
+          tempFirebaseUrl.value = firebaseUrl.value;
+          isCloudSettingsOpen.value = true;
+        };
+
+        const saveCloudSettings = () => {
+          const code = (tempRoomCode.value || '').trim().toUpperCase() || 'EMBRO';
+          currentRoomCode.value = code;
+          localStorage.setItem('embro_room_code', code);
+
+          if (!firebaseUrl.value) {
+            firebaseUrl.value = DEFAULT_FIREBASE_URL;
+          }
+          localStorage.setItem('embro_firebase_url', firebaseUrl.value);
+
+          isCloudSettingsOpen.value = false;
+          isCloudArchivesLoaded = false;
+          isInitialRoomStateLoaded = false;
+          initBroadcastChannel();
+          initFirebaseSync();
+          showToast(`Ruangan diubah ke "${code}"`);
+        };
+
+        // ================= LIFECYCLE & PERSISTENCE =================
+        onMounted(() => {
+          // 1. Muat pengaturan ruangan & Firebase
+          const storedRoom = localStorage.getItem('embro_room_code');
+          if (storedRoom && storedRoom !== 'PABRIK-UTAMA') {
+            currentRoomCode.value = storedRoom;
+          } else {
+            currentRoomCode.value = 'EMBRO';
+            localStorage.setItem('embro_room_code', 'EMBRO');
+          }
+
+          const storedFbUrl = localStorage.getItem('embro_firebase_url');
+          if (storedFbUrl && storedFbUrl.trim()) {
+            firebaseUrl.value = storedFbUrl.trim();
+          } else {
+            firebaseUrl.value = DEFAULT_FIREBASE_URL;
+            localStorage.setItem('embro_firebase_url', DEFAULT_FIREBASE_URL);
+          }
+
+          const storedActiveSessId = localStorage.getItem('embro_active_session_id');
+          if (storedActiveSessId) activeSessionId.value = Number(storedActiveSessId) || storedActiveSessId;
+
+          const storedActiveSessName = localStorage.getItem('embro_active_session_name');
+          if (storedActiveSessName) activeSessionName.value = storedActiveSessName;
+
+          // 2. Muat custom colors
+          const storedColors = localStorage.getItem('embro_custom_colors');
+          if (storedColors) {
+            try { colorMap.value = JSON.parse(storedColors); } catch (e) {}
+          }
+
+          // 3. Muat arsip sesi
+          const storedArchives = localStorage.getItem('embro_archives');
+          if (storedArchives) {
+            try { savedSessions.value = JSON.parse(storedArchives); } catch (e) {}
+          }
+
+          // 4. Deteksi dan proses Parameter URL (Room & Sharelink Hash)
+          let loadedFromUrl = false;
+          try {
+            if (typeof window !== 'undefined') {
+              const urlParams = new URLSearchParams(window.location.search);
+              const queryRoom = urlParams.get('room');
+              if (queryRoom) {
+                currentRoomCode.value = queryRoom.toUpperCase();
+                localStorage.setItem('embro_room_code', currentRoomCode.value);
+              }
+
+              if (window.location.hash && window.location.hash.startsWith('#data=')) {
+                const encodedData = window.location.hash.substring(6);
+                const imported = decodePayload(encodedData);
+                if (imported && imported.cmts && Array.isArray(imported.cmts)) {
+                  cmts.value = imported.cmts;
+                  needleCapacity.value = imported.needleCapacity || 11;
+                  swapNeedle.value = imported.swapNeedle || imported.needleCapacity || 11;
+                  completedMap.value = imported.completedMap || {};
+                  activeSessionId.value = imported.id || Date.now();
+                  activeSessionName.value = imported.name || 'Sesi Terbuka dari Link';
+
+                  const importedFp = getSessionFingerprint(cmts.value, needleCapacity.value, swapNeedle.value);
+                  const exists = savedSessions.value.find(s => 
+                    s.id === activeSessionId.value || 
+                    getSessionFingerprint(s.cmts, s.needleCapacity, s.swapNeedle) === importedFp
+                  );
+                  if (!exists) {
+                    savedSessions.value.unshift({
+                      id: activeSessionId.value,
+                      name: activeSessionName.value,
+                      date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) + ' (Sharelink)',
+                      needleCapacity: needleCapacity.value,
+                      swapNeedle: swapNeedle.value,
+                      cmts: JSON.parse(JSON.stringify(cmts.value)),
+                      completedMap: JSON.parse(JSON.stringify(completedMap.value))
+                    });
+                  } else {
+                    activeSessionId.value = exists.id;
+                    activeSessionName.value = exists.name;
+                  }
+
+                  loadedFromUrl = true;
+                  showToast(`Sesi "${activeSessionName.value}" berhasil dimuat dari Tautan!`, 4000);
+                  if (window.history && window.history.replaceState) {
+                    const cleanUrl = window.location.pathname + (window.location.search ? window.location.search : '');
+                    window.history.replaceState(null, '', cleanUrl);
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Gagal memproses parameter URL:', err);
+          }
+
+          // 5. Muat CMT aktif & konfigurasi jika TIDAK dimuat dari URL Sharelink
+          if (!loadedFromUrl) {
+            const storedCmts = localStorage.getItem('embro_active_cmts');
+            if (storedCmts !== null) {
+              try { cmts.value = JSON.parse(storedCmts); } catch (e) { cmts.value = []; }
+            } else {
+              cmts.value = JSON.parse(JSON.stringify(SAMPLE_DATA));
+              localStorage.setItem('embro_active_cmts', JSON.stringify(cmts.value));
+            }
+
+            const storedCompleted = localStorage.getItem('embro_completed_map');
+            if (storedCompleted) {
+              try { completedMap.value = JSON.parse(storedCompleted); } catch (e) {}
+            }
+
+            const storedCap = localStorage.getItem('embro_needle_capacity');
+            if (storedCap) {
+              const parsedCap = parseInt(storedCap, 10);
+              if (!isNaN(parsedCap) && parsedCap >= 2) needleCapacity.value = parsedCap;
+            }
+
+            const storedSwap = localStorage.getItem('embro_swap_needle');
+            if (storedSwap) {
+              const parsedSwap = parseInt(storedSwap, 10);
+              if (!isNaN(parsedSwap) && parsedSwap >= 1 && parsedSwap <= needleCapacity.value) {
+                swapNeedle.value = parsedSwap;
+              } else {
+                swapNeedle.value = needleCapacity.value;
+              }
+            } else {
+              swapNeedle.value = needleCapacity.value;
+            }
+          }
+
+          // 6. Muat active tab
+          const storedTab = localStorage.getItem('embro_active_tab');
+          if (storedTab && ['operator', 'rack', 'colors', 'manage'].includes(storedTab)) {
+            activeTab.value = storedTab;
+          }
+
+          // 7. Inisialisasi Jalur Sinkronisasi (BroadcastChannel lokal + Firebase jika ada)
+          initBroadcastChannel();
+          initFirebaseSync();
+        });
+
+        // Watchers untuk persistensi otomatis ke localStorage & Realtime Cloud Sync
+        watch(cmts, (val) => {
+          localStorage.setItem('embro_active_cmts', JSON.stringify(val));
+          if (!isRemoteUpdating) debounceSyncRoomState();
+        }, { deep: true });
+
+        watch(completedMap, (val) => {
+          localStorage.setItem('embro_completed_map', JSON.stringify(val));
+          if (!isRemoteUpdating) debounceSyncRoomState(150);
+        }, { deep: true });
+
+        watch(needleCapacity, (val) => {
+          localStorage.setItem('embro_needle_capacity', String(val));
+          if (swapNeedle.value > val) swapNeedle.value = val;
+          if (!isRemoteUpdating) debounceSyncRoomState();
+        });
+
+        watch(swapNeedle, (val) => {
+          localStorage.setItem('embro_swap_needle', String(val));
+          if (!isRemoteUpdating) debounceSyncRoomState();
+        });
+
+        watch(activeTab, (val) => {
+          localStorage.setItem('embro_active_tab', val);
+        });
+
+        watch(colorMap, (val) => {
+          localStorage.setItem('embro_custom_colors', JSON.stringify(val));
+          if (!isRemoteUpdating) debounceSyncRoomState(300);
+        }, { deep: true });
+
+        watch(savedSessions, (val) => {
+          localStorage.setItem('embro_archives', JSON.stringify(val));
+        }, { deep: true });
+
+        watch(activeSessionId, (val) => {
+          if (val) localStorage.setItem('embro_active_session_id', String(val));
+          else localStorage.removeItem('embro_active_session_id');
+          if (!isRemoteUpdating) debounceSyncRoomState();
+        });
+
+        watch(activeSessionName, (val) => {
+          if (val) localStorage.setItem('embro_active_session_name', val);
+          else localStorage.removeItem('embro_active_session_name');
+          if (!isRemoteUpdating) debounceSyncRoomState();
+        });
+
+        // ================= METRICS & HELPERS =================
+        const totalCmtCount = computed(() => cmts.value.length);
+        
+        const uniqueTotalCmts = computed(() => {
+          return new Set(cmts.value.map(c => c.cmt)).size;
+        });
+
+        const completedCount = computed(() => {
+          return cmts.value.filter(c => {
+            const keyWithFlopy = `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`;
+            const keyLegacy = `${c.cmt}_${c.variant || '-'}`;
+            return completedMap.value[keyWithFlopy] || completedMap.value[keyLegacy];
+          }).length;
+        });
+
+        const progressPercent = computed(() => {
+          if (totalCmtCount.value === 0) return 0;
+          return Math.round((completedCount.value / totalCmtCount.value) * 100);
+        });
+
+        const isCompleted = (key) => !!completedMap.value[key];
+
+        const toggleComplete = (key) => {
+          completedMap.value[key] = !completedMap.value[key];
+          if (activeSessionId.value) {
+            const s = savedSessions.value.find(item => item.id === activeSessionId.value);
+            if (s) s.completedMap = { ...completedMap.value };
+          }
+          broadcastSync('CHECKLIST_UPDATE', { 
+            completedMap: completedMap.value, 
+            sessionId: activeSessionId.value 
+          });
+          debounceSyncArchivesToCloud();
+        };
+
+        const confirmResetCompleted = async () => {
+          const ok = await showConfirm({
+            title: 'Reset Ceklis',
+            message: 'Reset semua status ceklis pengerjaan menjadi BELUM?',
+            confirmText: 'Reset Ceklis',
+            cancelText: 'Batal',
+            type: 'warning'
+          });
+          if (ok) {
+            completedMap.value = {};
+            if (activeSessionId.value) {
+              const s = savedSessions.value.find(item => item.id === activeSessionId.value);
+              if (s) s.completedMap = {};
+            }
+            broadcastSync('CHECKLIST_UPDATE', { 
+              completedMap: {}, 
+              sessionId: activeSessionId.value 
+            });
+            syncArchivesToCloud();
+          }
+        };
+
+        const getStageCompletedCount = (stage) => {
+          return stage.items.filter(it => isCompleted(it.key)).length;
+        };
+
+        const getStageSubtitle = (stage) => {
+          const uniqueCmts = [...new Set(stage.items.map(it => it.cmt))];
+          if (uniqueCmts.length === 1) {
+            return `(CMT ${uniqueCmts[0]})`;
+          }
+          return `(${uniqueCmts.length} CMT)`;
+        };
+
+        const isStageComplete = (stage) => {
+          return !!(stage && stage.items && stage.items.length > 0 && stage.items.every(it => isCompleted(it.key)));
+        };
+
+        const activeStageIndex = computed(() => {
+          const list = calculation.value.stagesList || [];
+          for (let i = 0; i < list.length; i++) {
+            if (!isStageComplete(list[i])) return i;
+          }
+          return -1;
+        });
+
+        const getStageState = (stage, idx) => {
+          if (isStageComplete(stage)) return 'completed';
+          if (idx === activeStageIndex.value) return 'active';
+          return 'upcoming';
+        };
+
+        // ================= COLOR UTILITIES =================
+        const getThreadColor = (code) => {
+          if (!code || code === '-') return '#3f3f46';
+          if (colorMap.value[code]) return colorMap.value[code];
+          if (DEFAULT_COLOR_MAP[code]) return DEFAULT_COLOR_MAP[code];
+
+          // Deterministic hash fallback
+          let hash = 0;
+          for (let i = 0; i < code.length; i++) {
+            hash = code.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+          return '#' + '00000'.substring(0, 6 - c.length) + c;
+        };
+
+        const getTextColor = (hexColor) => {
+          if (!hexColor || hexColor.length < 7) return '#ffffff';
+          const r = parseInt(hexColor.substr(1, 2), 16);
+          const g = parseInt(hexColor.substr(3, 2), 16);
+          const b = parseInt(hexColor.substr(5, 2), 16);
+          const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+          return yiq >= 140 ? '#09090b' : '#ffffff';
+        };
+
+        const activeColorMap = computed(() => {
+          const map = {};
+          Object.keys(DEFAULT_COLOR_MAP).forEach(code => {
+            map[code] = getThreadColor(code);
+          });
+          cmts.value.forEach(item => {
+            item.threads.forEach(th => {
+              map[th] = getThreadColor(th);
+            });
+          });
+          return map;
+        });
+
+        const resetColors = async () => {
+          const ok = await showConfirm({
+            title: 'Reset Warna Benang',
+            message: 'Kembalikan warna semua benang ke standar katalog Star Elephant?',
+            confirmText: 'Kembalikan Standar',
+            cancelText: 'Batal',
+            type: 'warning'
+          });
+          if (ok) {
+            colorMap.value = {};
+            localStorage.removeItem('embro_custom_colors');
+          }
+        };
+
+        // ================= CAPACITY CONTROLS (ARROWS ONLY) =================
+        const incrementCapacity = () => {
+          if (needleCapacity.value < 24) {
+            needleCapacity.value++;
+          }
+        };
+
+        const decrementCapacity = () => {
+          if (needleCapacity.value > 2) {
+            needleCapacity.value--;
+            if (swapNeedle.value > needleCapacity.value) {
+              swapNeedle.value = needleCapacity.value;
+            }
+          }
+        };
+
+        // ================= CORE DOMAIN ALGORITHM =================
+        const calculation = computed(() => {
+          if (cmts.value.length === 0) {
+            return { threadToNeedle: {}, overflowThreads: [], stagesList: [], manualSwapItems: [], swapChanges: 0 };
+          }
+
+          // Count by design, not by duplicate use inside one design.
+          const freq = {};
+          cmts.value.forEach(item => {
+            new Set(item.threads).forEach(t => { 
+              freq[t] = (freq[t] || 0) + 1; 
+            });
+          });
+
+          const totalCap = needleCapacity.value;
+          // Jarum swap default ke jarum paling akhir / ujung
+          const primarySwap = (swapNeedle.value >= 1 && swapNeedle.value <= totalCap) 
+            ? swapNeedle.value 
+            : totalCap;
+
+          // 1. Hitung frekuensi kemunculan tiap benang secara global
+          const rankedThreads = Object.keys(freq).sort((a, b) => {
+            if (freq[b] !== freq[a]) return freq[b] - freq[a];
+            const idxA = PREFERRED_FIXED_ORDER.indexOf(a);
+            const idxB = PREFERRED_FIXED_ORDER.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.localeCompare(b);
+          });
+
+          // Slot jarum tetap: seluruh jarum selain primarySwap
+          const nonSwapSlots = [];
+          for (let i = 1; i <= totalCap; i++) {
+            if (i !== primarySwap) nonSwapSlots.push(i);
+          }
+          const fixedCount = nonSwapSlots.length;
+
+          // 2. Evaluasi dan pilih himpunan benang tetap terbaik (minimalkan varian multi-swap)
+          function evaluateFixedSet(candidateSet) {
+            let pureBase = 0;
+            let singleSwap = 0;
+            let multiSwap = 0;
+            const dynamicThreads = new Set();
+
+            cmts.value.forEach(item => {
+              const missing = item.threads.filter(t => !candidateSet.has(t));
+              const uniqMissing = new Set(missing);
+              if (uniqMissing.size === 0) pureBase++;
+              else if (uniqMissing.size === 1) {
+                singleSwap++;
+                dynamicThreads.add([...uniqMissing][0]);
+              } else {
+                multiSwap++;
+                uniqMissing.forEach(t => dynamicThreads.add(t));
+              }
+            });
+
+            return { multiSwap, dynamicCount: dynamicThreads.size, pureBase };
+          }
+
+          function compareFixedScores(s1, s2) {
+            if (s1.multiSwap !== s2.multiSwap) return s1.multiSwap - s2.multiSwap;
+            if (s1.dynamicCount !== s2.dynamicCount) return s1.dynamicCount - s2.dynamicCount;
+            return s2.pureBase - s1.pureBase;
+          }
+
+          let bestFixedSet = new Set(rankedThreads.slice(0, Math.min(fixedCount, rankedThreads.length)));
+          let bestFixedScore = evaluateFixedSet(bestFixedSet);
+
+          const unselectedThreads = rankedThreads.filter(t => !bestFixedSet.has(t));
+          let improved = true;
+          while (improved) {
+            improved = false;
+            for (const outTh of [...bestFixedSet]) {
+              for (const inTh of unselectedThreads) {
+                const candidate = new Set(bestFixedSet);
+                candidate.delete(outTh);
+                candidate.add(inTh);
+                const score = evaluateFixedSet(candidate);
+                if (compareFixedScores(score, bestFixedScore) < 0) {
+                  bestFixedSet = candidate;
+                  bestFixedScore = score;
+                  improved = true;
+                  break;
+                }
+              }
+              if (improved) break;
+            }
+          }
+
+          // Urutkan benang tetap ke nonSwapSlots
+          const orderedFixedThreads = [...bestFixedSet].sort((a, b) => {
+            const idxA = PREFERRED_FIXED_ORDER.indexOf(a);
+            const idxB = PREFERRED_FIXED_ORDER.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            if (freq[b] !== freq[a]) return freq[b] - freq[a];
+            return a.localeCompare(b);
+          });
+
+          const baseNeedleMapping = {};
+          orderedFixedThreads.forEach((th, idx) => {
+            baseNeedleMapping[th] = nonSwapSlots[idx];
+          });
+
+          // 3. Kelompokkan CMT berdasarkan kebutuhan benang dinamis
+          const directItems = [];
+          const singleSwapGroups = {};
+          const multiSwapList = [];
+
+          cmts.value.forEach(item => {
+            const missing = [...new Set(item.threads.filter(t => !bestFixedSet.has(t)))];
+            if (missing.length === 0) {
+              directItems.push(item);
+            } else if (missing.length === 1) {
+              const th = missing[0];
+              if (!singleSwapGroups[th]) singleSwapGroups[th] = [];
+              singleSwapGroups[th].push(item);
+            } else {
+              multiSwapList.push({ item, missing });
+            }
+          });
+
+          // 4. Susun Tahap-Tahap (Stages)
+          const stagesList = [];
+          const allRotatedSwapThreads = [];
+
+          const singleSwapThreads = Object.keys(singleSwapGroups).sort((a, b) => {
+            return singleSwapGroups[b].length - singleSwapGroups[a].length || freq[b] - freq[a];
+          });
+
+          const initialSwapThread = singleSwapThreads[0] || null;
+          if (initialSwapThread) allRotatedSwapThreads.push(initialSwapThread);
+
+          const stage1Items = [
+            ...directItems,
+            ...(initialSwapThread && singleSwapGroups[initialSwapThread] ? singleSwapGroups[initialSwapThread] : [])
+          ];
+
+          const stage1NeedleMap = { ...baseNeedleMapping };
+          if (initialSwapThread) {
+            stage1NeedleMap[initialSwapThread] = primarySwap;
+          }
+
+          // Tahap 1: Setup Awal
+          if (stage1Items.length > 0 || singleSwapThreads.length === 0) {
+            stagesList.push({
+              title: "Setup Awal",
+              isSwapStage: false,
+              swaps: initialSwapThread ? [{ needle: primarySwap, thread: initialSwapThread, isPrimary: true }] : [],
+              swappedNeedles: initialSwapThread ? [primarySwap] : [],
+              instruction: initialSwapThread
+                ? `Pasang jarum tetap J1–J${totalCap} (selain J${primarySwap}). Pasang ${initialSwapThread} di Jarum ${primarySwap}.`
+                : `Semua benang muat di mesin (${totalCap} jarum). Langsung jalan tanpa ganti benang.`,
+              needleMap: stage1NeedleMap,
+              items: stage1Items.map(c => ({
+                ...c,
+                key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
+                needleSequence: c.threads.map(t => 'J' + stage1NeedleMap[t])
+              }))
+            });
+          }
+
+          // Rekap status awal benang pada jarum di Tahap 1
+          const stage1NeedleUsage = {};
+          Object.keys(stage1NeedleMap).forEach(th => {
+            const n = stage1NeedleMap[th];
+            stage1NeedleUsage[n] = th;
+          });
+
+          // State pelacak benang fisik di tiap jarum saat tahapan berganti
+          const activeNeedleState = { ...stage1NeedleUsage };
+
+          // Tahap-tahap Single Swap (Rotasi jarum ujung primarySwap saja)
+          singleSwapThreads.slice(1).forEach(th => {
+            allRotatedSwapThreads.push(th);
+            const stageMap = { ...baseNeedleMapping, [th]: primarySwap };
+            const items = singleSwapGroups[th] || [];
+            const prev = activeNeedleState[primarySwap] || '';
+            activeNeedleState[primarySwap] = th;
+
+            const swapDesc = prev ? `J${primarySwap} (${prev}) → ${th}` : `J${primarySwap} → ${th}`;
+            stagesList.push({
+              title: `Ganti ${swapDesc}`,
+              isSwapStage: true,
+              swaps: [{ needle: primarySwap, thread: th, prevThread: prev, isPrimary: true }],
+              swappedNeedles: [primarySwap],
+              instruction: `Ganti ${swapDesc}.`,
+              needleMap: stageMap,
+              items: items.map(c => ({
+                ...c,
+                key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
+                needleSequence: c.threads.map(t => 'J' + stageMap[t])
+              }))
+            });
+          });
+
+          // Tahap-tahap Multi-Swap (Seperti CMT 657 yang butuh beberapa warna baru)
+          // Alokasi jarum mutlak anti-tabrakan: tiap warna dijamin berada di jarum berbeda!
+          let remainingMulti = [...multiSwapList];
+          while (remainingMulti.length > 0) {
+            const first = remainingMulti.shift();
+            const currentStageItems = [first.item];
+            const currentStageThreads = new Set(first.item.threads);
+
+            let added = true;
+            while (added) {
+              added = false;
+              for (let i = 0; i < remainingMulti.length; i++) {
+                const cand = remainingMulti[i];
+                const union = new Set([...currentStageThreads, ...cand.item.threads]);
+                if (union.size <= totalCap) {
+                  currentStageItems.push(cand.item);
+                  cand.item.threads.forEach(t => currentStageThreads.add(t));
+                  remainingMulti.splice(i, 1);
+                  added = true;
+                  break;
+                }
+              }
+            }
+
+            const usedBaseThreads = [...currentStageThreads].filter(t => bestFixedSet.has(t));
+            const usedBaseNeedles = new Set(usedBaseThreads.map(t => baseNeedleMapping[t]));
+            const missingThreads = [...currentStageThreads].filter(t => !bestFixedSet.has(t));
+
+            // Ambil jarum bebas dari ujung kanan rack
+            const availableNeedles = [];
+            if (!usedBaseNeedles.has(primarySwap)) availableNeedles.push(primarySwap);
+            for (let n = totalCap; n >= 1; n--) {
+              if (n !== primarySwap && !usedBaseNeedles.has(n)) {
+                availableNeedles.push(n);
+              }
+            }
+
+            const stageMap = { ...baseNeedleMapping };
+            const swaps = [];
+
+            missingThreads.forEach((th, idx) => {
+              const assignedNeedle = availableNeedles[idx] || primarySwap;
+              const prev = activeNeedleState[assignedNeedle] || '';
+              stageMap[th] = assignedNeedle;
+              swaps.push({
+                needle: assignedNeedle,
+                thread: th,
+                prevThread: prev,
+                isPrimary: (assignedNeedle === primarySwap)
+              });
+              activeNeedleState[assignedNeedle] = th;
+              if (!allRotatedSwapThreads.includes(th)) {
+                allRotatedSwapThreads.push(th);
+              }
+            });
+
+            swaps.sort((a, b) => a.needle - b.needle);
+            const swapDesc = swaps.map(s => s.prevThread ? `J${s.needle} (${s.prevThread}) → ${s.thread}` : `J${s.needle} → ${s.thread}`).join(', ');
+
+            stagesList.push({
+              title: `Ganti ${swapDesc}`,
+              isSwapStage: true,
+              swaps: swaps,
+              swappedNeedles: swaps.map(s => s.needle),
+              instruction: `Ganti ${swapDesc}.`,
+              needleMap: stageMap,
+              items: currentStageItems.map(c => ({
+                ...c,
+                key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
+                needleSequence: c.threads.map(t => 'J' + stageMap[t])
+              }))
+            });
+          }
+
+          return {
+            stagesList,
+            threadToNeedle: baseNeedleMapping,
+            overflowThreads: allRotatedSwapThreads,
+            stage1NeedleUsage,
+            primarySwap
+          };
+        });
+
+        // Susunan Jarum untuk Tab Rack / Setup
+        const needleList = computed(() => {
+          const list = [];
+          const usage = calculation.value.stage1NeedleUsage || {};
+          const overflow = calculation.value.overflowThreads || [];
+          const pSwap = calculation.value.primarySwap || needleCapacity.value;
+
+          for (let i = 1; i <= needleCapacity.value; i++) {
+            const isSwap = (i === pSwap);
+            const threadCode = usage[i] || '';
+            const threadName = threadCode ? threadCode : '-';
+            const colorName = THREAD_METADATA[threadCode]?.name || '';
+
+            list.push({ 
+              num: i, 
+              isSwap, 
+              thread: threadName, 
+              rawCode: threadCode, 
+              colorName: colorName 
+            });
+          }
+          return list;
+        });
+
+        // ================= CMT & SESSION ACTIONS =================
+        const loadSampleData = async () => {
+          if (cmts.value.length > 0) {
+            const confirmed = await showConfirm({
+              title: 'Peringatan Keamanan Data',
+              message: `Saat ini terdapat ${uniqueTotalCmts.value} CMT aktif (${cmts.value.length} variasi).\n\nMemuat data sampel akan menimpa seluruh data yang sedang aktif saat ini.\nApakah Anda yakin ingin mengganti data dengan sampel bawaan?`,
+              confirmText: 'Timpa Data',
+              cancelText: 'Batal',
+              type: 'danger'
+            });
+            if (!confirmed) return;
+          }
+          cmts.value = JSON.parse(JSON.stringify(SAMPLE_DATA));
+          needleCapacity.value = 11;
+          swapNeedle.value = 11;
+          completedMap.value = {};
+        };
+
+        const clearAllCMTs = async () => {
+          const ok = await showConfirm({
+            title: 'Kosongkan Daftar CMT',
+            message: 'Apakah Anda yakin ingin menghapus semua daftar CMT aktif saat ini?',
+            confirmText: 'Kosongkan Semua',
+            cancelText: 'Batal',
+            type: 'danger'
+          });
+          if (ok) {
+            cmts.value = [];
+            completedMap.value = {};
+          }
+        };
+
+        const addCMT = async () => {
+          const cmtNum = newCmt.value.trim();
+          if (!cmtNum) {
+            await showAlert({
+              title: 'Input Belum Lengkap',
+              message: 'Nomor CMT wajib diisi.',
+              type: 'warning'
+            });
+            return;
+          }
+
+          // Validasi seluruh baris varian
+          const rowsToInsert = [];
+          for (let i = 0; i < variantRows.value.length; i++) {
+            const row = variantRows.value[i];
+            const rawThreads = (row.threads || '').trim();
+            const varLabel = row.variant.trim() || (variantRows.value.length > 1 ? getVariantPlaceholder(i) : '-');
+
+            if (!rawThreads) {
+              await showAlert({
+                title: 'Kode Benang Kosong',
+                message: `Variasi #${i + 1} (${varLabel}) belum memiliki kode benang. Silakan isi kode benang terlebih dahulu.`,
+                type: 'warning'
+              });
+              return;
+            }
+
+            const parsed = rawThreads.split(/[, -]+/).map(t => t.trim()).filter(Boolean);
+            if (parsed.length === 0) {
+              await showAlert({
+                title: 'Format Tidak Valid',
+                message: `Format kode benang pada Variasi #${i + 1} (${varLabel}) tidak valid. Gunakan format contoh: 1179, 1180, 1164`,
+                type: 'warning'
+              });
+              return;
+            }
+
+            rowsToInsert.push({
+              flopy: (newFlopy.value || '').trim(),
+              cmt: cmtNum,
+              variant: varLabel,
+              threads: parsed
+            });
+          }
+
+          if (rowsToInsert.length === 0) return;
+
+          // Simpan seluruh varian sekaligus
+          rowsToInsert.forEach(item => cmts.value.push(item));
+
+          // Reset formulir kembali bersih
+          resetCmtForm();
+        };
+
+        // Pengelompokan CMT agar variasi dari CMT yang sama berada dalam satu kartu
+        const groupedCmts = computed(() => {
+          const groups = [];
+          const map = new Map();
+
+          cmts.value.forEach((item, index) => {
+            const cmtKey = String(item.cmt).trim();
+            if (!map.has(cmtKey)) {
+              const group = {
+                cmt: cmtKey,
+                flopy: item.flopy || '',
+                variants: []
+              };
+              map.set(cmtKey, group);
+              groups.push(group);
+            }
+            const grp = map.get(cmtKey);
+            if (!grp.flopy && item.flopy) {
+              grp.flopy = item.flopy;
+            }
+            grp.variants.push({
+              itemRef: item,
+              flopy: item.flopy,
+              cmt: item.cmt,
+              variant: item.variant,
+              threads: item.threads,
+              originalIndex: index
+            });
+          });
+
+          return groups;
+        });
+
+        const removeCMTVariant = (itemRef) => {
+          const idx = cmts.value.indexOf(itemRef);
+          if (idx !== -1) {
+            cmts.value.splice(idx, 1);
+          }
+        };
+
+        const removeCMTGroup = async (group) => {
+          if (group.variants.length <= 1) {
+            if (group.variants[0]?.itemRef) {
+              removeCMTVariant(group.variants[0].itemRef);
+            } else {
+              cmts.value = cmts.value.filter(c => String(c.cmt).trim() !== group.cmt);
+            }
+            return;
+          }
+
+          const confirmed = await showConfirm({
+            title: 'Hapus Seluruh CMT',
+            message: `Hapus seluruh data CMT ${group.cmt} beserta ${group.variants.length} variasinya?`,
+            confirmText: 'Hapus Semua',
+            cancelText: 'Batal',
+            type: 'danger'
+          });
+          if (confirmed) {
+            cmts.value = cmts.value.filter(c => String(c.cmt).trim() !== group.cmt);
+          }
+        };
+
+        const removeCMT = (indexOrRef) => {
+          if (typeof indexOrRef === 'number') {
+            cmts.value.splice(indexOrRef, 1);
+          } else {
+            removeCMTVariant(indexOrRef);
+          }
+        };
+
+        const saveCurrentSession = async () => {
+          if (cmts.value.length === 0) {
+            await showAlert({
+              title: 'Daftar Kosong',
+              message: 'Daftar CMT masih kosong, tidak ada data untuk disimpan.',
+              type: 'warning'
+            });
+            return;
+          }
+
+          const currentFp = getSessionFingerprint(cmts.value, needleCapacity.value, swapNeedle.value);
+          const rawNote = sessionNote.value.trim();
+
+          // 1. Guardrail Sesi Aktif: Cek jika sesi yang sedang dibuka saat ini sudah ada di arsip
+          if (activeSessionId.value) {
+            const activeSess = savedSessions.value.find(s => s.id === activeSessionId.value);
+            if (activeSess) {
+              const activeFp = getSessionFingerprint(activeSess.cmts, activeSess.needleCapacity, activeSess.swapNeedle);
+              if (activeFp === currentFp) {
+                // Susunan CMT, benang & variasi sama persis dengan sesi aktif yang tersimpan
+                const noteChanged = rawNote && rawNote !== activeSess.name && rawNote !== activeSess.note;
+
+                if (noteChanged) {
+                  // User memberikan nama/catatan baru untuk sesi ini
+                  const rename = await showConfirm({
+                    title: 'Perbarui Nama Sesi?',
+                    message: `Sesi ini sudah ada di arsip dengan nama "${activeSess.name}".\n\nApakah Anda ingin memperbarui namanya menjadi "${rawNote}"?`,
+                    confirmText: 'Perbarui Nama',
+                    cancelText: 'Simpan Arsip Baru',
+                    type: 'confirm'
+                  });
+                  if (rename) {
+                    activeSess.name = rawNote;
+                    activeSess.note = rawNote;
+                    activeSessionName.value = rawNote;
+                    sessionNote.value = '';
+                    broadcastSync('SESSION_CHANGE', { session: activeSess });
+                    syncArchivesToCloud();
+                    showToast(`Nama sesi diperbarui menjadi "${rawNote}".`);
+                    return;
+                  }
+                  // Jika memilih "Simpan Arsip Baru", proses berlanjut ke bawah untuk membuat arsip baru
+                } else {
+                  // Sama sekali tidak ada perubahan nama ataupun data CMT
+                  await showAlert({
+                    title: 'Sesi Sudah Tersimpan',
+                    message: `Sesi ini sudah tersimpan rapi dalam arsip:\n\n• Sesi: "${activeSess.name}"\n• Progres: ${getSessionProgress(activeSess)}\n\nSeluruh data CMT, kode benang, variasi, dan status ceklis otomatis tersimpan dan tersinkronisasi tanpa perlu disimpan berulang kali.`,
+                    type: 'info'
+                  });
+                  return;
+                }
+              } else {
+                // Data CMT telah dimodifikasi dari sesi aktif semula
+                const updateChoice = await showConfirm({
+                  title: 'Perubahan Data Sesi',
+                  message: `Data CMT pada sesi "${activeSess.name}" telah diubah.\n\nApakah Anda ingin memperbarui data pada arsip yang sudah ada?`,
+                  confirmText: 'Perbarui Arsip Ini',
+                  cancelText: 'Simpan Sebagai Baru',
+                  type: 'confirm'
+                });
+                if (updateChoice) {
+                  activeSess.cmts = JSON.parse(JSON.stringify(cmts.value));
+                  activeSess.needleCapacity = needleCapacity.value;
+                  activeSess.swapNeedle = swapNeedle.value;
+                  activeSess.completedMap = JSON.parse(JSON.stringify(completedMap.value));
+                  if (rawNote) {
+                    activeSess.name = rawNote;
+                    activeSess.note = rawNote;
+                    activeSessionName.value = rawNote;
+                  }
+                  sessionNote.value = '';
+                  broadcastSync('SESSION_CHANGE', { session: activeSess });
+                  syncArchivesToCloud();
+                  showToast(`Arsip sesi "${activeSess.name}" berhasil diperbarui.`);
+                  return;
+                }
+                // Jika memilih "Simpan Sebagai Baru", biarkan lanjut membuat entri baru
+              }
+            }
+          }
+
+          // 2. Guardrail Duplikasi: Cek apakah ada sesi LAIN di arsip yang datanya sama persis
+          const duplicateSess = savedSessions.value.find(s => 
+            s.id !== activeSessionId.value && 
+            getSessionFingerprint(s.cmts, s.needleCapacity, s.swapNeedle) === currentFp
+          );
+
+          if (duplicateSess) {
+            const proceed = await showConfirm({
+              title: 'Data Duplikat Terdeteksi',
+              message: `Susunan CMT, kode benang, dan variasi ini sama persis dengan arsip yang sudah ada:\n\n• Sesi: "${duplicateSess.name}" (${duplicateSess.date})\n• Progres: ${getSessionProgress(duplicateSess)}\n\nApakah Anda yakin ingin tetap menyimpannya sebagai sesi arsip baru?`,
+              confirmText: 'Tetap Simpan',
+              cancelText: 'Batal',
+              type: 'warning'
+            });
+            if (!proceed) return;
+          }
+
+          const now = new Date();
+          const dateString = now.toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric'
+          }) + ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+          const sessName = rawNote || `Sesi ${dateString}`;
+          const newSession = {
+            id: Date.now(),
+            name: sessName,
+            date: dateString,
+            note: rawNote,
+            needleCapacity: needleCapacity.value,
+            swapNeedle: swapNeedle.value,
+            cmts: JSON.parse(JSON.stringify(cmts.value)),
+            completedMap: JSON.parse(JSON.stringify(completedMap.value))
+          };
+
+          savedSessions.value.unshift(newSession);
+          activeSessionId.value = newSession.id;
+          activeSessionName.value = newSession.name;
+          sessionNote.value = '';
+
+          syncArchivesToCloud();
+          broadcastSync('SESSION_CHANGE', { session: newSession });
+          showToast(`Sesi "${sessName}" berhasil disimpan ke arsip.`);
+        };
+
+        const loadSession = async (index) => {
+          const sess = savedSessions.value[index];
+          if (!sess) return;
+          const ok = await showConfirm({
+            title: 'Muat Arsip Sesi',
+            message: `Muat sesi "${sess.name || sess.date}" (${sess.note || 'Tanpa Catatan'})?\n\nData aktif saat ini akan digantikan oleh sesi yang dipilih.`,
+            confirmText: 'Muat Sesi',
+            cancelText: 'Batal',
+            type: 'confirm'
+          });
+          if (ok) {
+            activateSession(sess);
+            activeTab.value = 'operator';
+          }
+        };
+
+        const deleteSession = async (index) => {
+          const sess = savedSessions.value[index];
+          if (!sess) return;
+          const ok = await showConfirm({
+            title: 'Hapus Arsip Sesi',
+            message: `Apakah Anda yakin ingin menghapus arsip "${sess.name || sess.note || sess.date}"?`,
+            confirmText: 'Hapus Sesi',
+            cancelText: 'Batal',
+            type: 'danger'
+          });
+          if (ok) {
+            if (activeSessionId.value === sess.id) {
+              activeSessionId.value = null;
+              activeSessionName.value = '';
+            }
+            savedSessions.value.splice(index, 1);
+            syncArchivesToCloud();
+            showToast('Arsip sesi telah dihapus.');
+          }
+        };
+
+        const printWorksheet = () => {
+          window.print();
+        };
+
+        const currentDateString = computed(() => {
+          const now = new Date();
+          return now.toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric'
+          }) + ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        });
+
+        return {
+          activeTab,
+          needleCapacity,
+          swapNeedle,
+          cmts,
+          completedMap,
+          colorMap,
+          savedSessions,
+          sessionNote,
+          isSnapshotOpen,
+          newFlopy,
+          newCmt,
+          variantRows,
+          addVariantRow,
+          removeVariantRow,
+          resetCmtForm,
+          modalState,
+          showConfirm,
+          showAlert,
+          THREAD_METADATA,
+          totalCmtCount,
+          completedCount,
+          progressPercent,
+          isCompleted,
+          toggleComplete,
+          confirmResetCompleted,
+          getStageCompletedCount,
+          getThreadColor,
+          getTextColor,
+          activeColorMap,
+          resetColors,
+          incrementCapacity,
+          decrementCapacity,
+          calculation,
+          needleList,
+          loadSampleData,
+          clearAllCMTs,
+          addCMT,
+          removeCMT,
+          groupedCmts,
+          removeCMTVariant,
+          removeCMTGroup,
+          getVariantPlaceholder,
+          saveCurrentSession,
+          loadSession,
+          deleteSession,
+          printWorksheet,
+          currentDateString,
+          uniqueTotalCmts,
+          getStageSubtitle,
+          isStageComplete,
+          activeStageIndex,
+          getStageState,
+          // Fitur Live Sharing & Cloud Session
+          currentRoomCode,
+          firebaseUrl,
+          activeSessionId,
+          activeSessionName,
+          isSyncConnected,
+          syncBadgeText,
+          isCloudSettingsOpen,
+          tempRoomCode,
+          tempFirebaseUrl,
+          toastMessage,
+          showToast,
+          copyCurrentActiveShareLink,
+          copySessionLink,
+          getSessionShareLink,
+          activateSession,
+          openCloudSettingsModal,
+          saveCloudSettings,
+          getSessionCmtSummary,
+          getSessionProgress
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
