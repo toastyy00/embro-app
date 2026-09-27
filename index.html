@@ -1211,109 +1211,165 @@
               </div>
             </div>
 
-            <!-- Section 2: Variasi & Opsi Kode Benang (Repeater Variasi dengan Opsi Warna Memanjang ke Samping) -->
-            <div class="space-y-3 pt-1">
+            <!-- Section 2: Variasi & Kode Benang (Default 1 Input Field, Klik + OPSI untuk Multi-Warna) -->
+            <div class="space-y-2.5 pt-1">
               <!-- Header Section -->
               <div class="flex items-center justify-between text-[10.5px] font-mono uppercase tracking-wider text-zinc-400 font-semibold px-0.5">
                 <div class="flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
-                  <span>Variasi &amp; Opsi Warna Trial</span>
+                  <span>Variasi &amp; Kode Benang</span>
                 </div>
-                <span class="text-[10px] text-zinc-500 font-normal">Kombinasi warna: pisahkan spasi (cth: 1171 1070)</span>
+                <span class="text-[10px] text-zinc-500 font-normal">Klik <strong class="text-zinc-300">+ OPSI</strong> jika film memiliki 2+ warna</span>
               </div>
 
-              <!-- List Kartu Tiap Variasi (C1, C2, dst.) -->
+              <!-- List Variasi Rows -->
               <div class="space-y-2.5">
                 <div
                   v-for="(row, rIdx) in variantRows"
                   :key="rIdx"
-                  class="bg-zinc-950/80 border border-zinc-800 hover:border-zinc-750 rounded-lg p-2.5 sm:p-3 space-y-2.5 transition-all shadow-sm"
                 >
-                  <!-- Baris Header Variasi: Label Variasi & Tombol Hapus Variasi -->
-                  <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-zinc-850">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="w-5 h-5 rounded bg-zinc-850 text-zinc-300 text-[10px] font-bold flex items-center justify-center font-mono border border-zinc-750">
-                        {{ rIdx + 1 }}
-                      </span>
-                      <span class="text-[11px] font-mono uppercase font-bold text-zinc-300">Variasi:</span>
+                  <!-- KONDISI A: Default Mode 1 Warna (Single Input Field - Cepat & Praktis) -->
+                  <div v-if="!row.options || row.options.length <= 1" class="flex items-center gap-2">
+                    <!-- Variasi Name Input (Kecil, cth: C1) -->
+                    <input
+                      v-model="row.variant"
+                      :placeholder="getVariantPlaceholder(rIdx)"
+                      title="Nama variasi (cth: C1)"
+                      class="w-24 sm:w-28 h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono font-bold text-zinc-100 placeholder:text-zinc-600 focus:outline-none uppercase shrink-0 transition-all"
+                    />
+
+                    <!-- Kode Benang (Langsung Isi 4 Opsi Warna Sekaligus) -->
+                    <div class="flex-1 min-w-0">
                       <input
-                        v-model="row.variant"
-                        :placeholder="getVariantPlaceholder(rIdx)"
-                        class="w-24 sm:w-28 h-7 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded px-2 text-xs font-mono font-bold text-zinc-100 placeholder:text-zinc-600 focus:outline-none uppercase transition-all"
-                        title="Nama variasi (cth: C1, C2, Navy, dll)"
+                        v-model="row.options[0]"
+                        placeholder="cth: 1139, 1070, 1320, 1175 (langsung 4 opsi)"
+                        class="w-full h-10 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded-md px-3 text-xs sm:text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+                        @keyup.enter="rIdx === variantRows.length - 1 ? addCMT() : null"
                       />
-                      <span class="text-[10px] font-mono text-zinc-500">
-                        • {{ (row.options || []).filter(o => (o || '').trim()).length }} Opsi Terisi
-                      </span>
                     </div>
 
-                    <!-- Tombol Hapus Baris Variasi Ini (Hanya muncul jika variasi > 1) -->
+                    <!-- Tombol + OPSI (Aktifkan Mode Kombinasi Multi-Warna) -->
+                    <button
+                      @click="addOptionToRow(rIdx)"
+                      type="button"
+                      title="Klik jika desain floppy memiliki 2 warna atau lebih (kombinasi)"
+                      class="h-10 px-2.5 sm:px-3 rounded-md border border-dashed border-zinc-700 hover:border-zinc-500 bg-zinc-900/60 hover:bg-zinc-850 text-zinc-300 hover:text-white font-mono text-xs font-semibold flex items-center gap-1 shrink-0 transition-all select-none cursor-pointer"
+                    >
+                      <span class="text-sm font-bold leading-none">+</span>
+                      <span class="text-[11px]">OPSI</span>
+                    </button>
+
+                    <!-- Tombol Hapus Baris Variasi (Hanya muncul jika variasi > 1) -->
                     <button
                       v-if="variantRows.length > 1"
                       @click="removeVariantRow(rIdx)"
                       type="button"
                       title="Hapus variasi ini"
-                      class="h-6 px-2 rounded flex items-center gap-1 text-[10.5px] font-mono text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md border border-zinc-750 bg-zinc-900 hover:bg-rose-500/15 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 transition-all cursor-pointer"
                     >
-                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
-                      <span>Hapus Variasi</span>
                     </button>
                   </div>
 
-                  <!-- Baris Opsi Warna Memanjang ke Samping (Horizontal Scrollable) -->
-                  <div>
-                    <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1.5 px-0.5">
-                      <span class="uppercase tracking-wider font-semibold">Opsi Kode Benang (Geser ke samping):</span>
-                      <span class="text-[9.5px] text-zinc-500 lowercase">(1 input = 1 opsi)</span>
-                    </div>
-
-                    <div class="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin -mx-1 px-1">
-                      <!-- Kotak Input Tiap Opsi -->
-                      <div
-                        v-for="(opt, optIdx) in (row.options || [''])"
-                        :key="optIdx"
-                        class="shrink-0 w-36 sm:w-44 bg-zinc-900 border border-zinc-750 hover:border-zinc-650 rounded-lg p-2 space-y-1.5 transition-all shadow-sm"
-                      >
-                        <!-- Header Opsi: Nomor Opsi & Hapus Opsi -->
-                        <div class="flex items-center justify-between pb-1 border-b border-zinc-800">
-                          <span class="text-[10px] font-mono font-bold text-zinc-300 uppercase">
-                            Opsi {{ optIdx + 1 }}
-                          </span>
-                          <button
-                            v-if="row.options && row.options.length > 1"
-                            @click="removeOptionFromRow(rIdx, optIdx)"
-                            type="button"
-                            title="Hapus opsi ini"
-                            class="w-4 h-4 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors text-[10px]"
-                          >
-                            ✕
-                          </button>
-                        </div>
-
-                        <!-- Input Kode Benang untuk Opsi Ini -->
-                        <div>
-                          <input
-                            v-model="row.options[optIdx]"
-                            placeholder="cth: 1171 1070"
-                            class="w-full h-8 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded px-2 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
-                            @keyup.enter="rIdx === variantRows.length - 1 && optIdx === row.options.length - 1 ? addCMT() : null"
-                          />
-                        </div>
+                  <!-- KONDISI B: Mode Multi-Warna Kombinasi (Muncul setelah tombol + OPSI diklik) -->
+                  <div v-else class="bg-zinc-950/80 border border-zinc-800 hover:border-zinc-750 rounded-lg p-2.5 sm:p-3 space-y-2.5 transition-all shadow-sm">
+                    <!-- Header Baris Multi-Warna -->
+                    <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-zinc-850">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="w-5 h-5 rounded bg-zinc-850 text-zinc-300 text-[10px] font-bold flex items-center justify-center font-mono border border-zinc-750">
+                          {{ rIdx + 1 }}
+                        </span>
+                        <span class="text-[11px] font-mono uppercase font-bold text-zinc-300">Variasi:</span>
+                        <input
+                          v-model="row.variant"
+                          :placeholder="getVariantPlaceholder(rIdx)"
+                          class="w-24 sm:w-28 h-7 bg-zinc-900 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded px-2 text-xs font-mono font-bold text-zinc-100 placeholder:text-zinc-600 focus:outline-none uppercase transition-all"
+                          title="Nama variasi (cth: C1)"
+                        />
+                        <span class="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold">
+                          Mode Kombinasi ({{ row.options.length }} Opsi)
+                        </span>
                       </div>
 
-                      <!-- Tombol Tambah Opsi Baru ke Samping (+) -->
-                      <button
-                        @click="addOptionToRow(rIdx)"
-                        type="button"
-                        title="Tambah Opsi Warna Baru ke Samping"
-                        class="shrink-0 w-24 sm:w-28 h-[60px] rounded-lg border border-dashed border-zinc-750 hover:border-zinc-500 bg-zinc-900/40 hover:bg-zinc-850 text-zinc-400 hover:text-white font-mono text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all select-none cursor-pointer p-1.5"
-                      >
-                        <span class="text-sm font-bold leading-none">+</span>
-                        <span class="text-[10px] font-medium">+ Opsi</span>
-                      </button>
+                      <div class="flex items-center gap-1.5">
+                        <!-- Tombol Reset Kembali ke 1 Warna -->
+                        <button
+                          @click="resetRowToSingleOption(rIdx)"
+                          type="button"
+                          title="Kembalikan ke satu input field (mode 1 warna)"
+                          class="h-6 px-2 rounded text-[10px] font-mono text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
+                        >
+                          ↺ Mode 1 Warna
+                        </button>
+
+                        <!-- Tombol Hapus Variasi -->
+                        <button
+                          v-if="variantRows.length > 1"
+                          @click="removeVariantRow(rIdx)"
+                          type="button"
+                          title="Hapus variasi ini"
+                          class="w-6 h-6 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        >
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Wadah Opsi Warna Memanjang ke Samping (Horizontal Scrollable) -->
+                    <div>
+                      <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1.5 px-0.5">
+                        <span class="uppercase tracking-wider font-semibold">Opsi Kode Benang (Geser ke samping):</span>
+                        <span class="text-[9.5px] text-zinc-500 lowercase">(1 input = 1 opsi kombinasi)</span>
+                      </div>
+
+                      <div class="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin -mx-1 px-1">
+                        <!-- Kotak Tiap Opsi Kombinasi -->
+                        <div
+                          v-for="(opt, optIdx) in row.options"
+                          :key="optIdx"
+                          class="shrink-0 w-36 sm:w-44 bg-zinc-900 border border-zinc-750 hover:border-zinc-650 rounded-lg p-2 space-y-1.5 transition-all shadow-sm"
+                        >
+                          <div class="flex items-center justify-between pb-1 border-b border-zinc-800">
+                            <span class="text-[10px] font-mono font-bold text-zinc-300 uppercase">
+                              Opsi {{ optIdx + 1 }}
+                            </span>
+                            <button
+                              @click="removeOptionFromRow(rIdx, optIdx)"
+                              type="button"
+                              title="Hapus opsi ini"
+                              class="w-4 h-4 rounded flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors text-[10px]"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          <div>
+                            <input
+                              v-model="row.options[optIdx]"
+                              placeholder="cth: 1171 1070"
+                              class="w-full h-8 bg-zinc-950 border border-zinc-750 focus:border-white focus:ring-1 focus:ring-white/30 rounded px-2 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all"
+                              @keyup.enter="rIdx === variantRows.length - 1 && optIdx === row.options.length - 1 ? addCMT() : null"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Tombol Tambah Opsi Baru ke Samping (+) -->
+                        <button
+                          @click="addOptionToRow(rIdx)"
+                          type="button"
+                          title="Tambah Opsi Warna Baru ke Samping"
+                          class="shrink-0 w-24 sm:w-28 h-[60px] rounded-lg border border-dashed border-zinc-750 hover:border-zinc-500 bg-zinc-900/40 hover:bg-zinc-850 text-zinc-400 hover:text-white font-mono text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all select-none cursor-pointer p-1.5"
+                        >
+                          <span class="text-sm font-bold leading-none">+</span>
+                          <span class="text-[10px] font-medium">+ Opsi</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2230,7 +2286,7 @@
 
           const newFlopy = ref('');
           const newCmt = ref('');
-          const variantRows = ref([{ variant: '', options: ['', '', '', ''] }]);
+          const variantRows = ref([{ variant: '', options: [''] }]);
 
           const getNextVariant = (existingRows) => {
             let lastVal = '';
@@ -2286,13 +2342,24 @@
               if (!Array.isArray(variantRows.value[rIdx].options)) {
                 variantRows.value[rIdx].options = [];
               }
-              variantRows.value[rIdx].options.push('');
+              if (variantRows.value[rIdx].options.length === 0) {
+                variantRows.value[rIdx].options = ['', ''];
+              } else {
+                variantRows.value[rIdx].options.push('');
+              }
             }
           };
 
           const removeOptionFromRow = (rIdx, optIdx) => {
-            if (variantRows.value[rIdx] && Array.isArray(variantRows.value[rIdx].options) && variantRows.value[rIdx].options.length > 1) {
+            if (variantRows.value[rIdx] && Array.isArray(variantRows.value[rIdx].options)) {
               variantRows.value[rIdx].options.splice(optIdx, 1);
+            }
+          };
+
+          const resetRowToSingleOption = (rIdx) => {
+            if (variantRows.value[rIdx]) {
+              const firstOpt = (variantRows.value[rIdx].options && variantRows.value[rIdx].options[0]) || '';
+              variantRows.value[rIdx].options = [firstOpt];
             }
           };
 
@@ -2302,7 +2369,7 @@
               variantRows.value[0].variant = 'C1';
             }
             const nextName = getNextVariant(variantRows.value);
-            variantRows.value.push({ variant: nextName, options: ['', '', '', ''] });
+            variantRows.value.push({ variant: nextName, options: [''] });
           };
 
           const removeVariantRow = (index) => {
@@ -2314,7 +2381,7 @@
           const resetCmtForm = () => {
             newFlopy.value = '';
             newCmt.value = '';
-            variantRows.value = [{ variant: '', options: ['', '', '', ''] }];
+            variantRows.value = [{ variant: '', options: [''] }];
           };
 
           // ================= CUSTOM NATIVE IN-PAGE MODAL =================
@@ -3973,6 +4040,7 @@
             removeVariantRow,
             addOptionToRow,
             removeOptionFromRow,
+            resetRowToSingleOption,
             resetCmtForm,
             modalState,
             showConfirm,
