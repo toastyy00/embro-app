@@ -1,124 +1,120 @@
-# AGENTS.md - Panduan Arsitektur & Peta Proyek untuk AI Assistants
-> Dokumen ini dirancang khusus untuk memandu AI coding agents (Antigravity, Gemini Code Assist, Claude Code, GitHub Copilot, Codex, Cursor) agar dapat memahami, mencari, memodifikasi, dan mengembangkan fitur di proyek ini secara cepat, hemat token, dan bebas error.
+# AGENTS.md — AI Architecture & Coding Guidelines
+> **Target Audience:** Autonomous AI coding agents (Antigravity, Gemini Code Assist, Claude Code, GitHub Copilot, Codex, Cursor).  
+> **Purpose:** Provide an instant, token-efficient mental model of the codebase to read, navigate, modify, and extend features without regressions.
 
 ---
 
-## 1. Ikhtisar Proyek (Project Overview)
-* **Nama Proyek:** `embro-app` (Embro Optimizer)
-* **Tujuan Aplikasi:** Sistem cerdas untuk optimasi urutan jarum mesin bordir komputer multi-kepala, verifikasi trial benang (ACC), penjadwalan mesin (SPK), manajemen stok benang gudang, dan master database Wilcom floppy.
-* **Paradigma Arsitektur:** **Modular Single File Components (SFC)** berbasis Vite + Vue 3 + Pinia + Tailwind CSS.
+## 1. Project Overview
+- **App Name:** `embro-app` (Embro Optimizer)
+- **Domain:** Industrial multi-head computerized embroidery management: needle sequence optimization, trial thread approval (ACC), machine scheduling (SPK), warehouse inventory, and Wilcom floppy database.
+- **Architecture:** **Modular Single File Components (SFC)** powered by Vite + Vue 3 + Pinia + Tailwind CSS.
 
 ---
 
-## 2. Stack Teknologi & Versi
-| Komponen | Teknologi | Keterangan |
-| :--- | :--- | :--- |
-| **Runtime / Tooling** | Node.js (v20+), Vite 5 | Hot Module Replacement (HMR) sub-detik |
-| **Framework** | Vue 3.4+ (`<script setup>`) | Composition API modern standar resmi |
-| **State Management** | Pinia 2.2+ | Store terpisah per domain domain/modul |
-| **CSS Framework** | Tailwind CSS 3.4+ | Purged, utility-first styling |
-| **Backend & Sync** | Firebase Modular SDK (v10) | Realtime Database + Storage |
+## 2. Tech Stack
+- **Build Tool:** Vite 5 (instant sub-second HMR)
+- **Framework:** Vue 3.4+ (`<script setup>` Composition API)
+- **State Management:** Pinia 2.2+ (isolated modular stores per domain)
+- **Styling:** Tailwind CSS 3.4+ + PostCSS (utility-first, purged CSS)
+- **Cloud & Sync:** Firebase Modular SDK v10 (Realtime Database & Storage)
 
 ---
 
-## 3. Peta Direktori & Pemetaan File (Directory Map)
+## 3. Directory Map & File Responsibilities
 
-Ketika Anda diminta untuk memeriksa, memperbaiki, atau menambah fitur, **langsung buka file terkait berikut tanpa perlu memproses file lain**:
+When tasked with a feature or bugfix, **navigate directly to the designated file below**:
 
 ```
 embro-app/
-├── AGENTS.md                  <-- Panduan untuk AI Agent (berkas ini)
-├── index.html                 <-- Entry point HTML Vite (ringkas, < 25 baris)
-├── index.monolith.html        <-- Arsip cadangan berkas monolitik lama (HANYA REFERENSI)
-├── package.json               <-- Dependensi npm & script dev/build
-├── vite.config.js             <-- Konfigurasi Vite & alias '@/' -> 'src/'
-├── tailwind.config.js         <-- Konfigurasi font & tema warna kustom zinc
-├── postcss.config.js          <-- PostCSS plugin (Tailwind + Autoprefixer)
+├── AGENTS.md                   # This AI guidance document
+├── index.html                  # Minimal HTML entry point (< 25 lines)
+├── index.monolith.html         # Legacy monolithic backup (READ-ONLY REFERENCE)
+├── package.json                # Dependencies and npm scripts
+├── vite.config.js              # Bundler config & '@/' alias to 'src/'
+├── tailwind.config.js          # Custom theme, font families, and zinc color palette
+├── postcss.config.js           # PostCSS Tailwind and Autoprefixer config
 │
 └── src/
-    ├── main.js                <-- Entry point script Vue 3 & Pinia initialization
-    ├── App.vue                <-- Root layout shell (Header, Tab Switcher, Toast)
+    ├── main.js                 # App bootstrapping (Vue + Pinia + CSS)
+    ├── App.vue                 # App shell layout (Header, Tab Switcher, Toast)
     │
     ├── assets/
-    │   └── main.css           <-- Tailwind directives & kustom styling scrollbar
+    │   └── main.css            # Tailwind directives and custom dark scrollbars
     │
-    ├── utils/                 <-- LOGIKA MURNI (Pure JS, Tanpa DOM, Mudah di-Unit Test)
-    │   ├── needleSolver.js    <-- Algoritma optimasi jarum & pembagian tahap (stages)
-    │   ├── colorPalette.js    <-- Katalog benang Rayon Star Elephant, hex, dan getTextColor
-    │   └── imageCompressor.js <-- Kompresor foto Wilcom ke format WebP via HTML5 Canvas
+    ├── utils/                  # PURE LOGIC (Zero DOM, Side-Effect Free, Unit Testable)
+    │   ├── needleSolver.js     # Needle allocation engine & stage sequence optimizer
+    │   ├── colorPalette.js     # Thread catalog (Star Elephant Rayon), hex map, text contrast
+    │   └── imageCompressor.js  # Client-side Canvas compressor (WebP, max 1280px)
     │
-    ├── services/              <-- INTEGRASI EKSTERNAL
-    │   └── firebase.js        <-- Inisialisasi Firebase Realtime Database & Auth
+    ├── services/               # EXTERNAL INTEGRATIONS
+    │   └── firebase.js         # Firebase modular Realtime Database & Auth initialization
     │
-    ├── stores/                <-- STATE MANAGEMENT (PINIA STORES)
-    │   ├── useTrialStore.js   <-- State CMT, jarum swap, stages, & logika approval ACC
-    │   ├── useInventoryStore.js <-- State stok benang gudang & tombol quick adjust [-]/[+]
-    │   ├── useFloppyStore.js  <-- State master file Wilcom, stitches, & upload screenshot
-    │   └── useToastStore.js   <-- State notifikasi toast melayang
+    ├── stores/                 # REACTIVE STATE (PINIA STORES)
+    │   ├── useTrialStore.js    # Active CMTs, needle capacity, stages, option ACC states
+    │   ├── useInventoryStore.js# Warehouse thread inventory, [-]/[+] adjusters, filters
+    │   ├── useFloppyStore.js   # Wilcom master database, stitch/meter formulas, screenshots
+    │   └── useToastStore.js    # Reactive floating toast alerts
     │
-    ├── components/            <-- KOMPONEN REUSABLE
+    ├── components/             # REUSABLE UI COMPONENTS
     │   ├── common/
-    │   │   ├── AppNavigation.vue  <-- Switcher tab menu atas
-    │   │   └── ToastContainer.vue <-- Kontainer notifikasi toast
+    │   │   ├── AppNavigation.vue  # Main module tab switcher
+    │   │   └── ToastContainer.vue # Global toast message renderer
     │   └── trial/
-    │       └── ComboBadge.vue     <-- Badge sambung kombinasi benang [J3|1171||J2|1070]
+    │       └── ComboBadge.vue     # Connected option badge [J3|1171||J2|1070] with [✓] indicator
     │
-    └── views/                 <-- TAMPILAN HALAMAN UTAMA PER MODUL
-        ├── TrialView.vue      <-- Modul 1: Trial Benang & Urutan Mesin Operator
-        ├── ScheduleView.vue   <-- Modul 2: Jadwal Mesin & Status Siap Jalan
-        ├── InventoryView.vue  <-- Modul 3: Manajemen Stok Benang & Lokasi Rak
-        └── FloppyView.vue     <-- Modul 4: Database Master File Wilcom & Kompresi Foto
+    └── views/                  # TOP-LEVEL MODULE VIEWS
+        ├── TrialView.vue       # Module 1: Trial Benang & Machine Operator Card Stages
+        ├── ScheduleView.vue    # Module 2: Jadwal Mesin & Production SPK Checklist
+        ├── InventoryView.vue   # Module 3: Thread Warehouse Stock & Location Rack
+        └── FloppyView.vue      # Module 4: Wilcom Design Floppy Master & WebP Uploads
 ```
 
 ---
 
-## 4. Logika Domain Kunci (Crucial Domain Rules)
+## 4. Key Domain Rules & Non-Negotiables
 
-### A. Isolasi Status ACC Antar Opsi Kombinasi Warna
-* **Lokasi:** `src/stores/useTrialStore.js` dan `src/components/trial/ComboBadge.vue`.
-* **Aturan Mutlak:** 
-  * Status ACC untuk film berkombinasi warna disimpan per opsi: `accMap[key]['opt_' + optIdx] = true`.
-  * **Setiap opsi harus berdiri sendiri.** Meng-ACC Opsi 1 (`opt_0`) **TIDAK BOLEH** membuat Opsi 2 (`opt_1`) ter-highlight kuning/amber atau jarumnya menyala putih meskipun keduanya sama-sama memiliki kode benang yang identik (misal: benang `1070`).
-  * Wording teks `"OPSI 1"` tidak ditampilkan; langsung tampilkan badge sambung `[ J3 | 🔵 1171 || J2 | 🔵 1070 ]` dengan indikator centang hijau `[✓]` di ujung kiri jika aktif.
+### A. Independent ACC State per Option (Strict Isolation)
+- **Source of Truth:** `src/stores/useTrialStore.js` (`accMap`) and `src/components/trial/ComboBadge.vue`.
+- **Rule:** For multi-color combination films, approvals are stored strictly per option: `accMap[key]['opt_' + optIdx] = true`.
+- **Constraint:** Approving Option 1 (`opt_0`) **MUST NEVER** highlight or alter the needle state of Option 2 (`opt_1`), even if both options share identical thread codes (e.g., thread `1070`).
+- **UI Spec:** Do NOT display redundant text like `"OPSI 1"`. Directly display the connected badge (`[ J3 | 🔵 1171 || J2 | 🔵 1070 ]`) with an emerald green `[✓]` checkmark badge on approval.
 
-### B. Algoritma Pembagian Jarum Mesin Bordir
-* **Lokasi:** `src/utils/needleSolver.js` -> fungsi `calculateMachineStages()`.
-* **Aturan:**
-  * Mesin bordir memiliki jarum tetap (J1–J11 kecuali jarum swap).
-  * Jarum swap (default jarum 4 atau jarum ujung) digunakan untuk merotasi benang dinamis.
-  * Fungsi ini adalah *pure function*. Jangan mencampurkan kode DOM atau reaktivitas Vue ke dalam berkas ini.
+### B. Machine Needle Allocation Algorithm
+- **Source of Truth:** `src/utils/needleSolver.js` -> `calculateMachineStages()`.
+- **Rule:** Calculates global thread frequency, maps highest-frequency threads to fixed needles (J1–J11 excluding swap needle), and routes dynamic threads through the primary swap needle (default needle 4 or rack end).
+- **Constraint:** Pure mathematical function. Never import Vue reactivity or DOM elements into this file.
 
-### C. Kompresi Gambar Screenshot Wilcom
-* **Lokasi:** `src/utils/imageCompressor.js` -> fungsi `compressImageBase64()`.
-* **Aturan:**
-  * Foto screenshot dikompresi ke format **WebP** dengan resolusi maksimal 1280px dan kualitas `0.80 - 0.82` sebelum disimpan ke localStorage atau Firebase Storage untuk menghemat kuota.
+### C. Image Compression (Firebase Storage Economy)
+- **Source of Truth:** `src/utils/imageCompressor.js` -> `compressImageBase64()`.
+- **Rule:** Wilcom screenshots must be compressed to **WebP format** (max dimension: 1280px, quality: 0.80–0.82) before storing to localStorage or Firebase to conserve storage quotas.
 
 ---
 
-## 5. Panduan Coding untuk AI Assistant (AI Rules of Engagement)
+## 5. Strict AI Rules of Engagement
 
-1. **Gunakan Syntax Modern:** Selalu gunakan Vue 3 `<script setup>`, Pinia Composition API syntax (`defineStore('name', () => { ... })`), dan Tailwind CSS utility classes.
-2. **Jangan Monolitik Ulang:** Jangan pernah mengembalikan kode menjadi satu file monolitik besar. Tetap jaga pemisahan modular per berkas.
-3. **Penyimpanan State:**
-   * Jangan simpan state lokal jika state tersebut dibutuhkan oleh modul lain; letakkan di Pinia store terkait.
-   * Kunci localStorage yang digunakan:
-     - `needle_cap` (kapasitas jarum)
-     - `needle_swap` (jarum swap)
-     - `cmts` (daftar film aktif)
-     - `embro_acc_map` (peta status ACC)
-     - `completed_cmts` (checklist status)
-     - `embro_inventory_list` (stok gudang)
-     - `embro_floppy_list` (database Wilcom)
-4. **Verifikasi Build:**
-   Setelah melakukan perubahan, selalu jalankan perintah verifikasi berikut di terminal:
-   ```powershell
-   npm run build
-   ```
-   Pastikan tidak ada error kompilasi dan modul berhasil di-bundle.
+1. **Maintain Modular Structure:** Never collapse code back into a single monolithic file. Keep individual files small and focused (< 250 lines).
+2. **Component Syntax:** Always use Vue 3 `<script setup>` syntax with Composition API.
+3. **No Math in Templates:** Place all scheduling and needle calculations in `src/utils/needleSolver.js` or Pinia computed getters.
+4. **Preserve Storage Keys:** Maintain exact localStorage key names for backward compatibility:
+   - `needle_cap`
+   - `needle_swap`
+   - `cmts`
+   - `embro_acc_map`
+   - `completed_cmts`
+   - `embro_inventory_list`
+   - `embro_floppy_list`
+5. **Always Verify Builds:** Always run `npm run build` after making changes to verify zero syntax, lint, or bundler errors.
 
 ---
 
-## 6. Perintah Standar (Common Commands)
-* **Development Server:** `npm run dev` (buka di `http://localhost:5173`)
-* **Production Build:** `npm run build` (output statis di folder `dist/`)
-* **Preview Production:** `npm run preview`
+## 6. Common Commands
+```powershell
+# Start local development server (HMR enabled at http://localhost:5173)
+npm run dev
+
+# Compile and bundle for production (outputs to dist/)
+npm run build
+
+# Preview production build locally
+npm run preview
+```
