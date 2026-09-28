@@ -919,9 +919,92 @@
                   </div>
                 </div>
 
-                <!-- Keypad Machine Sequence (Tactile Segmented Patch Keycaps - Clickable per-thread ACC with modern white highlight) -->
+                <!-- Keypad Machine Sequence (Supports connected combination badges [J2|2216||J5|2212] when film has multi-color options) -->
                 <div class="machine-input mt-2 pt-1.5 border-t border-zinc-850/60">
-                  <div class="flex flex-wrap items-center gap-y-1.5 gap-x-1">
+                  <!-- KONDISI A: Mode Opsi Kombinasi Warna (Ketika film memiliki kombinasi warna dalam opsi) -->
+                  <div v-if="item.hasCombinationOptions" class="space-y-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <div
+                        v-for="opt in item.combinationOptions"
+                        :key="opt.optIdx"
+                        class="inline-flex items-center gap-1.5 bg-zinc-950/80 border rounded-lg p-1 shadow-sm transition-all"
+                        :class="isOptionAcc(item, opt)
+                          ? 'border-emerald-600/60 bg-emerald-950/20 ring-1 ring-emerald-500/20'
+                          : (isOptionPartialAcc(item, opt) ? 'border-amber-600/50 bg-amber-950/15' : 'border-zinc-800')"
+                      >
+                        <!-- Badge Nama Opsi (Bisa diklik untuk ACC / batal ACC seluruh benang dalam opsi ini) -->
+                        <button
+                          type="button"
+                          @click.stop="toggleOptionAcc(item, opt)"
+                          :title="isOptionAcc(item, opt) ? `Batal ACC seluruh warna ${opt.label}` : `ACC seluruh kombinasi warna ${opt.label}`"
+                          class="px-2 py-0.5 rounded border font-mono text-[10px] font-bold uppercase tracking-tight shrink-0 select-none cursor-pointer transition-all active:scale-95 flex items-center gap-1"
+                          :class="isOptionAcc(item, opt)
+                            ? 'bg-emerald-500 text-zinc-950 border-emerald-400 font-extrabold shadow-sm'
+                            : (isOptionPartialAcc(item, opt)
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                              : 'bg-zinc-850 hover:bg-zinc-750 text-zinc-300 border-zinc-750')"
+                        >
+                          <svg v-if="isOptionAcc(item, opt)" class="w-3 h-3 text-zinc-950 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span>{{ opt.label }}</span>
+                        </button>
+
+                        <!-- Badge Jarum & Kode Benang Disambung [J2|2216 || J5|2212] -->
+                        <div class="inline-flex items-stretch rounded-md overflow-hidden border border-zinc-750 bg-zinc-900 shadow-sm print:border-black">
+                          <template v-for="(th, tIdx) in opt.threads" :key="tIdx">
+                            <!-- Divider || antara benang dalam 1 opsi kombinasi -->
+                            <div
+                              v-if="tIdx > 0"
+                              class="w-2.5 bg-zinc-950 flex items-center justify-center border-x border-zinc-700/80 select-none shrink-0"
+                              title="Kombinasi warna dalam 1 opsi"
+                            >
+                              <div class="flex items-center gap-[2px]">
+                                <span class="w-[1px] h-3.5 bg-zinc-500 rounded-full"></span>
+                                <span class="w-[1px] h-3.5 bg-zinc-500 rounded-full"></span>
+                              </div>
+                            </div>
+
+                            <!-- Sub-tombol benang jarum -->
+                            <button
+                              type="button"
+                              @click.stop="toggleThreadAcc(item, th.code)"
+                              :title="isThreadAcc(item, th.code) ? `Batal ACC benang ${th.code}` : `Pilih ACC benang ${th.code}`"
+                              class="inline-flex items-stretch select-none cursor-pointer transition-all text-left active:scale-95 group"
+                              :class="isThreadAcc(item, th.code)
+                                ? 'bg-zinc-800 text-white'
+                                : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(th.needleNum)
+                                  ? 'bg-zinc-850 text-white hover:bg-zinc-800'
+                                  : 'bg-zinc-900/90 text-zinc-300 hover:bg-zinc-800')"
+                            >
+                              <!-- Needle Segment -->
+                              <div
+                                class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px] font-mono shrink-0"
+                                :class="isThreadAcc(item, th.code)
+                                  ? 'bg-white text-zinc-950 font-extrabold border-white'
+                                  : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(th.needleNum)
+                                    ? 'bg-white/20 border-white/40 text-white font-bold'
+                                    : 'bg-zinc-850 border-zinc-750 text-zinc-200')"
+                              >
+                                {{ th.needle }}
+                              </div>
+                              <!-- Thread Code & Swatch -->
+                              <div
+                                class="px-2 py-0.5 flex items-center gap-1.5 text-[11px] font-mono shrink-0"
+                                :class="isThreadAcc(item, th.code) ? 'text-white font-bold' : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(th.needleNum) ? 'text-white font-bold' : 'text-zinc-300')"
+                              >
+                                <span class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(th.code) }"></span>
+                                <span class="font-medium">{{ th.code }}</span>
+                              </div>
+                            </button>
+                          </template>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- KONDISI B: Mode Default Tanpa Kombinasi (Satu per satu dengan tanda panah →) -->
+                  <div v-else class="flex flex-wrap items-center gap-y-1.5 gap-x-1">
                     <template v-for="(needle, nIndex) in item.needleSequence" :key="nIndex">
                       <div class="inline-flex items-center gap-1">
                         <button
@@ -1487,23 +1570,44 @@
                     </button>
                   </div>
 
-                  <!-- Urutan Benang Variasi (Clickable per-thread ACC with modern white highlight) -->
+                  <!-- Urutan Benang Variasi (Dukungan Mode Opsi Kombinasi Warna) -->
                   <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
-                    <button
-                      v-for="(th, thIdx) in v.threads"
-                      :key="thIdx"
-                      type="button"
-                      @click="toggleThreadAcc(v.itemRef, th)"
-                      :title="isThreadAcc(v.itemRef, th) ? `Klik untuk membatalkan ACC benang ${th}` : `Klik untuk menyetujui (ACC) benang ${th}`"
-                      :class="isThreadAcc(v.itemRef, th)
-                        ? 'bg-zinc-800 border-white text-white font-bold ring-1 ring-white/60 shadow-sm'
-                        : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'"
-                      class="inline-flex items-center gap-1.5 px-2 py-0.5 border rounded text-[10px] font-mono transition-all cursor-pointer active:scale-95"
-                    >
-                      <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                      <span>{{ th }}</span>
-                    </button>
+                    <template v-if="hasItemCombinationOptions(v.itemRef)">
+                      <div v-for="(opt, optIdx) in v.itemRef.threadOptions" :key="optIdx" class="inline-flex items-center gap-1 bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5">
+                        <span class="text-[9.5px] font-mono font-bold text-zinc-400 uppercase">Opsi {{ optIdx + 1 }}:</span>
+                        <div class="inline-flex items-stretch rounded border border-zinc-750 overflow-hidden divide-x divide-zinc-700 bg-zinc-900">
+                          <template v-for="(th, tIdx) in (Array.isArray(opt) ? opt : [opt])" :key="tIdx">
+                            <button
+                              type="button"
+                              @click="toggleThreadAcc(v.itemRef, th)"
+                              :title="isThreadAcc(v.itemRef, th) ? `Klik untuk batal ACC benang ${th}` : `Klik untuk ACC benang ${th}`"
+                              class="px-1.5 py-0.5 inline-flex items-center gap-1 text-[10px] font-mono cursor-pointer transition-colors active:scale-95"
+                              :class="isThreadAcc(v.itemRef, th) ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-850'"
+                            >
+                              <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                              <span>{{ th }}</span>
+                            </button>
+                          </template>
+                        </div>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
+                      <button
+                        v-for="(th, thIdx) in v.threads"
+                        :key="thIdx"
+                        type="button"
+                        @click="toggleThreadAcc(v.itemRef, th)"
+                        :title="isThreadAcc(v.itemRef, th) ? `Klik untuk membatalkan ACC benang ${th}` : `Klik untuk menyetujui (ACC) benang ${th}`"
+                        :class="isThreadAcc(v.itemRef, th)
+                          ? 'bg-zinc-800 border-white text-white font-bold ring-1 ring-white/60 shadow-sm'
+                          : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'"
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 border rounded text-[10px] font-mono transition-all cursor-pointer active:scale-95"
+                      >
+                        <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                        <span>{{ th }}</span>
+                      </button>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -1514,21 +1618,42 @@
                   <span class="text-[10.5px] font-mono font-medium text-zinc-300">{{ group.variants[0].variant }}</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-1.5">
-                  <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
-                  <button
-                    v-for="(th, thIdx) in group.variants[0].threads"
-                    :key="thIdx"
-                    type="button"
-                    @click="toggleThreadAcc(group.variants[0].itemRef, th)"
-                    :title="isThreadAcc(group.variants[0].itemRef, th) ? `Klik untuk membatalkan ACC benang ${th}` : `Klik untuk menyetujui (ACC) benang ${th}`"
-                    :class="isThreadAcc(group.variants[0].itemRef, th)
-                      ? 'bg-zinc-800 border-white text-white font-bold ring-1 ring-white/60 shadow-sm'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700'"
-                    class="inline-flex items-center gap-1.5 px-2 py-0.5 border rounded text-[10px] font-mono transition-all cursor-pointer active:scale-95"
-                  >
-                    <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
-                    <span>{{ th }}</span>
-                  </button>
+                  <template v-if="hasItemCombinationOptions(group.variants[0].itemRef)">
+                    <div v-for="(opt, optIdx) in group.variants[0].itemRef.threadOptions" :key="optIdx" class="inline-flex items-center gap-1 bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5">
+                      <span class="text-[9.5px] font-mono font-bold text-zinc-400 uppercase">Opsi {{ optIdx + 1 }}:</span>
+                      <div class="inline-flex items-stretch rounded border border-zinc-750 overflow-hidden divide-x divide-zinc-700 bg-zinc-900">
+                        <template v-for="(th, tIdx) in (Array.isArray(opt) ? opt : [opt])" :key="tIdx">
+                          <button
+                            type="button"
+                            @click="toggleThreadAcc(group.variants[0].itemRef, th)"
+                            :title="isThreadAcc(group.variants[0].itemRef, th) ? `Klik untuk batal ACC benang ${th}` : `Klik untuk ACC benang ${th}`"
+                            class="px-1.5 py-0.5 inline-flex items-center gap-1 text-[10px] font-mono cursor-pointer transition-colors active:scale-95"
+                            :class="isThreadAcc(group.variants[0].itemRef, th) ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-850'"
+                          >
+                            <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                            <span>{{ th }}</span>
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mr-0.5">Benang:</span>
+                    <button
+                      v-for="(th, thIdx) in group.variants[0].threads"
+                      :key="thIdx"
+                      type="button"
+                      @click="toggleThreadAcc(group.variants[0].itemRef, th)"
+                      :title="isThreadAcc(group.variants[0].itemRef, th) ? `Klik untuk membatalkan ACC benang ${th}` : `Klik untuk menyetujui (ACC) benang ${th}`"
+                      :class="isThreadAcc(group.variants[0].itemRef, th)
+                        ? 'bg-zinc-800 border-white text-white font-bold ring-1 ring-white/60 shadow-sm'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700'"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 border rounded text-[10px] font-mono transition-all cursor-pointer active:scale-95"
+                    >
+                      <span class="w-2 h-2 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(th) }"></span>
+                      <span>{{ th }}</span>
+                    </button>
+                  </template>
                 </div>
               </div>
             </div>
@@ -4634,6 +4759,54 @@
             if (!isRemoteUpdating) debounceSyncRoomState(150);
           };
 
+          const isOptionAcc = (item, opt) => {
+            if (!item || !opt || !Array.isArray(opt.threads) || opt.threads.length === 0) return false;
+            return opt.threads.every((th) => isThreadAcc(item, th.code));
+          };
+
+          const isOptionPartialAcc = (item, opt) => {
+            if (!item || !opt || !Array.isArray(opt.threads) || opt.threads.length === 0) return false;
+            const hasAny = opt.threads.some((th) => isThreadAcc(item, th.code));
+            const hasAll = opt.threads.every((th) => isThreadAcc(item, th.code));
+            return hasAny && !hasAll;
+          };
+
+          const toggleOptionAcc = (item, opt) => {
+            if (!item || !opt || !Array.isArray(opt.threads)) return;
+            const allAcc = isOptionAcc(item, opt);
+            const key = item.key || `${item.flopy ? item.flopy + '_' : ''}${item.cmt}_${item.variant || '-'}`;
+            if (!accMap.value[key] || typeof accMap.value[key] !== 'object') {
+              accMap.value[key] = {};
+            }
+            opt.threads.forEach((th) => {
+              const code = String(th.code).trim();
+              if (allAcc) {
+                delete accMap.value[key][code];
+              } else {
+                accMap.value[key][code] = true;
+              }
+            });
+            if (Object.keys(accMap.value[key]).length === 0) {
+              delete accMap.value[key];
+            }
+            accMap.value = { ...accMap.value };
+            localStorage.setItem('embro_acc_map', JSON.stringify(accMap.value));
+            if (!isRemoteUpdating) debounceSyncRoomState(150);
+            const optName = opt.label || 'Opsi';
+            if (allAcc) {
+              showToast(`Batal ACC semua warna ${optName} untuk CMT ${item.cmt}`);
+            } else {
+              showToast(`✓ Semua warna ${optName} di-ACC untuk CMT ${item.cmt}`);
+            }
+          };
+
+          const hasItemCombinationOptions = (item) => {
+            if (!item || !Array.isArray(item.threadOptions)) return false;
+            const rawOpts = item.threadOptions;
+            return (item.isCombination && rawOpts.some((opt) => Array.isArray(opt) && opt.length >= 2)) ||
+                   (rawOpts.length > 1 && rawOpts.some((opt) => Array.isArray(opt) && opt.length >= 2));
+          };
+
           const accCount = computed(() => {
             return cmts.value.filter((c) => isAcc(c)).length;
           });
@@ -5622,6 +5795,45 @@
               stage1NeedleMap[initialSwapThread] = primarySwap;
             }
 
+            // Helper untuk memetakan item CMT ke stage dengan dukungan Opsi Kombinasi Warna
+            const mapCmtForStage = (c, needleMap) => {
+              const needleSequence = (c.threads || []).map((t) => (needleMap[t] !== undefined ? 'J' + needleMap[t] : 'J?'));
+
+              let combinationOptions = null;
+              let hasCombinationOptions = false;
+
+              const rawOpts = Array.isArray(c.threadOptions) ? c.threadOptions : null;
+              const isCombo = (c.isCombination && rawOpts && rawOpts.some((opt) => Array.isArray(opt) && opt.length >= 2)) ||
+                              (rawOpts && rawOpts.length > 1 && rawOpts.some((opt) => Array.isArray(opt) && opt.length >= 2));
+
+              if (isCombo) {
+                hasCombinationOptions = true;
+                combinationOptions = rawOpts.map((opt, optIdx) => {
+                  const threadList = Array.isArray(opt) ? opt : [opt];
+                  return {
+                    optIdx,
+                    label: `Opsi ${optIdx + 1}`,
+                    threads: threadList.map((th) => {
+                      const nNum = needleMap[th] !== undefined ? needleMap[th] : null;
+                      return {
+                        code: th,
+                        needleNum: nNum,
+                        needle: nNum !== null ? 'J' + nNum : 'J?',
+                      };
+                    }),
+                  };
+                });
+              }
+
+              return {
+                ...c,
+                key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
+                needleSequence,
+                hasCombinationOptions,
+                combinationOptions,
+              };
+            };
+
             // Tahap 1: Setup Awal
             if (stage1Items.length > 0 || singleSwapThreads.length === 0) {
               stagesList.push({
@@ -5633,11 +5845,7 @@
                   ? `Pasang jarum tetap J1–J${totalCap} (selain J${primarySwap}). Pasang ${initialSwapThread} di Jarum ${primarySwap}.`
                   : `Semua benang muat di mesin (${totalCap} jarum). Langsung jalan tanpa ganti benang.`,
                 needleMap: stage1NeedleMap,
-                items: stage1Items.map((c) => ({
-                  ...c,
-                  key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
-                  needleSequence: c.threads.map((t) => 'J' + stage1NeedleMap[t]),
-                })),
+                items: stage1Items.map((c) => mapCmtForStage(c, stage1NeedleMap)),
               });
             }
 
@@ -5667,11 +5875,7 @@
                 swappedNeedles: [primarySwap],
                 instruction: `Ganti ${swapDesc}.`,
                 needleMap: stageMap,
-                items: items.map((c) => ({
-                  ...c,
-                  key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
-                  needleSequence: c.threads.map((t) => 'J' + stageMap[t]),
-                })),
+                items: items.map((c) => mapCmtForStage(c, stageMap)),
               });
             });
 
@@ -5741,11 +5945,7 @@
                 swappedNeedles: swaps.map((s) => s.needle),
                 instruction: `Ganti ${swapDesc}.`,
                 needleMap: stageMap,
-                items: currentStageItems.map((c) => ({
-                  ...c,
-                  key: `${c.flopy ? c.flopy + '_' : ''}${c.cmt}_${c.variant || '-'}`,
-                  needleSequence: c.threads.map((t) => 'J' + stageMap[t]),
-                })),
+                items: currentStageItems.map((c) => mapCmtForStage(c, stageMap)),
               });
             }
 
@@ -6125,17 +6325,30 @@
                 return;
               }
 
+              const isMultiOptionMode = (row.options || []).length > 1;
               const allParsedThreads = [];
               const parsedOptions = [];
-              for (const optStr of rawOptions) {
-                const optThreads = optStr
+
+              if (isMultiOptionMode) {
+                // Mode Kombinasi: tiap kotak input adalah 1 opsi kombinasi (bisa 2+ warna)
+                for (const optStr of rawOptions) {
+                  const optThreads = optStr
+                    .split(/[, -]+/)
+                    .map((t) => t.trim())
+                    .filter(Boolean);
+                  if (optThreads.length > 0) {
+                    allParsedThreads.push(...optThreads);
+                    parsedOptions.push(optThreads);
+                  }
+                }
+              } else {
+                // Mode 1 Warna: satu deretan kode benang yang masing-masing merupakan opsi 1 warna
+                const optThreads = (rawOptions[0] || '')
                   .split(/[, -]+/)
                   .map((t) => t.trim())
                   .filter(Boolean);
-                if (optThreads.length > 0) {
-                  allParsedThreads.push(...optThreads);
-                  parsedOptions.push(optThreads);
-                }
+                allParsedThreads.push(...optThreads);
+                optThreads.forEach((th) => parsedOptions.push([th]));
               }
 
               if (allParsedThreads.length === 0) {
@@ -6153,6 +6366,7 @@
                 variant: varLabel,
                 threads: allParsedThreads,
                 threadOptions: parsedOptions,
+                isCombination: isMultiOptionMode && parsedOptions.some((opt) => opt.length >= 2),
               });
             }
 
@@ -6434,6 +6648,10 @@
             isThreadAcc,
             toggleThreadAcc,
             getAccThreads,
+            isOptionAcc,
+            isOptionPartialAcc,
+            toggleOptionAcc,
+            hasItemCombinationOptions,
             accCount,
             accList,
             scheduleSearch,
