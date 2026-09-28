@@ -1,30 +1,24 @@
 <script setup>
-import { useToastStore } from '../../stores/useToastStore.js';
+import { useAppStore } from '../../stores/useAppStore.js';
 
-const toast = useToastStore();
+const store = useAppStore();
 </script>
 
 <template>
   <transition
-    enter-active-class="transition duration-200 ease-out"
-    enter-from-class="transform translate-y-4 opacity-0 scale-95"
-    enter-to-class="transform translate-y-0 opacity-100 scale-100"
+    enter-active-class="transition duration-150 ease-out"
+    enter-from-class="opacity-0 translate-y-2"
+    enter-to-class="opacity-100 translate-y-0"
     leave-active-class="transition duration-150 ease-in"
-    leave-from-class="transform translate-y-0 opacity-100 scale-100"
-    leave-to-class="transform translate-y-4 opacity-0 scale-95"
+    leave-from-class="opacity-100 translate-y-0"
+    leave-to-class="opacity-0 translate-y-2"
   >
     <div
-      v-if="toast.isVisible"
-      class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl text-zinc-100 font-mono text-xs max-w-md backdrop-blur-md"
+      v-if="store.toastMessage"
+      class="fixed bottom-4 right-4 z-50 max-w-sm px-4 py-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-white text-xs font-mono shadow-2xl flex items-center gap-2 select-none"
     >
-      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span class="flex-1">{{ toast.message }}</span>
-      <button
-        @click="toast.hideToast"
-        class="text-zinc-500 hover:text-zinc-300 ml-2 text-sm leading-none"
-      >
-        ✕
-      </button>
+      <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+      <span class="flex-1">{{ store.toastMessage }}</span>
     </div>
   </transition>
 </template>

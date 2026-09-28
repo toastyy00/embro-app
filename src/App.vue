@@ -1,66 +1,64 @@
 <script setup>
-import { ref } from 'vue';
-import AppNavigation from './components/common/AppNavigation.vue';
-import ToastContainer from './components/common/ToastContainer.vue';
+import { useAppStore } from './stores/useAppStore.js';
+import AppSidebar from './components/layout/AppSidebar.vue';
+import AppMobileDrawer from './components/layout/AppMobileDrawer.vue';
+import AppHeader from './components/layout/AppHeader.vue';
 import CmtDataView from './views/CmtDataView.vue';
 import TrialView from './views/TrialView.vue';
+import FloppyView from './views/FloppyView.vue';
 import ScheduleView from './views/ScheduleView.vue';
 import InventoryView from './views/InventoryView.vue';
-import FloppyView from './views/FloppyView.vue';
+import ArchivesView from './views/ArchivesView.vue';
+import ConfirmModal from './components/common/ConfirmModal.vue';
+import ToastContainer from './components/common/ToastContainer.vue';
+import CloudSettingsModal from './components/common/CloudSettingsModal.vue';
+import FloppyModal from './components/common/FloppyModal.vue';
+import ScreenshotPreviewModal from './components/common/ScreenshotPreviewModal.vue';
 
-const activeTab = ref('cmt');
+const store = useAppStore();
 </script>
 
 <template>
-  <div class="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
-    <!-- Top Header -->
-    <header class="border-b border-zinc-850 bg-zinc-900/60 backdrop-blur-md sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold font-mono text-sm shadow-sm">
-            E
-          </div>
-          <div>
-            <h1 class="font-bold font-mono text-sm text-white tracking-wide">
-              EMBRO OPTIMIZER
-            </h1>
-            <p class="text-[10px] font-mono text-zinc-500">
-              Sistem Urutan Mesin & Stok Bordir Komputer
-            </p>
-          </div>
-        </div>
-
-        <!-- Status Tag -->
-        <div class="flex items-center gap-2">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium bg-zinc-900 border border-zinc-800 text-zinc-400">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Vite Modular v2.0</span>
-          </span>
-        </div>
+  <div class="app-shell max-w-3xl lg:max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-5 transition-all duration-200">
+    <!-- Dedicated Print Header (A4) -->
+    <div class="hidden print:block mb-3 pb-2 border-b-2 border-black font-mono">
+      <div class="flex justify-between items-baseline">
+        <h1 class="text-sm font-bold uppercase tracking-tight text-black">EMBRO-AR — SPK BORDIR &amp; LEMBAR KERJA OPERATOR</h1>
+        <span class="text-xs text-black">{{ store.currentDateString }}</span>
       </div>
-    </header>
+      <div class="text-[11px] text-zinc-800 mt-0.5">
+        EMBRO-AR APP • Divisi Embroidery Al-Raaz • Setup: {{ store.needleCapacity }} Jarum • Slot Swap: Jarum {{ store.swapNeedle }} (J{{ store.swapNeedle }})
+      </div>
+    </div>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-4">
-      <!-- Navigation Tabs -->
-      <AppNavigation
-        :active-tab="activeTab"
-        @change-tab="(tab) => activeTab = tab"
-      />
+    <!-- MAIN CONTAINER: SIDEBAR + CONTENT -->
+    <div class="lg:flex lg:gap-5 lg:items-start">
+      <!-- Desktop Sidebar -->
+      <AppSidebar />
 
-      <!-- Dynamic Active Tab View -->
-      <transition mode="out-in" enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div :key="activeTab">
-          <CmtDataView v-if="activeTab === 'cmt'" />
-          <TrialView v-else-if="activeTab === 'trial'" @switch-to-cmt="activeTab = 'cmt'" />
-          <ScheduleView v-else-if="activeTab === 'schedule'" />
-          <InventoryView v-else-if="activeTab === 'inventory'" />
-          <FloppyView v-else-if="activeTab === 'floppy'" />
-        </div>
-      </transition>
-    </main>
+      <!-- Right Content Area -->
+      <div class="flex-1 min-w-0">
+        <!-- Header Section (Status Strip & Actions) -->
+        <AppHeader />
 
-    <!-- Floating Toast Notification Container -->
+        <!-- Dynamic Views -->
+        <CmtDataView v-if="store.activeModule === 'cmt'" />
+        <TrialView v-else-if="store.activeModule === 'trial'" />
+        <FloppyView v-else-if="store.activeModule === 'floppy'" />
+        <ScheduleView v-else-if="store.activeModule === 'schedule'" />
+        <InventoryView v-else-if="store.activeModule === 'inventory'" />
+        <ArchivesView v-else-if="store.activeModule === 'archives'" />
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <AppMobileDrawer />
+
+    <!-- Modals & Notifications -->
+    <ConfirmModal />
     <ToastContainer />
+    <CloudSettingsModal />
+    <FloppyModal />
+    <ScreenshotPreviewModal />
   </div>
 </template>

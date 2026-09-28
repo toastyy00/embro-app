@@ -508,6 +508,23 @@
 
           <!-- Nav Items -->
           <nav class="space-y-1 text-xs">
+            <!-- 0. Data CMT -->
+            <button
+              @click="activeModule = 'cmt'"
+              :class="activeModule === 'cmt' ? 'bg-zinc-800 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border-transparent'"
+              class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg border transition-all text-left group cursor-pointer"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+                  <path d="M6 6h10M6 10h10"></path>
+                </svg>
+                <span>Data CMT</span>
+              </div>
+              <span v-if="uniqueTotalCmts > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950/80 border border-cyan-800/80 text-cyan-300 font-semibold">{{ uniqueTotalCmts }} CMT</span>
+              <span v-else class="text-[9px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400 font-medium">Pusat Data</span>
+            </button>
+
             <!-- 1. Trial Benang -->
             <button
               @click="activeModule = 'trial'"
@@ -520,7 +537,8 @@
                 </svg>
                 <span>Trial Benang</span>
               </div>
-              <span v-if="totalCmtCount > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-300 font-semibold">{{ totalCmtCount }}</span>
+              <span v-if="calculation.stagesList.length > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 font-semibold">{{ calculation.stagesList.length }} Tahap</span>
+              <span v-else class="text-[9px] px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-750 text-zinc-400 font-medium">Simulasi</span>
             </button>
 
             <!-- 2. Master Floppy -->
@@ -713,476 +731,59 @@
         </div>
       </header>
 
-      <!-- ================= MODULE 1: TRIAL BENANG & JARUM ================= -->
-      <div v-show="activeModule === 'trial'" class="space-y-3.5">
-        <!-- ================= TAB NAVIGATION (COMPACT) ================= -->
-        <nav class="workspace-nav grid grid-cols-3 gap-1 bg-zinc-900 border border-zinc-800/80 p-1 rounded-lg mb-3 text-xs font-mono font-medium no-print">
-        <button
-          @click="activeTab = 'operator'"
-          :class="activeTab === 'operator' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
-          class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
-        >
-          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 11 12 14 22 4"></polyline>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-          </svg>
-          <span>Trial</span>
-        </button>
-
-        <button
-          @click="activeTab = 'rack'"
-          :class="activeTab === 'rack' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
-          class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
-        >
-          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line>
-            <line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line>
-            <line x1="20" y1="12" x2="20" y2="3"></line>
-          </svg>
-          <span>Mesin</span>
-        </button>
-
-        <button
-          @click="activeTab = 'manage'"
-          :class="['manage', 'colors'].includes(activeTab) ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
-          class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
-        >
-          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="21 8 21 21 3 21 3 8"></polyline>
-            <rect x="1" y="3" width="22" height="5"></rect>
-            <line x1="10" y1="12" x2="14" y2="12"></line>
-          </svg>
-          <span>Data</span>
-        </button>
-      </nav>
-
-      <!-- ================= TAB 1: TRIAL BORDIR ================= -->
-      <main v-if="activeTab === 'operator'" class="space-y-3.5">
-        <!-- Empty state when no CMT exists -->
-        <div v-if="cmts.length === 0" class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 text-center font-mono">
-          <div class="text-xs text-zinc-300 font-bold mb-1">Daftar Pengerjaan Kosong</div>
-          <p class="text-[11px] text-zinc-500 font-sans">Silakan tambahkan data CMT atau muat sampel melalui tab <button @click="activeTab = 'manage'" class="text-zinc-300 underline font-semibold">Data</button>.</p>
-        </div>
-
-        <!-- Stage Cards -->
-        <div v-else class="space-y-3.5">
-          <div
-            v-for="(stage, idx) in calculation.stagesList"
-            :key="idx"
-            class="stage-panel border rounded-xl transition-all print-card overflow-hidden"
-            :class="{
-            'bg-zinc-950/40 border-zinc-850/80 opacity-50': getStageState(stage, idx) === 'completed',
-            'bg-zinc-900 border-zinc-300 ring-1 ring-white/30 shadow-[0_0_24px_-4px_rgba(255,255,255,0.1)]': getStageState(stage, idx) === 'active' && stage.isSwapStage,
-            'bg-zinc-900 border-zinc-600 shadow-sm ring-1 ring-zinc-600/50': getStageState(stage, idx) === 'active' && !stage.isSwapStage,
-            'bg-zinc-950/60 border-zinc-800/80': getStageState(stage, idx) === 'upcoming'
-          }"
-          >
-            <!-- Stage Header / Phase Bar -->
-            <div
-              class="px-3 py-2 sm:px-3.5 sm:py-2.5 border-b font-mono flex items-center justify-between gap-2"
-              :class="{
-              'border-zinc-850/70 bg-zinc-950/60': getStageState(stage, idx) === 'completed',
-              'border-zinc-700 bg-zinc-850/90': getStageState(stage, idx) === 'active',
-              'border-zinc-800/60 bg-zinc-900/40': getStageState(stage, idx) === 'upcoming'
-            }"
+      <!-- ================= MODULE 0: PUSAT DATA CMT (CENTRAL DATA HUB) ================= -->
+      <section v-if="activeModule === 'cmt'" class="space-y-3.5 no-print font-mono">
+        <!-- Module Header Banner -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-cyan-950 border border-cyan-800/80 flex items-center justify-center text-cyan-400 shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+                <path d="M6 6h10M6 10h10"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-sm font-bold text-white uppercase tracking-tight">Pusat Data CMT &amp; Order Produksi</h2>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold uppercase tracking-wider">Hub Data Utama</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 font-sans">Input No CMT, Nama Floppy, variasi, dan opsi warna sebelum dialokasikan ke mesin</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10.5px] px-2.5 py-1 rounded bg-zinc-900 border border-zinc-750 text-zinc-300 font-semibold">
+              <strong class="text-cyan-400 font-bold">{{ uniqueTotalCmts }}</strong> CMT ({{ totalCmtCount }} Variasi)
+            </span>
+            <button
+              @click="activeModule = 'trial'; activeTab = 'operator'"
+              class="h-8 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold font-mono transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+              title="Buka simulasi urutan jarum &amp; ACC operator"
             >
-              <!-- Left: Stage Index & Action Directive -->
-              <div class="flex items-center gap-2 min-w-0 flex-wrap">
-                <!-- Stage Index Pill -->
-                <span
-                  class="font-bold text-[10px] px-2 py-0.5 rounded border uppercase shrink-0 tracking-wider"
-                  :class="{
-                  'bg-zinc-850 border-zinc-800 text-zinc-500': getStageState(stage, idx) === 'completed',
-                  'bg-zinc-800 border-zinc-700 text-zinc-100 font-semibold': getStageState(stage, idx) === 'active',
-                  'bg-zinc-850 border-zinc-800 text-zinc-400': getStageState(stage, idx) === 'upcoming'
-                }"
-                >
-                  Tahap {{ String(idx + 1).padStart(2, '0') }}
-                </span>
-
-                <!-- Directive Label -->
-                <template v-if="!stage.isSwapStage">
-                  <span class="text-xs font-bold uppercase tracking-tight" :class="getStageState(stage, idx) === 'completed' ? 'text-zinc-500 line-through' : 'text-zinc-100'"> Setup Awal </span>
-                  <span
-                    v-if="stage.swaps && stage.swaps.length > 0"
-                    class="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
-                    :class="getStageState(stage, idx) === 'completed' 
-                    ? 'bg-zinc-850 border-zinc-800 text-zinc-500' 
-                    : 'text-zinc-200 bg-white/10 border-white/25 font-bold'"
-                  >
-                    J{{ stage.swaps[0].needle }}: {{ stage.swaps[0].thread }}
-                  </span>
-                </template>
-              </div>
-
-              <!-- Right: Stage Counter & Status Badge -->
-              <div class="flex items-center gap-1.5 font-mono text-[11px] shrink-0">
-                <div
-                  class="flex items-center gap-1.5 px-2 py-0.5 rounded border"
-                  :class="getStageState(stage, idx) === 'completed' 
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold' 
-                  : 'bg-zinc-950/80 border-zinc-800 text-zinc-200'"
-                >
-                  <span v-if="getStageState(stage, idx) === 'completed'"> ✓ SELESAI </span>
-                  <div v-else class="flex items-center gap-1 font-bold">
-                    <span>{{ getStageCompletedCount(stage) }}/{{ stage.items.length }}</span>
-                    <span class="text-[10px] text-zinc-400 font-normal">{{ getStageSubtitle(stage) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Guidance Callout for Stage 1 (Callout Instruction - Amber Border-Left) -->
-            <div v-if="idx === 0 && getStageState(stage, idx) !== 'completed'" class="p-2 sm:px-3 sm:py-2.5 bg-zinc-950/40 border-b border-zinc-850/80 no-print">
-              <div class="flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-none bg-amber-950/25 border border-amber-500/25 border-l-[3.5px] border-l-amber-500 text-zinc-100 text-xs font-sans shadow-sm">
-                <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-                <span class="font-medium text-[11.5px] sm:text-xs text-zinc-100"> Sesuaikan urutan kode benang pada mesin seperti di tab Mesin </span>
-              </div>
-            </div>
-
-            <!-- Swap Callout Instruction (Callout Instruction - Amber Border-Left) -->
-            <div v-if="stage.isSwapStage && getStageState(stage, idx) !== 'completed'" class="p-2 sm:px-3 sm:py-2.5 bg-zinc-950/40 border-b border-zinc-850/80 no-print">
-              <div class="flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-none bg-amber-950/25 border border-amber-500/25 border-l-[3.5px] border-l-amber-500 text-zinc-100 text-xs font-mono shadow-sm">
-                <!-- Needle Icon for Jarum Swap -->
-                <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 21l3.5-1.5l14.5-14.5a2.121 2.121 0 0 0-3-3l-14.5 14.5z" />
-                  <path d="M16.5 6.5l1 1" />
-                  <path d="M19 4c-.5-1.5-2-1.5-3-1s-2 1.5-3.5 1.5s-2.5-1-3.5-1s-2 1-2 2" />
-                </svg>
-                <div class="text-[11.5px] sm:text-xs font-mono font-medium flex items-center gap-1.5 flex-wrap">
-                  <span class="text-white font-bold uppercase">Ganti:</span>
-                  <template v-for="(sw, swIdx) in stage.swaps" :key="sw.needle">
-                    <span class="text-zinc-100 font-semibold">
-                      J{{ sw.needle }}<span v-if="sw.prevThread" class="text-zinc-400 font-normal"> ({{ sw.prevThread }})</span>
-                      <span class="text-amber-400 font-bold mx-1">→</span>
-                      <span class="text-amber-300 font-bold underline underline-offset-2">{{ sw.thread }}</span>
-                    </span>
-                    <span v-if="swIdx < stage.swaps.length - 1" class="text-zinc-600 font-bold">, </span>
-                  </template>
-                </div>
-              </div>
-            </div>
-
-            <!-- List of Variant Items under this Stage -->
-            <div class="stage-list grid gap-2 p-2.5 sm:p-3">
-              <div
-                v-for="(item, i) in stage.items"
-                :key="item.key"
-                :class="isCompleted(item.key) 
-                ? 'bg-zinc-950/40 border-zinc-850/60 opacity-40' 
-                : 'bg-zinc-950 border-zinc-800/80 hover:border-zinc-700/80'"
-                class="work-item border rounded-lg p-2.5 sm:p-3 transition-all print-card shadow-sm"
-              >
-                <!-- Card Top Row: CMT info and Action Button -->
-                <div class="flex items-center justify-between gap-2">
-                  <!-- Clean Text Header: CMT | Varian | Floppy | ACC Badge -->
-                  <div class="flex items-center gap-1.5 text-[11px] font-mono min-w-0 flex-wrap leading-tight">
-                    <!-- CMT Identifier (Plain text) -->
-                    <span class="font-bold text-white tracking-tight text-[11.5px]" :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"> CMT {{ item.cmt }} </span>
-
-                    <!-- Variant (Plain text) -->
-                    <template v-if="item.variant && item.variant !== '-'">
-                      <span class="text-zinc-600 select-none text-[9px]">|</span>
-                      <span class="text-zinc-300 font-medium text-[10.5px]" :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"> {{ item.variant }} </span>
-                    </template>
-
-                    <!-- Floppy Name (Plain text) -->
-                    <template v-if="item.flopy">
-                      <span class="text-zinc-600 select-none text-[9px]">|</span>
-                      <span class="text-zinc-400 font-medium text-[10px]" :class="{ 'line-through text-zinc-600': isCompleted(item.key) }"> {{ item.flopy }} </span>
-                    </template>
-
-                  </div>
-
-                  <!-- Actions: Ergonomic Checklist Action -->
-                  <div class="flex items-center gap-1.5 shrink-0 no-print">
-                    <button
-                      @click="toggleComplete(item.key)"
-                      :class="isCompleted(item.key) 
-                      ? 'bg-zinc-800 border-zinc-650 text-white font-bold' 
-                      : 'bg-zinc-900 hover:bg-zinc-850 border-zinc-750 text-zinc-400 hover:text-zinc-200'"
-                      class="h-7 px-2.5 rounded-md border font-mono text-[10px] font-semibold flex items-center gap-1.5 transition-all select-none shrink-0 active:scale-95"
-                    >
-                      <svg v-if="isCompleted(item.key)" class="w-3.5 h-3.5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span v-else class="w-2 h-2 rounded-full border border-zinc-500 inline-block shrink-0"></span>
-                      <span>{{ isCompleted(item.key) ? 'SELESAI' : 'BELUM' }}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Keypad Machine Sequence (Supports connected combination badges [J2|2216||J5|2212] when film has multi-color options) -->
-                <div class="machine-input mt-2 pt-1.5 border-t border-zinc-850/60">
-                  <!-- KONDISI A: Mode Opsi Kombinasi Warna (Cukup badge gabungan antar kode benang tanpa teks OPSI) -->
-                  <div v-if="item.hasCombinationOptions" class="space-y-1.5">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <div
-                        v-for="opt in item.combinationOptions"
-                        :key="opt.optIdx"
-                        @click.stop="toggleOptionAcc(item, opt)"
-                        :title="isOptionAcc(item, opt) ? 'Klik untuk membatalkan ACC opsi ini' : 'Klik untuk menyetujui (ACC) opsi ini'"
-                        class="inline-flex items-stretch rounded-md overflow-hidden border shadow-sm cursor-pointer select-none transition-all active:scale-95 text-left group print:border-black"
-                        :class="isOptionAcc(item, opt)
-                          ? 'border-emerald-500 bg-emerald-950/20 ring-2 ring-emerald-500/50 shadow-md shadow-emerald-500/10'
-                          : 'border-zinc-750 bg-zinc-900/90 hover:border-zinc-500 hover:bg-zinc-850'"
-                      >
-                        <!-- Indikator Checkmark Hijau jika Opsi ini Terpilih / di-ACC -->
-                        <div
-                          v-if="isOptionAcc(item, opt)"
-                          class="px-2 py-0.5 bg-emerald-500 text-zinc-950 flex items-center justify-center border-r border-emerald-400"
-                          title="Opsi kombinasi ini telah di-ACC"
-                        >
-                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                        </div>
-
-                        <template v-for="(th, tIdx) in opt.threads" :key="tIdx">
-                          <!-- Divider || antara benang dalam 1 opsi kombinasi -->
-                          <div
-                            v-if="tIdx > 0"
-                            class="w-2.5 bg-zinc-950 flex items-center justify-center border-x border-zinc-700/80 select-none shrink-0"
-                            title="Kombinasi benang dalam 1 opsi"
-                          >
-                            <div class="flex items-center gap-[2px]">
-                              <span class="w-[1px] h-3.5 bg-zinc-500 rounded-full"></span>
-                              <span class="w-[1px] h-3.5 bg-zinc-500 rounded-full"></span>
-                            </div>
-                          </div>
-
-                          <!-- Segment Benang: Jarum + Kode Benang -->
-                          <div class="inline-flex items-stretch">
-                            <!-- Needle Segment -->
-                            <div
-                              class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px] font-mono shrink-0 transition-colors"
-                              :class="isOptionAcc(item, opt)
-                                ? 'bg-zinc-800 text-emerald-300 border-zinc-700 font-extrabold'
-                                : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(th.needleNum)
-                                  ? 'bg-white/20 border-white/40 text-white font-bold'
-                                  : 'bg-zinc-850 border-zinc-750 text-zinc-200 group-hover:bg-zinc-800')"
-                            >
-                              {{ th.needle }}
-                            </div>
-                            <!-- Thread Code & Swatch -->
-                            <div
-                              class="px-2.5 py-0.5 flex items-center gap-1.5 text-[11px] font-mono shrink-0 transition-colors"
-                              :class="isOptionAcc(item, opt) ? 'text-white font-bold' : 'text-zinc-300 group-hover:text-white'"
-                            >
-                              <span class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(th.code) }"></span>
-                              <span class="font-medium">{{ th.code }}</span>
-                            </div>
-                          </div>
-                        </template>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- KONDISI B: Mode Default Tanpa Kombinasi (Satu per satu dengan tanda panah →) -->
-                  <div v-else class="flex flex-wrap items-center gap-y-1.5 gap-x-1">
-                    <template v-for="(needle, nIndex) in item.needleSequence" :key="nIndex">
-                      <div class="inline-flex items-center gap-1">
-                        <button
-                          type="button"
-                          @click="toggleThreadAcc(item, item.threads[nIndex])"
-                          :title="isThreadAcc(item, item.threads[nIndex]) ? `Batal ACC benang ${item.threads[nIndex]}` : `Pilih ACC benang ${item.threads[nIndex]}`"
-                          class="needle-keycap inline-flex items-stretch rounded-md overflow-hidden border font-mono text-xs shadow-sm transition-all select-none cursor-pointer active:scale-95 text-left group print:border-black"
-                          :class="isThreadAcc(item, item.threads[nIndex])
-                            ? 'border-white bg-zinc-800 ring-2 ring-white/60 shadow-sm shadow-white/15 print:bg-zinc-100'
-                            : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
-                              ? 'border-zinc-300/80 bg-zinc-850 ring-1 ring-white/20 shadow-sm hover:border-zinc-400' 
-                              : 'border-zinc-800 bg-zinc-900/90 hover:border-zinc-650')"
-                        >
-                          <!-- Needle Segment -->
-                          <div
-                            class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px]"
-                            :class="isThreadAcc(item, item.threads[nIndex])
-                              ? 'bg-white text-zinc-950 font-extrabold border-white'
-                              : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
-                                ? 'bg-white/20 border-white/40 text-white font-bold' 
-                                : 'bg-zinc-850 border-zinc-750 text-zinc-200')"
-                          >
-                            {{ needle }}
-                          </div>
-                          <!-- Thread Code & Swatch -->
-                          <div
-                            class="px-2 py-0.5 flex items-center gap-1.5 text-[11px]"
-                            :class="isThreadAcc(item, item.threads[nIndex]) ? 'text-white font-bold' : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', ''))) ? 'text-white font-bold' : 'text-zinc-300')"
-                          >
-                            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(item.threads[nIndex]) }"></span>
-                            <span class="font-medium"> {{ item.threads[nIndex] }} </span>
-                          </div>
-                        </button>
-
-                        <span v-if="nIndex < item.needleSequence.length - 1" class="text-zinc-600 font-mono text-[10px] font-bold select-none px-0.5"> → </span>
-                      </div>
-                    </template>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M9 5h6M10 9h4"></path>
+              </svg>
+              <span>Trial Benang 🪡</span>
+            </button>
           </div>
         </div>
-      </main>
 
-      <!-- ================= TAB 2: PENGATURAN JARUM (SETUP) ================= -->
-      <section v-if="activeTab === 'rack'" class="space-y-3">
-        <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl p-3 sm:p-4 shadow-sm space-y-3.5">
-          <!-- Unified Controls Console: Jumlah Jarum & Jarum Ganti (Single Compact Section) -->
-          <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-850">
-            <!-- Control 1: Jumlah Jarum -->
-            <div class="flex items-center justify-between gap-3 sm:pr-3">
-              <div>
-                <div class="text-[10.5px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">Jumlah Jarum</div>
-                <div class="text-[10px] text-zinc-500 font-mono mt-0.5">Total jarum mesin</div>
-              </div>
-
-              <div class="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-md p-0.5 shrink-0">
-                <button
-                  @click="decrementCapacity"
-                  :disabled="needleCapacity <= 2"
-                  title="Kurangi 1 Jarum"
-                  class="w-7 h-7 rounded bg-zinc-850 hover:bg-zinc-750 active:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 flex items-center justify-center transition-all active:scale-95"
-                >
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </button>
-
-                <div class="w-10 text-center font-mono font-bold text-sm text-zinc-100 select-none">{{ needleCapacity }}J</div>
-
-                <button
-                  @click="incrementCapacity"
-                  :disabled="needleCapacity >= 24"
-                  title="Tambah 1 Jarum"
-                  class="w-7 h-7 rounded bg-zinc-850 hover:bg-zinc-750 active:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 flex items-center justify-center transition-all active:scale-95"
-                >
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Control 2: Jarum Ganti (Simple Wording) -->
-            <div class="flex items-center justify-between gap-3 pt-2.5 sm:pt-0 sm:pl-3">
-              <div>
-                <div class="text-[10.5px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">Jarum Ganti</div>
-                <div class="text-[10px] text-zinc-500 font-mono mt-0.5">Posisi rotasi benang</div>
-              </div>
-
-              <div class="relative shrink-0">
-                <select
-                  v-model.number="swapNeedle"
-                  class="h-8 bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-md pl-2.5 pr-7 text-xs font-mono font-bold text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 cursor-pointer appearance-none transition-colors"
-                >
-                  <option v-for="n in needleCapacity" :key="n" :value="n">Jarum {{ n }} (J{{ n }})</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Susunan Benang Rack Visual -->
-          <div class="pt-3 border-t border-zinc-800/80">
-            <div class="flex items-center gap-2 mb-2.5">
-              <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
-              <h3 class="text-xs font-mono font-bold text-zinc-200 uppercase tracking-wider">SUSUNAN BENANG</h3>
-            </div>
-
-            <!-- Needle Rack Grid (Responsive, Dynamic across Mobile & Desktop) -->
-            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2 sm:gap-2.5">
-              <div
-                v-for="needle in needleList"
-                :key="needle.num"
-                class="relative rounded-lg border overflow-hidden transition-all flex flex-col justify-between"
-                :class="needle.isSwap 
-                ? 'bg-zinc-900 border-zinc-400/80 shadow-[0_0_12px_-2px_rgba(255,255,255,0.08)] ring-1 ring-white/20' 
-                : 'bg-zinc-950 border-zinc-800/90 hover:border-zinc-700'"
-              >
-                <!-- Color Indicator Stripe -->
-                <div class="h-1 w-full shrink-0" :style="{ backgroundColor: getThreadColor(needle.rawCode) }"></div>
-
-                <div class="p-2 sm:p-2.5 flex flex-col items-center text-center">
-                  <!-- Needle Index & Role Badge -->
-                  <div class="w-full flex items-center justify-between gap-1 mb-1.5">
-                    <span class="font-mono font-bold text-[10px] px-1 py-0.5 rounded" :class="needle.isSwap ? 'bg-white/20 text-white font-bold' : 'bg-zinc-850 text-zinc-300'"> J{{ needle.num }} </span>
-                    <span class="text-[8.5px] font-mono font-bold tracking-wider uppercase px-1 py-0.5 rounded" :class="needle.isSwap ? 'bg-white text-zinc-950 font-extrabold shadow-sm' : 'text-zinc-500'">
-                      {{ needle.isSwap ? 'GANTI' : 'FIX' }}
-                    </span>
-                  </div>
-
-                  <!-- Swatch Circle + Thread Code (No Redundant Text, No Cutoff) -->
-                  <div class="flex flex-col items-center justify-center my-1 gap-1">
-                    <span class="w-4 h-4 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(needle.rawCode) }"></span>
-                    <span class="font-mono font-bold text-xs sm:text-sm tracking-tight" :class="needle.rawCode ? (needle.isSwap ? 'text-white font-bold' : 'text-zinc-100') : 'text-zinc-600'"> {{ needle.rawCode || '-' }} </span>
-                  </div>
-
-                  <!-- Color Label / Name (Shortened, Clean & Multi-line on small spaces) -->
-                  <span class="text-[9.5px] text-zinc-400 font-sans w-full mt-0.5 leading-tight line-clamp-2 min-h-[1.25rem] text-center" :title="needle.colorName || (needle.rawCode ? 'Warna Custom' : 'Kosong')">
-                    {{ needle.colorName ? needle.colorName.split('/')[0].trim() : (needle.rawCode ? 'Warna Custom' : 'Kosong') }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Rotation Pipeline Section (Clean Visual Steps) -->
-            <div v-if="calculation.overflowThreads && calculation.overflowThreads.length > 0" class="mt-4 pt-3 border-t border-zinc-800/80">
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-200">
-                  <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="23 4 23 10 17 10"></polyline>
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                  </svg>
-                  <span>ROTASI JARUM {{ swapNeedle }}</span>
-                </div>
-                <span class="text-[10px] font-mono text-zinc-500"> {{ calculation.overflowThreads.length }} Kode </span>
-              </div>
-
-              <!-- Steps Pipeline Carousel / Flex Row (Dynamic desktop wrap / mobile scroll) -->
-              <div class="flex items-center gap-2 overflow-x-auto lg:overflow-visible flex-nowrap lg:flex-wrap pb-1 pt-0.5">
-                <template v-for="(code, rIdx) in calculation.overflowThreads" :key="code">
-                  <!-- Step Pill -->
-                  <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700/80 text-xs font-mono shrink-0 shadow-sm">
-                    <span class="text-[10px] text-zinc-400 font-bold"> T{{ String(rIdx + 1).padStart(2, '0') }}: </span>
-                    <span class="w-3 h-3 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(code) }"></span>
-                    <span class="font-bold text-zinc-100"> {{ code }} </span>
-                    <span class="text-[10.5px] text-zinc-400 font-sans hidden sm:inline"> {{ THREAD_METADATA[code]?.name ? THREAD_METADATA[code].name.split('/')[0].trim() : '' }} </span>
-                  </div>
-
-                  <!-- Arrow Connector -->
-                  <svg v-if="rIdx < calculation.overflowThreads.length - 1" class="w-3 h-3 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </template>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 3: PALET WARNA (DICTIONARY) ================= -->
-      <section v-if="activeTab === 'colors'" class="space-y-3 no-print">
+        <!-- Sub Tabs: CMT vs Kamus Warna -->
         <div class="flex items-center justify-between gap-3">
-          <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300">Data Produksi</h2>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-sm bg-cyan-400"></span>
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-200">
+              {{ cmtSubTab === 'colors' ? 'Kamus Warna Benang' : 'Form Input &amp; Daftar CMT' }}
+            </h2>
+          </div>
           <div class="data-switch">
-            <button @click="activeTab = 'manage'">CMT</button>
-            <button class="is-active">Warna</button>
+            <button :class="{ 'is-active': cmtSubTab === 'cmt' }" @click="cmtSubTab = 'cmt'">Data CMT</button>
+            <button :class="{ 'is-active': cmtSubTab === 'colors' }" @click="cmtSubTab = 'colors'">Kamus Warna</button>
           </div>
         </div>
-        <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-lg p-3 sm:p-4 shadow-sm">
+
+        <!-- VIEW A: Kamus Warna (Star Elephant Rayon) -->
+        <div v-show="cmtSubTab === 'colors'">
+          <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-lg p-3 sm:p-4 shadow-sm">
           <div class="flex items-center justify-between mb-1">
             <h3 class="text-xs font-mono font-bold text-zinc-200 uppercase tracking-wider">KAMUS WARNA BENANG (STAR ELEPHANT RAYON)</h3>
             <span class="text-[10px] font-mono text-zinc-500">PT ANTELAS / 120D</span>
@@ -1229,22 +830,11 @@
             Reset Warna ke Standar Star Elephant
           </button>
         </div>
-      </section>
-
-      <!-- ================= TAB 4: KELOLA CMT & ARSIP ================= -->
-      <section v-if="activeTab === 'manage'" class="space-y-3.5 no-print">
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
-            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-zinc-200">Data Produksi</h2>
-          </div>
-          <div class="data-switch">
-            <button class="is-active">CMT</button>
-            <button @click="activeTab = 'colors'">Warna</button>
-          </div>
         </div>
 
-        <!-- 1. Form Tambah Data CMT (Parent-Child Multi-Variasi Repeater) -->
+        <!-- VIEW B: Form Tambah CMT, Daftar CMT Aktif & Arsip Sesi -->
+        <div v-show="cmtSubTab === 'cmt'" class="space-y-3.5">
+          <!-- 1. Form Tambah Data CMT (Parent-Child Multi-Variasi Repeater) -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-sm space-y-3.5">
           <!-- Card Header -->
           <div class="flex items-center justify-between pb-2.5 border-b border-zinc-800/80">
@@ -1818,7 +1408,469 @@
             </div>
           </div>
         </div>
+        </div>
       </section>
+      <!-- END OF MODULE 0: PUSAT DATA CMT -->
+
+      <!-- ================= MODULE 1: TRIAL BENANG & JARUM ================= -->
+      <div v-show="activeModule === 'trial'" class="space-y-3.5">
+        <!-- ================= TAB NAVIGATION (COMPACT) ================= -->
+        <nav class="workspace-nav grid grid-cols-3 gap-1 bg-zinc-900 border border-zinc-800/80 p-1 rounded-lg mb-3 text-xs font-mono font-medium no-print">
+        <button
+          @click="activeTab = 'operator'"
+          :class="activeTab === 'operator' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
+          class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
+        >
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          <span>Trial</span>
+        </button>
+
+        <button
+          @click="activeTab = 'rack'"
+          :class="activeTab === 'rack' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 border border-transparent'"
+          class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px]"
+        >
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+          </svg>
+          <span>Mesin</span>
+        </button>
+
+        <button
+          @click="activeModule = 'cmt'"
+          class="h-8.5 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 select-none text-[11px] text-zinc-400 hover:text-cyan-300 hover:bg-zinc-850/60 border border-transparent cursor-pointer"
+          title="Buka Pusat Data CMT untuk menambah atau mengedit CMT"
+        >
+          <svg class="w-3.5 h-3.5 shrink-0 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M6 6h10M6 10h10"></path>
+          </svg>
+          <span>Data CMT ↗</span>
+        </button>
+      </nav>
+
+      <!-- ================= TAB 1: TRIAL BORDIR ================= -->
+      <main v-if="activeTab === 'operator'" class="space-y-3.5">
+        <!-- Empty state when no CMT exists -->
+        <div v-if="cmts.length === 0" class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 text-center font-mono">
+          <div class="text-xs text-zinc-300 font-bold mb-1">Daftar Pengerjaan Kosong</div>
+          <p class="text-[11px] text-zinc-500 font-sans">Silakan tambahkan data CMT melalui menu <button @click="activeModule = 'cmt'" class="text-cyan-300 underline font-semibold cursor-pointer">Data CMT</button> atau <button @click="loadSampleData" class="text-zinc-300 underline font-semibold cursor-pointer">muat sampel</button>.</p>
+        </div>
+
+        <!-- Stage Cards -->
+        <div v-else class="space-y-3.5">
+          <div
+            v-for="(stage, idx) in calculation.stagesList"
+            :key="idx"
+            class="stage-panel border rounded-xl transition-all print-card overflow-hidden"
+            :class="{
+            'bg-zinc-950/40 border-zinc-850/80 opacity-50': getStageState(stage, idx) === 'completed',
+            'bg-zinc-900 border-zinc-300 ring-1 ring-white/30 shadow-[0_0_24px_-4px_rgba(255,255,255,0.1)]': getStageState(stage, idx) === 'active' && stage.isSwapStage,
+            'bg-zinc-900 border-zinc-600 shadow-sm ring-1 ring-zinc-600/50': getStageState(stage, idx) === 'active' && !stage.isSwapStage,
+            'bg-zinc-950/60 border-zinc-800/80': getStageState(stage, idx) === 'upcoming'
+          }"
+          >
+            <!-- Stage Header / Phase Bar -->
+            <div
+              class="px-3 py-2 sm:px-3.5 sm:py-2.5 border-b font-mono flex items-center justify-between gap-2"
+              :class="{
+              'border-zinc-850/70 bg-zinc-950/60': getStageState(stage, idx) === 'completed',
+              'border-zinc-700 bg-zinc-850/90': getStageState(stage, idx) === 'active',
+              'border-zinc-800/60 bg-zinc-900/40': getStageState(stage, idx) === 'upcoming'
+            }"
+            >
+              <!-- Left: Stage Index & Action Directive -->
+              <div class="flex items-center gap-2 min-w-0 flex-wrap">
+                <!-- Stage Index Pill -->
+                <span
+                  class="font-bold text-[10px] px-2 py-0.5 rounded border uppercase shrink-0 tracking-wider"
+                  :class="{
+                  'bg-zinc-850 border-zinc-800 text-zinc-500': getStageState(stage, idx) === 'completed',
+                  'bg-zinc-800 border-zinc-700 text-zinc-100 font-semibold': getStageState(stage, idx) === 'active',
+                  'bg-zinc-850 border-zinc-800 text-zinc-400': getStageState(stage, idx) === 'upcoming'
+                }"
+                >
+                  Tahap {{ String(idx + 1).padStart(2, '0') }}
+                </span>
+
+                <!-- Directive Label -->
+                <template v-if="!stage.isSwapStage">
+                  <span class="text-xs font-bold uppercase tracking-tight" :class="getStageState(stage, idx) === 'completed' ? 'text-zinc-500 line-through' : 'text-zinc-100'"> Setup Awal </span>
+                  <span
+                    v-if="stage.swaps && stage.swaps.length > 0"
+                    class="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
+                    :class="getStageState(stage, idx) === 'completed' 
+                    ? 'bg-zinc-850 border-zinc-800 text-zinc-500' 
+                    : 'text-zinc-200 bg-white/10 border-white/25 font-bold'"
+                  >
+                    J{{ stage.swaps[0].needle }}: {{ stage.swaps[0].thread }}
+                  </span>
+                </template>
+              </div>
+
+              <!-- Right: Stage Counter & Status Badge -->
+              <div class="flex items-center gap-1.5 font-mono text-[11px] shrink-0">
+                <div
+                  class="flex items-center gap-1.5 px-2 py-0.5 rounded border"
+                  :class="getStageState(stage, idx) === 'completed' 
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold' 
+                  : 'bg-zinc-950/80 border-zinc-800 text-zinc-200'"
+                >
+                  <span v-if="getStageState(stage, idx) === 'completed'"> ✓ SELESAI </span>
+                  <div v-else class="flex items-center gap-1 font-bold">
+                    <span>{{ getStageCompletedCount(stage) }}/{{ stage.items.length }}</span>
+                    <span class="text-[10px] text-zinc-400 font-normal">{{ getStageSubtitle(stage) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guidance Callout for Stage 1 (Callout Instruction - Amber Border-Left) -->
+            <div v-if="idx === 0 && getStageState(stage, idx) !== 'completed'" class="p-2 sm:px-3 sm:py-2.5 bg-zinc-950/40 border-b border-zinc-850/80 no-print">
+              <div class="flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-none bg-amber-950/25 border border-amber-500/25 border-l-[3.5px] border-l-amber-500 text-zinc-100 text-xs font-sans shadow-sm">
+                <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span class="font-medium text-[11.5px] sm:text-xs text-zinc-100"> Sesuaikan urutan kode benang pada mesin seperti di tab Mesin </span>
+              </div>
+            </div>
+
+            <!-- Swap Callout Instruction (Callout Instruction - Amber Border-Left) -->
+            <div v-if="stage.isSwapStage && getStageState(stage, idx) !== 'completed'" class="p-2 sm:px-3 sm:py-2.5 bg-zinc-950/40 border-b border-zinc-850/80 no-print">
+              <div class="flex items-center gap-2.5 px-3 py-2 sm:py-2.5 rounded-none bg-amber-950/25 border border-amber-500/25 border-l-[3.5px] border-l-amber-500 text-zinc-100 text-xs font-mono shadow-sm">
+                <!-- Needle Icon for Jarum Swap -->
+                <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 21l3.5-1.5l14.5-14.5a2.121 2.121 0 0 0-3-3l-14.5 14.5z" />
+                  <path d="M16.5 6.5l1 1" />
+                  <path d="M19 4c-.5-1.5-2-1.5-3-1s-2 1.5-3.5 1.5s-2.5-1-3.5-1s-2 1-2 2" />
+                </svg>
+                <div class="text-[11.5px] sm:text-xs font-mono font-medium flex items-center gap-1.5 flex-wrap">
+                  <span class="text-white font-bold uppercase">Ganti:</span>
+                  <template v-for="(sw, swIdx) in stage.swaps" :key="sw.needle">
+                    <span class="text-zinc-100 font-semibold">
+                      J{{ sw.needle }}<span v-if="sw.prevThread" class="text-zinc-400 font-normal"> ({{ sw.prevThread }})</span>
+                      <span class="text-amber-400 font-bold mx-1">→</span>
+                      <span class="text-amber-300 font-bold underline underline-offset-2">{{ sw.thread }}</span>
+                    </span>
+                    <span v-if="swIdx < stage.swaps.length - 1" class="text-zinc-600 font-bold">, </span>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- List of Variant Items under this Stage -->
+            <div class="stage-list grid gap-2 p-2.5 sm:p-3">
+              <div
+                v-for="(item, i) in stage.items"
+                :key="item.key"
+                :class="isCompleted(item.key) 
+                ? 'bg-zinc-950/40 border-zinc-850/60 opacity-40' 
+                : 'bg-zinc-950 border-zinc-800/80 hover:border-zinc-700/80'"
+                class="work-item border rounded-lg p-2.5 sm:p-3 transition-all print-card shadow-sm"
+              >
+                <!-- Card Top Row: CMT info and Action Button -->
+                <div class="flex items-center justify-between gap-2">
+                  <!-- Clean Text Header: CMT | Varian | Floppy | ACC Badge -->
+                  <div class="flex items-center gap-1.5 text-[11px] font-mono min-w-0 flex-wrap leading-tight">
+                    <!-- CMT Identifier (Plain text) -->
+                    <span class="font-bold text-white tracking-tight text-[11.5px]" :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"> CMT {{ item.cmt }} </span>
+
+                    <!-- Variant (Plain text) -->
+                    <template v-if="item.variant && item.variant !== '-'">
+                      <span class="text-zinc-600 select-none text-[9px]">|</span>
+                      <span class="text-zinc-300 font-medium text-[10.5px]" :class="{ 'line-through text-zinc-500': isCompleted(item.key) }"> {{ item.variant }} </span>
+                    </template>
+
+                    <!-- Floppy Name (Plain text) -->
+                    <template v-if="item.flopy">
+                      <span class="text-zinc-600 select-none text-[9px]">|</span>
+                      <span class="text-zinc-400 font-medium text-[10px]" :class="{ 'line-through text-zinc-600': isCompleted(item.key) }"> {{ item.flopy }} </span>
+                    </template>
+
+                  </div>
+
+                  <!-- Actions: Ergonomic Checklist Action -->
+                  <div class="flex items-center gap-1.5 shrink-0 no-print">
+                    <button
+                      @click="toggleComplete(item.key)"
+                      :class="isCompleted(item.key) 
+                      ? 'bg-zinc-800 border-zinc-650 text-white font-bold' 
+                      : 'bg-zinc-900 hover:bg-zinc-850 border-zinc-750 text-zinc-400 hover:text-zinc-200'"
+                      class="h-7 px-2.5 rounded-md border font-mono text-[10px] font-semibold flex items-center gap-1.5 transition-all select-none shrink-0 active:scale-95"
+                    >
+                      <svg v-if="isCompleted(item.key)" class="w-3.5 h-3.5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span v-else class="w-2 h-2 rounded-full border border-zinc-500 inline-block shrink-0"></span>
+                      <span>{{ isCompleted(item.key) ? 'SELESAI' : 'BELUM' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Keypad Machine Sequence (Supports connected combination badges [J2|2216||J5|2212] when film has multi-color options) -->
+                <div class="machine-input mt-2 pt-1.5 border-t border-zinc-850/60">
+                  <!-- KONDISI A: Mode Opsi Kombinasi Warna (Cukup badge gabungan antar kode benang tanpa teks OPSI) -->
+                  <div v-if="item.hasCombinationOptions" class="space-y-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <div
+                        v-for="opt in item.combinationOptions"
+                        :key="opt.optIdx"
+                        @click.stop="toggleOptionAcc(item, opt)"
+                        :title="isOptionAcc(item, opt) ? 'Klik untuk membatalkan ACC opsi ini' : 'Klik untuk menyetujui (ACC) opsi ini'"
+                        class="inline-flex items-stretch rounded-md overflow-hidden border shadow-sm cursor-pointer select-none transition-all active:scale-95 text-left group print:border-black"
+                        :class="isOptionAcc(item, opt)
+                          ? 'border-emerald-500 bg-emerald-950/20 ring-2 ring-emerald-500/50 shadow-md shadow-emerald-500/10'
+                          : 'border-zinc-750 bg-zinc-900/90 hover:border-zinc-500 hover:bg-zinc-850'"
+                      >
+                        <!-- Indikator Checkmark Hijau jika Opsi ini Terpilih / di-ACC -->
+                        <div
+                          v-if="isOptionAcc(item, opt)"
+                          class="px-2 py-0.5 bg-emerald-500 text-zinc-950 flex items-center justify-center border-r border-emerald-400"
+                          title="Opsi kombinasi ini telah di-ACC"
+                        >
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+
+                        <template v-for="(th, tIdx) in opt.threads" :key="tIdx">
+                          <!-- Divider || antara benang dalam 1 opsi kombinasi -->
+                          <div
+                            v-if="tIdx > 0"
+                            class="w-2.5 bg-zinc-950 flex items-center justify-center border-x border-zinc-700/80 select-none shrink-0"
+                            title="Kombinasi benang dalam 1 opsi"
+                          >
+                            <div class="flex items-center gap-[2px]">
+                              <span class="w-[1px] h-3.5 bg-zinc-500 rounded-full"></span>
+                              <span class="w-[1px] h-3.5 bg-zinc-500 rounded-full"></span>
+                            </div>
+                          </div>
+
+                          <!-- Segment Benang: Jarum + Kode Benang -->
+                          <div class="inline-flex items-stretch">
+                            <!-- Needle Segment -->
+                            <div
+                              class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px] font-mono shrink-0 transition-colors"
+                              :class="isOptionAcc(item, opt)
+                                ? 'bg-zinc-800 text-emerald-300 border-zinc-700 font-extrabold'
+                                : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(th.needleNum)
+                                  ? 'bg-white/20 border-white/40 text-white font-bold'
+                                  : 'bg-zinc-850 border-zinc-750 text-zinc-200 group-hover:bg-zinc-800')"
+                            >
+                              {{ th.needle }}
+                            </div>
+                            <!-- Thread Code & Swatch -->
+                            <div
+                              class="px-2.5 py-0.5 flex items-center gap-1.5 text-[11px] font-mono shrink-0 transition-colors"
+                              :class="isOptionAcc(item, opt) ? 'text-white font-bold' : 'text-zinc-300 group-hover:text-white'"
+                            >
+                              <span class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(th.code) }"></span>
+                              <span class="font-medium">{{ th.code }}</span>
+                            </div>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- KONDISI B: Mode Default Tanpa Kombinasi (Satu per satu dengan tanda panah →) -->
+                  <div v-else class="flex flex-wrap items-center gap-y-1.5 gap-x-1">
+                    <template v-for="(needle, nIndex) in item.needleSequence" :key="nIndex">
+                      <div class="inline-flex items-center gap-1">
+                        <button
+                          type="button"
+                          @click="toggleThreadAcc(item, item.threads[nIndex])"
+                          :title="isThreadAcc(item, item.threads[nIndex]) ? `Batal ACC benang ${item.threads[nIndex]}` : `Pilih ACC benang ${item.threads[nIndex]}`"
+                          class="needle-keycap inline-flex items-stretch rounded-md overflow-hidden border font-mono text-xs shadow-sm transition-all select-none cursor-pointer active:scale-95 text-left group print:border-black"
+                          :class="isThreadAcc(item, item.threads[nIndex])
+                            ? 'border-white bg-zinc-800 ring-2 ring-white/60 shadow-sm shadow-white/15 print:bg-zinc-100'
+                            : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
+                              ? 'border-zinc-300/80 bg-zinc-850 ring-1 ring-white/20 shadow-sm hover:border-zinc-400' 
+                              : 'border-zinc-800 bg-zinc-900/90 hover:border-zinc-650')"
+                        >
+                          <!-- Needle Segment -->
+                          <div
+                            class="px-2 py-0.5 font-bold tracking-tight border-r flex items-center justify-center text-[11px]"
+                            :class="isThreadAcc(item, item.threads[nIndex])
+                              ? 'bg-white text-zinc-950 font-extrabold border-white'
+                              : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', '')))
+                                ? 'bg-white/20 border-white/40 text-white font-bold' 
+                                : 'bg-zinc-850 border-zinc-750 text-zinc-200')"
+                          >
+                            {{ needle }}
+                          </div>
+                          <!-- Thread Code & Swatch -->
+                          <div
+                            class="px-2 py-0.5 flex items-center gap-1.5 text-[11px]"
+                            :class="isThreadAcc(item, item.threads[nIndex]) ? 'text-white font-bold' : (getStageState(stage, idx) === 'active' && stage.swappedNeedles && stage.swappedNeedles.includes(parseInt(needle.replace('J', ''))) ? 'text-white font-bold' : 'text-zinc-300')"
+                          >
+                            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(item.threads[nIndex]) }"></span>
+                            <span class="font-medium"> {{ item.threads[nIndex] }} </span>
+                          </div>
+                        </button>
+
+                        <span v-if="nIndex < item.needleSequence.length - 1" class="text-zinc-600 font-mono text-[10px] font-bold select-none px-0.5"> → </span>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ================= TAB 2: PENGATURAN JARUM (SETUP) ================= -->
+      <section v-if="activeTab === 'rack'" class="space-y-3">
+        <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl p-3 sm:p-4 shadow-sm space-y-3.5">
+          <!-- Unified Controls Console: Jumlah Jarum & Jarum Ganti (Single Compact Section) -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-850">
+            <!-- Control 1: Jumlah Jarum -->
+            <div class="flex items-center justify-between gap-3 sm:pr-3">
+              <div>
+                <div class="text-[10.5px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">Jumlah Jarum</div>
+                <div class="text-[10px] text-zinc-500 font-mono mt-0.5">Total jarum mesin</div>
+              </div>
+
+              <div class="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-md p-0.5 shrink-0">
+                <button
+                  @click="decrementCapacity"
+                  :disabled="needleCapacity <= 2"
+                  title="Kurangi 1 Jarum"
+                  class="w-7 h-7 rounded bg-zinc-850 hover:bg-zinc-750 active:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 flex items-center justify-center transition-all active:scale-95"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+
+                <div class="w-10 text-center font-mono font-bold text-sm text-zinc-100 select-none">{{ needleCapacity }}J</div>
+
+                <button
+                  @click="incrementCapacity"
+                  :disabled="needleCapacity >= 24"
+                  title="Tambah 1 Jarum"
+                  class="w-7 h-7 rounded bg-zinc-850 hover:bg-zinc-750 active:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 flex items-center justify-center transition-all active:scale-95"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Control 2: Jarum Ganti (Simple Wording) -->
+            <div class="flex items-center justify-between gap-3 pt-2.5 sm:pt-0 sm:pl-3">
+              <div>
+                <div class="text-[10.5px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">Jarum Ganti</div>
+                <div class="text-[10px] text-zinc-500 font-mono mt-0.5">Posisi rotasi benang</div>
+              </div>
+
+              <div class="relative shrink-0">
+                <select
+                  v-model.number="swapNeedle"
+                  class="h-8 bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-md pl-2.5 pr-7 text-xs font-mono font-bold text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 cursor-pointer appearance-none transition-colors"
+                >
+                  <option v-for="n in needleCapacity" :key="n" :value="n">Jarum {{ n }} (J{{ n }})</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Susunan Benang Rack Visual -->
+          <div class="pt-3 border-t border-zinc-800/80">
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="w-1.5 h-1.5 rounded-sm bg-zinc-300"></span>
+              <h3 class="text-xs font-mono font-bold text-zinc-200 uppercase tracking-wider">SUSUNAN BENANG</h3>
+            </div>
+
+            <!-- Needle Rack Grid (Responsive, Dynamic across Mobile & Desktop) -->
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2 sm:gap-2.5">
+              <div
+                v-for="needle in needleList"
+                :key="needle.num"
+                class="relative rounded-lg border overflow-hidden transition-all flex flex-col justify-between"
+                :class="needle.isSwap 
+                ? 'bg-zinc-900 border-zinc-400/80 shadow-[0_0_12px_-2px_rgba(255,255,255,0.08)] ring-1 ring-white/20' 
+                : 'bg-zinc-950 border-zinc-800/90 hover:border-zinc-700'"
+              >
+                <!-- Color Indicator Stripe -->
+                <div class="h-1 w-full shrink-0" :style="{ backgroundColor: getThreadColor(needle.rawCode) }"></div>
+
+                <div class="p-2 sm:p-2.5 flex flex-col items-center text-center">
+                  <!-- Needle Index & Role Badge -->
+                  <div class="w-full flex items-center justify-between gap-1 mb-1.5">
+                    <span class="font-mono font-bold text-[10px] px-1 py-0.5 rounded" :class="needle.isSwap ? 'bg-white/20 text-white font-bold' : 'bg-zinc-850 text-zinc-300'"> J{{ needle.num }} </span>
+                    <span class="text-[8.5px] font-mono font-bold tracking-wider uppercase px-1 py-0.5 rounded" :class="needle.isSwap ? 'bg-white text-zinc-950 font-extrabold shadow-sm' : 'text-zinc-500'">
+                      {{ needle.isSwap ? 'GANTI' : 'FIX' }}
+                    </span>
+                  </div>
+
+                  <!-- Swatch Circle + Thread Code (No Redundant Text, No Cutoff) -->
+                  <div class="flex flex-col items-center justify-center my-1 gap-1">
+                    <span class="w-4 h-4 rounded-full border border-white/20 shadow-sm shrink-0" :style="{ backgroundColor: getThreadColor(needle.rawCode) }"></span>
+                    <span class="font-mono font-bold text-xs sm:text-sm tracking-tight" :class="needle.rawCode ? (needle.isSwap ? 'text-white font-bold' : 'text-zinc-100') : 'text-zinc-600'"> {{ needle.rawCode || '-' }} </span>
+                  </div>
+
+                  <!-- Color Label / Name (Shortened, Clean & Multi-line on small spaces) -->
+                  <span class="text-[9.5px] text-zinc-400 font-sans w-full mt-0.5 leading-tight line-clamp-2 min-h-[1.25rem] text-center" :title="needle.colorName || (needle.rawCode ? 'Warna Custom' : 'Kosong')">
+                    {{ needle.colorName ? needle.colorName.split('/')[0].trim() : (needle.rawCode ? 'Warna Custom' : 'Kosong') }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rotation Pipeline Section (Clean Visual Steps) -->
+            <div v-if="calculation.overflowThreads && calculation.overflowThreads.length > 0" class="mt-4 pt-3 border-t border-zinc-800/80">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-200">
+                  <svg class="w-3.5 h-3.5 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  <span>ROTASI JARUM {{ swapNeedle }}</span>
+                </div>
+                <span class="text-[10px] font-mono text-zinc-500"> {{ calculation.overflowThreads.length }} Kode </span>
+              </div>
+
+              <!-- Steps Pipeline Carousel / Flex Row (Dynamic desktop wrap / mobile scroll) -->
+              <div class="flex items-center gap-2 overflow-x-auto lg:overflow-visible flex-nowrap lg:flex-wrap pb-1 pt-0.5">
+                <template v-for="(code, rIdx) in calculation.overflowThreads" :key="code">
+                  <!-- Step Pill -->
+                  <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700/80 text-xs font-mono shrink-0 shadow-sm">
+                    <span class="text-[10px] text-zinc-400 font-bold"> T{{ String(rIdx + 1).padStart(2, '0') }}: </span>
+                    <span class="w-3 h-3 rounded-full border border-white/20 shrink-0" :style="{ backgroundColor: getThreadColor(code) }"></span>
+                    <span class="font-bold text-zinc-100"> {{ code }} </span>
+                    <span class="text-[10.5px] text-zinc-400 font-sans hidden sm:inline"> {{ THREAD_METADATA[code]?.name ? THREAD_METADATA[code].name.split('/')[0].trim() : '' }} </span>
+                  </div>
+
+                  <!-- Arrow Connector -->
+                  <svg v-if="rIdx < calculation.overflowThreads.length - 1" class="w-3 h-3 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       </div>
       <!-- END OF MODULE 1: TRIAL BENANG -->
 
@@ -2832,7 +2884,7 @@
         <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-3 shadow-sm">
           <div class="flex items-center justify-between border-b border-zinc-850 pb-2">
             <span class="text-xs font-bold text-white uppercase">Daftar Arsip Sesi Tersimpan ({{ savedSessions.length }})</span>
-            <button @click="activeModule = 'trial'; activeTab = 'manage'" class="text-[11px] text-zinc-400 hover:text-white underline">Simpan Sesi Saat Ini</button>
+            <button @click="activeModule = 'cmt'; cmtSubTab = 'cmt'" class="text-[11px] text-zinc-400 hover:text-white underline">Simpan Sesi Saat Ini</button>
           </div>
 
           <div v-if="savedSessions.length === 0" class="py-8 text-center text-xs text-zinc-500">
@@ -2885,6 +2937,19 @@
 
               <!-- Drawer Nav Items -->
               <nav class="space-y-1 text-xs">
+                <button
+                  @click="activeModule = 'cmt'; isSidebarOpen = false"
+                  :class="activeModule === 'cmt' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
+                  class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left transition-colors"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">📋</span>
+                    <span>Data CMT</span>
+                  </div>
+                  <span v-if="uniqueTotalCmts > 0" class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-semibold">{{ uniqueTotalCmts }} CMT</span>
+                  <span v-else class="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">Pusat Data</span>
+                </button>
+
                 <button
                   @click="activeModule = 'trial'; isSidebarOpen = false"
                   :class="activeModule === 'trial' ? 'bg-zinc-850 text-white border-zinc-700 font-bold shadow-sm' : 'text-zinc-400 border-transparent'"
@@ -3629,8 +3694,9 @@
       createApp({
         setup() {
           const activeTab = ref('operator');
+          const cmtSubTab = ref('cmt');
           const storedMod = typeof localStorage !== 'undefined' ? localStorage.getItem('embro_active_module') : null;
-          const activeModule = ref(storedMod && ['trial', 'floppy', 'schedule', 'inventory', 'archives'].includes(storedMod) ? storedMod : 'trial');
+          const activeModule = ref(storedMod && ['cmt', 'trial', 'floppy', 'schedule', 'inventory', 'archives'].includes(storedMod) ? storedMod : 'trial');
           const isSidebarOpen = ref(false);
           const needleCapacity = ref(11);
           const swapNeedle = ref(11); // Default ke jarum paling akhir / ujung
@@ -4605,12 +4671,16 @@
 
             // 6. Muat active tab & active module
             const storedTab = localStorage.getItem('embro_active_tab');
-            if (storedTab && ['operator', 'rack', 'colors', 'manage'].includes(storedTab)) {
+            if (storedTab === 'manage' || storedTab === 'colors') {
+              activeModule.value = 'cmt';
+              cmtSubTab.value = storedTab === 'colors' ? 'colors' : 'cmt';
+              activeTab.value = 'operator';
+            } else if (storedTab && ['operator', 'rack'].includes(storedTab)) {
               activeTab.value = storedTab;
             }
 
             const storedMod = localStorage.getItem('embro_active_module');
-            if (storedMod && ['trial', 'floppy', 'schedule', 'inventory', 'archives'].includes(storedMod)) {
+            if (storedMod && ['cmt', 'trial', 'floppy', 'schedule', 'inventory', 'archives'].includes(storedMod)) {
               activeModule.value = storedMod;
             }
 
@@ -5312,8 +5382,8 @@
 
           const createCmtFromFloppy = (floppy) => {
             newFlopy.value = floppy.name;
-            activeModule.value = 'trial';
-            activeTab.value = 'manage';
+            activeModule.value = 'cmt';
+            cmtSubTab.value = 'cmt';
             showToast(`Floppy "${floppy.name}" dipilih. Silakan isi nomor CMT dan variasinya.`);
           };
 
@@ -6705,6 +6775,7 @@
           return {
             activeTab,
             activeModule,
+            cmtSubTab,
             isSidebarOpen,
             needleCapacity,
             swapNeedle,
