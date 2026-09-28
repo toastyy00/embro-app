@@ -1,54 +1,17 @@
 <script setup>
-import { ref } from 'vue';
 import { useTrialStore } from '../stores/useTrialStore.js';
 import ComboBadge from '../components/trial/ComboBadge.vue';
 import { getThreadColor } from '../utils/colorPalette.js';
 
 const trial = useTrialStore();
 
-// Form Input CMT Baru
-const newCmt = ref({
-  flopy: '',
-  cmt: '',
-  variant: '',
-  threadsInput: '',
-});
-
-function addSingleCmt() {
-  const cmtNum = (newCmt.value.cmt || '').trim();
-  const rawThreads = (newCmt.value.threadsInput || '').trim();
-
-  if (!cmtNum || !rawThreads) {
-    alert('Nomor CMT dan Kode Benang wajib diisi.');
-    return;
-  }
-
-  // Parse benang (dipisahkan spasi atau koma)
-  const threadList = rawThreads.split(/[\s,]+/).filter(Boolean);
-
-  trial.cmts.push({
-    flopy: (newCmt.value.flopy || '').trim() || 'Flopy A',
-    cmt: cmtNum,
-    variant: (newCmt.value.variant || '-').trim(),
-    threads: threadList,
-    threadOptions: [threadList],
-    isCombination: false,
-  });
-
-  newCmt.value.cmt = '';
-  newCmt.value.variant = '';
-  newCmt.value.threadsInput = '';
-}
-
-function removeCmtItem(idx) {
-  trial.cmts.splice(idx, 1);
-}
+defineEmits(['switch-to-cmt']);
 </script>
 
 <template>
   <div class="space-y-4">
-    <!-- 1. Pengaturan Kapasitas Mesin Bordir -->
-    <div class="p-3.5 bg-zinc-900/80 border border-zinc-800 rounded-xl flex flex-wrap items-center justify-between gap-3">
+    <!-- 1. Header Pengaturan Kapasitas Mesin Bordir (Mesin 1 Kepala Trial) -->
+    <div class="p-3.5 bg-zinc-900/80 border border-zinc-800 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
       <div class="flex items-center gap-3">
         <span class="text-xs font-mono font-bold text-white uppercase tracking-wider">Kapasitas Jarum:</span>
         <div class="flex items-center gap-1 bg-zinc-950 border border-zinc-800 rounded-lg p-0.5">
@@ -65,7 +28,7 @@ function removeCmtItem(idx) {
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-xs font-mono text-zinc-400">Jarum Swap:</span>
+        <span class="text-xs font-mono text-zinc-400">Jarum Swap (Rotasi):</span>
         <select
           v-model.number="trial.swapNeedle"
           class="bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1 text-xs font-mono text-white focus:outline-none focus:border-zinc-600"
@@ -78,16 +41,14 @@ function removeCmtItem(idx) {
 
       <div class="flex items-center gap-2">
         <button
-          @click="trial.loadSample"
-          class="px-3 py-1 rounded border border-zinc-800 bg-zinc-950 hover:bg-zinc-850 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
+          @click="$emit('switch-to-cmt')"
+          class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-xs font-mono font-medium text-zinc-200 flex items-center gap-1.5 transition-colors"
         >
-          Muat Sampel
-        </button>
-        <button
-          @click="trial.clearAllCmts"
-          class="px-3 py-1 rounded border border-zinc-800 bg-zinc-950 hover:bg-zinc-850 text-xs font-mono text-rose-400 hover:text-rose-300 transition-colors"
-        >
-          Kosongkan
+          <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>Kelola Data CMT ({{ trial.cmts.length }})</span>
         </button>
       </div>
     </div>
@@ -95,7 +56,13 @@ function removeCmtItem(idx) {
     <!-- 2. Tahapan Mesin (Stages) -->
     <div v-if="trial.stages.length === 0" class="p-12 text-center bg-zinc-900/40 border border-dashed border-zinc-800 rounded-2xl">
       <div class="text-zinc-400 font-mono text-xs">Belum ada variasi CMT bordir yang aktif.</div>
-      <div class="text-zinc-600 font-mono text-[11px] mt-1">Masukkan data CMT di formulir bawah atau klik "Muat Sampel".</div>
+      <div class="text-zinc-600 font-mono text-[11px] mt-1">Buka menu "Data CMT" untuk menambahkan nomor CMT dan variasi benang.</div>
+      <button
+        @click="$emit('switch-to-cmt')"
+        class="mt-3 px-4 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 rounded-lg text-xs font-mono font-semibold hover:bg-emerald-600/30 transition-colors"
+      >
+        + Buka Menu Data CMT
+      </button>
     </div>
 
     <div v-else class="space-y-4">
@@ -107,7 +74,10 @@ function removeCmtItem(idx) {
         <!-- Header Tahap -->
         <div class="p-3 bg-zinc-950/70 border-b border-zinc-800 flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase" :class="stage.isSwapStage ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'">
+            <span
+              class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase"
+              :class="stage.isSwapStage ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'"
+            >
               Tahap {{ sIdx + 1 }}
             </span>
             <span class="text-xs font-mono font-bold text-white">{{ stage.title }}</span>
@@ -116,7 +86,7 @@ function removeCmtItem(idx) {
           <span class="text-[11px] font-mono text-zinc-400">{{ stage.items.length }} Film</span>
         </div>
 
-        <!-- Instruksi Operator -->
+        <!-- Instruksi Operator Mesin -->
         <div v-if="stage.instruction" class="px-4 py-2 bg-zinc-950/30 text-[11px] font-mono text-zinc-300 border-b border-zinc-850">
           💡 {{ stage.instruction }}
         </div>
@@ -151,9 +121,9 @@ function removeCmtItem(idx) {
               </button>
             </div>
 
-            <!-- Tampilan Urutan Jarum / Opsi Warna -->
+            <!-- Tampilan Urutan Jarum & Badge Opsi Warna -->
             <div class="mt-2.5 pt-2 border-t border-zinc-850/80">
-              <!-- KONDISI A: Mode Opsi Kombinasi Benang -->
+              <!-- KONDISI A: Mode Opsi Kombinasi Benang (Badge Sambung [J3|1171||J2|1070] dengan Checkmark Mandiri) -->
               <div v-if="item.hasCombinationOptions" class="flex flex-wrap items-center gap-2">
                 <ComboBadge
                   v-for="opt in item.combinationOptions"
@@ -173,7 +143,7 @@ function removeCmtItem(idx) {
                     @click="trial.toggleThreadAcc(item, th)"
                     :title="trial.isThreadAcc(item, th) ? `Batal ACC benang ${th}` : `ACC benang ${th}`"
                     class="inline-flex items-stretch rounded border overflow-hidden cursor-pointer select-none text-[11px] font-mono transition-all"
-                    :class="trial.isThreadAcc(item, th) ? 'border-emerald-500 bg-emerald-950/20' : 'border-zinc-800 bg-zinc-900'"
+                    :class="trial.isThreadAcc(item, th) ? 'border-emerald-500 bg-emerald-950/20 ring-1 ring-emerald-500/50' : 'border-zinc-800 bg-zinc-900'"
                   >
                     <span class="px-1.5 py-0.5 bg-zinc-850 text-zinc-300 border-r border-zinc-800 font-bold">
                       {{ item.needleSequence[nIdx] || 'J?' }}
@@ -192,59 +162,6 @@ function removeCmtItem(idx) {
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 3. Form Input Cepat CMT di Bawah -->
-    <div class="p-4 bg-zinc-900/80 border border-zinc-800 rounded-xl space-y-3">
-      <div class="text-xs font-mono font-bold text-white uppercase tracking-wider">
-        + Input Cepat Variasi CMT Bordir
-      </div>
-
-      <form @submit.prevent="addSingleCmt" class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs font-mono">
-        <div>
-          <input
-            v-model="newCmt.flopy"
-            type="text"
-            placeholder="Flopy (Misal: Flopy B)"
-            class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white focus:outline-none focus:border-zinc-600"
-          />
-        </div>
-        <div>
-          <input
-            v-model="newCmt.cmt"
-            type="text"
-            required
-            placeholder="No CMT (Misal: 620)"
-            class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white focus:outline-none focus:border-zinc-600"
-          />
-        </div>
-        <div>
-          <input
-            v-model="newCmt.variant"
-            type="text"
-            placeholder="Variasi (Misal: C1 Navy)"
-            class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white focus:outline-none focus:border-zinc-600"
-          />
-        </div>
-        <div>
-          <input
-            v-model="newCmt.threadsInput"
-            type="text"
-            required
-            placeholder="Benang (Misal: 1179 1319 2216)"
-            class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white focus:outline-none focus:border-zinc-600"
-          />
-        </div>
-
-        <div class="sm:col-span-4 flex justify-end">
-          <button
-            type="submit"
-            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold rounded-lg text-xs font-mono transition-colors shadow-sm"
-          >
-            + Tambahkan Variasi CMT
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 </template>

@@ -63,10 +63,11 @@ embro-app/
     │       └── ComboBadge.vue     # Connected option badge [J3|1171||J2|1070] with [✓] indicator
     │
     └── views/                  # TOP-LEVEL MODULE VIEWS
-        ├── TrialView.vue       # Module 1: Trial Benang & Machine Operator Card Stages
-        ├── ScheduleView.vue    # Module 2: Jadwal Mesin & Production SPK Checklist
-        ├── InventoryView.vue   # Module 3: Thread Warehouse Stock & Location Rack
-        └── FloppyView.vue      # Module 4: Wilcom Design Floppy Master & WebP Uploads
+        ├── CmtDataView.vue     # Module 1: Data CMT (Central Operational Hub: No CMT, Floppy, Color Options)
+        ├── TrialView.vue       # Module 2: Trial Benang (Machine Operator Card Stages & Needle Solver)
+        ├── ScheduleView.vue    # Module 3: Jadwal Mesin (Production SPK Checklist & Ready Items)
+        ├── InventoryView.vue   # Module 4: Stok Benang (Thread Warehouse Stock & Location Rack)
+        └── FloppyView.vue      # Module 5: Master Floppy (Wilcom Design Floppy Master & WebP Uploads)
 ```
 
 ---
